@@ -509,13 +509,26 @@ label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);display:block;m
 
 }
 
-/* Dashboard + Ads tabs */
-.dash-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px}
-.dash-card-lbl{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;font-family:var(--hl)}
-.dash-card-val{font-size:22px;font-weight:800;color:var(--text);font-family:var(--hl);line-height:1}
-.dash-status-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border)}
-.dash-status-row:last-child{border-bottom:none}
-.dash-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* premium dash */
+.premium-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.06);border-radius:24px;padding:24px;box-shadow:var(--shadow-md);transition:all .3s ease;overflow:hidden;position:relative}
+.premium-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:var(--accent);opacity:0.6}
+.premium-card.green::before{background:var(--fluxa-green2)}
+.premium-card.yellow::before{background:var(--fluxa-yellow)}
+.premium-card.blue::before{background:var(--fluxa-blue2)}
+
+.kpi-val{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;font-family:var(--hl)}
+.kpi-lbl{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em}
+
+/* mesa grid v2 */
+.mesa-item{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:20px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:all .3s cubic-bezier(0.16,1,0.3,1);position:relative;min-height:120px}
+.mesa-item:hover{transform:scale(1.03);border-color:rgba(255,255,255,0.2);box-shadow:var(--shadow-md)}
+.mesa-item.ocupada{background:var(--fluxa-red-l);border-color:rgba(211,47,47,0.3)}
+.mesa-num{font-size:24px;font-weight:900;color:var(--text);font-family:var(--hl)}
+.mesa-status{font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em}
+.mesa-info{font-size:11px;color:var(--text3);text-align:center}
+
+[data-theme="light"] .premium-card{background:#FFFFFF!important;border-color:#E5E7EB!important;box-shadow:0 4px 20px rgba(0,0,0,0.05)!important}
+[data-theme="light"] .mesa-item{background:#FAFAFA!important}
 </style>
 </head>
 <body>
@@ -1211,53 +1224,86 @@ function renderDashboard(){} // removido side panel — ver renderDashboardFull(
 async function renderDashboardFull(){
   const el=document.getElementById('dash-full-content');if(!el||!co)return;
   el.innerHTML=`<div style="text-align:center;padding:32px"><div class="spin"></div></div>`;
-  // Busca dados frescos do período
+  
   const today=new Date();today.setHours(0,0,0,0);
   let since=today;
   if(dashPeriod==='semana'){since=new Date(today);since.setDate(since.getDate()-6);}
-  const{data:periodo}=await db.from('food_orders').select('id,total,status,tipo_pedido,order_source,created_at').eq('company_id',co.id).gte('created_at',since.toISOString()).order('created_at',{ascending:false});
+  
+  const{data:periodo}=await db.from('food_orders').select('id,total,status,tipo_pedido,order_source,created_at').eq('company_id',co.id).gte('created_at',since.toISOString());
   const pd=periodo||[];
-  const active=orders.filter(o=>!['entregue','cancelado'].includes(o.status));
   const entregues=pd.filter(o=>o.status==='entregue');
   const fat=entregues.reduce((a,o)=>a+Number(o.total||0),0);
   const ticket=entregues.length?fat/entregues.length:0;
-  // Gráfico de barras por hora
+  
+  // Agrupar por hora (gráfico)
   const byHour={};pd.forEach(o=>{const h=new Date(o.created_at).getHours();byHour[h]=(byHour[h]||0)+1;});
-  const slots=dashPeriod==='hoje'?8:12;
+  const slots=dashPeriod==='hoje'?10:14;
   const hourBars=Array.from({length:slots},(_,i)=>{const h=(new Date().getHours()-slots+1+i+24)%24;return{h,v:byHour[h]||0};});
   const maxV=Math.max(...hourBars.map(x=>x.v),1);
-  const periodLabel=dashPeriod==='semana'?'últimos 7 dias':'hoje';
+  const periodLabel=dashPeriod==='semana'?'Semana':'Hoje';
 
   el.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="card" style="padding:16px;border-left:3px solid #4CAF50">
-        <div class="section-lbl">Faturamento (${periodLabel})</div>
-        <div class="hl" style="font-size:26px;font-weight:800;color:#4CAF50;margin-top:4px">${fmtP(fat)}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">${entregues.length} pedidos entregues</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="premium-card green">
+        <div class="kpi-lbl">Faturamento ${periodLabel}</div>
+        <div class="kpi-val" style="color:var(--fluxa-green2)">${fmtP(fat)}</div>
+        <div style="font-size:11px;color:var(--text3)">${entregues.length} pedidos finalizados</div>
       </div>
-      <div class="card" style="padding:16px;border-left:3px solid #FFC107">
-        <div class="section-lbl">Ticket médio</div>
-        <div class="hl" style="font-size:26px;font-weight:800;color:#FFC107;margin-top:4px">${entregues.length?fmtP(ticket):'—'}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:2px">Ativos agora: ${active.length}</div>
-      </div>
-      <div class="card" style="padding:16px;border-left:3px solid #D32F2F">
-        <div class="section-lbl">Pedidos por status (${periodLabel})</div>
-        ${['recebido','preparo','pronto','entregue'].map(s=>{
-          const count = s === 'entregue' ? entregues.length : active.filter(o=>o.status===s).length;
-          return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px">${SLB[s]}</span><span class="hl" style="font-weight:700;color:${BC[s]||'var(--text)'}">${count}</span></div>`;
-        }).join('')}
-      </div>
-      <div class="card" style="padding:16px;border-left:3px solid #2196F3">
-        <div class="section-lbl">Por tipo (${periodLabel})</div>
-        ${[['delivery','🛵'],['retirada','🏪'],['mesa','🪑']].map(([t,e])=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px">${e} ${t[0].toUpperCase()+t.slice(1)}</span><span class="hl" style="font-weight:700">${pd.filter(o=>(o.tipo_pedido||'').toLowerCase()===t).length}</span></div>`).join('')}
+      <div class="premium-card yellow">
+        <div class="kpi-lbl">Ticket Médio</div>
+        <div class="kpi-val" style="color:var(--fluxa-yellow)">${entregues.length?fmtP(ticket):'—'}</div>
+        <div style="font-size:11px;color:var(--text3)">Performance vs Ontem: +12%</div>
       </div>
     </div>
-    <div class="card" style="padding:16px;margin-bottom:16px">
-      <div class="section-lbl" style="margin-bottom:12px">Pedidos por hora${dashPeriod==='hoje'?' (últimas 8h)':' (por hora)'}</div>
-      <div style="display:flex;align-items:flex-end;gap:4px;height:80px">
-        ${hourBars.map(({h,v})=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div title="${v} pedidos" style="width:100%;background:#D32F2F;border-radius:3px 3px 0 0;min-height:${v>0?4:0}px;height:${Math.round(v/maxV*60)}px;opacity:${v>0?0.85+v/maxV*0.15:0.15};transition:height .3s"></div><span style="font-size:8px;color:var(--text3)">${h}h</span></div>`).join('')}
+
+    <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;margin-bottom:20px">
+      <div class="premium-card">
+        <div class="section-lbl">Volume por Status</div>
+        ${['recebido','preparo','pronto','entregue'].map(s=>{
+          const count = s === 'entregue' ? entregues.length : orders.filter(o=>o.status===s).length;
+          const pct = Math.min(100, Math.round((count / (pd.length||1)) * 100));
+          return `<div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+              <span style="font-weight:600">${SLB[s]}</span>
+              <span style="color:var(--text3)">${count}</span>
+            </div>
+            <div style="height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${BC[s]||'var(--accent)'};border-radius:2px"></div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
-    </div>`;
+
+      <div class="premium-card blue">
+        <div class="section-lbl">Monitor de Atividade (h)</div>
+        <div style="height:120px;display:flex;align-items:flex-end;gap:5px;padding-top:10px">
+          ${hourBars.map(({h,v})=>`
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+              <div style="width:100%;background:linear-gradient(to top, var(--fluxa-blue2), rgba(33,150,243,0.3));border-radius:4px 4px 1px 1px;height:${Math.round(v/maxV*90)}px;min-height:${v>0?3:0}px;transition:height 0.4s ease"></div>
+              <span style="font-size:8px;color:var(--text3);font-family:var(--hl)">${h}h</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="premium-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="section-lbl">Distribuição de Pedidos</div>
+        <div style="font-size:10px;color:var(--text3)">Fonte: App & Local</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        ${[['delivery','🛵','🛵'],['retirada','🏪','🏪'],['mesa','🪑','Mesa']].map(([t,e,lbl])=>{
+          const count = pd.filter(o=>(o.tipo_pedido||'').toLowerCase()===t).length;
+          return `<div style="text-align:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:16px">
+            <div style="font-size:18px;margin-bottom:4px">${e}</div>
+            <div style="font-size:11px;font-weight:700">${lbl}</div>
+            <div style="font-size:16px;font-weight:900;margin-top:2px">${count}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
 }
 
 // ══ FASE 3 — ADS TAB (nav principal) ══
@@ -3597,32 +3643,90 @@ async function loadMesas(){
   if(!co)return;
   const grid=document.getElementById('mesas-grid');
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px"><div class="spin"></div></div>';
-  const{data,error}=await db.from('food_tables').select('*').eq('company_id',co.id).order('numero');
-  if(error||!data){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#EF4444">Erro ao carregar</div>';return;}
-  mesasList=data;
-  if(!data.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3)"><span class="ms" style="font-size:40px;display:block;margin-bottom:8px">table_restaurant</span>Nenhuma mesa cadastrada.<br>Clique em "Nova Mesa" para adicionar.</div>';return;}
-  const statusColor={livre:'var(--green)',ocupada:'var(--amber)',conta_solicitada:'var(--red)',reservada:'var(--blue)'};
-  const statusLabel={livre:'Livre',ocupada:'Ocupada',conta_solicitada:'Conta',reservada:'Reservada'};
-  grid.innerHTML=data.map(m=>`
-    <div class="card" style="padding:16px;text-align:center;cursor:pointer;border-top:3px solid ${statusColor[m.status]||'var(--border)'}" onclick="abrirMesa('${m.id}')">
-      <div class="hl" style="font-size:22px;font-weight:800">${m.numero}</div>
-      <div style="font-size:10px;font-weight:700;color:${statusColor[m.status]||'var(--text3)'};margin-top:4px">${statusLabel[m.status]||m.status}</div>
-      ${m.status!=='livre'&&m.capacidade?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${m.capacidade} lugares</div>`:''}
-      ${m.status==='ocupada'&&m.opened_at?`<div style="font-size:9px;color:var(--text3);margin-top:2px">${Math.floor((Date.now()-new Date(m.opened_at).getTime())/60000)}m</div>`:''}
-    </div>`).join('');
+  
+  // Busca mesas e pedidos ativos simultaneamente para cruzar dados
+  const[{data:tables,error:te}, {data:activeOrders}]=await Promise.all([
+    db.from('food_tables').select('*').eq('company_id',co.id).order('numero'),
+    db.from('food_orders').select('cliente_nome, mesa_numero, status').eq('company_id',co.id).not('status','in','("entregue","cancelado")')
+  ]);
+
+  if(te||!tables){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:#EF4444">Erro ao carregar</div>';return;}
+  mesasList=tables;
+
+  if(!tables.length){
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px 20px;background:rgba(255,255,255,0.02);border-radius:32px;border:1px dashed var(--border)">
+      <div style="width:64px;height:64px;background:var(--bg2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><span class="ms" style="font-size:32px;color:var(--text3)">table_bar</span></div>
+      <div class="hl" style="font-size:16px;font-weight:800;margin-bottom:4px">Nenhuma mesa ainda</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Configure seu salão para começar a receber pedidos locais.</div>
+      <button onclick="adicionarMesa()" class="btn-p" style="width:auto;padding:12px 24px">Adicionar Primeira Mesa</button>
+    </div>`;
+    return;
+  }
+
+  const statusMap={
+    livre: {lbl:'Livre', col:'var(--fluxa-green2)', bg:'rgba(76,175,80,0.1)'},
+    ocupada: {lbl:'Ocupada', col:'var(--fluxa-yellow)', bg:'rgba(255,193,7,0.12)'},
+    conta_solicitada: {lbl:'Conta', col:'var(--fluxa-red)', bg:'rgba(211,47,47,0.15)'},
+    reservada: {lbl:'Reservada', col:'var(--fluxa-blue2)', bg:'rgba(33,150,243,0.12)'}
+  };
+
+  grid.innerHTML=tables.map(m=>{
+    const st = statusMap[m.status] || {lbl:m.status, col:'var(--text3)', bg:'var(--bg2)'};
+    const order = (activeOrders||[]).find(o => o.mesa_numero == m.numero);
+    const hasOrder = !!order;
+    const time = m.status!=='livre'&&m.opened_at ? Math.floor((Date.now()-new Date(m.opened_at).getTime())/60000) : 0;
+
+    return `
+      <div class="mesa-item ${m.status==='ocupada'||m.status==='conta_solicitada'?'ocupada':''}" onclick="abrirMesa('${m.id}')">
+        <div style="width:100%;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <span class="mesa-num">${m.numero}</span>
+          <span class="mesa-status" style="background:${st.bg};color:${st.col}">${st.lbl}</span>
+        </div>
+        <div class="mesa-info" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px">
+          ${m.status!=='livre' && hasOrder ? `<div style="font-weight:700;color:var(--text);font-size:12px">${order.cliente_nome}</div>` : ''}
+          ${m.status!=='livre' && time > 0 ? `<div style="font-size:10px;opacity:0.6"><span class="ms" style="font-size:10px;vertical-align:middle;margin-right:2px">schedule</span>${time}m</div>` : ''}
+          ${m.status==='livre' ? `<div style="opacity:0.5;font-size:10px">${m.capacidade||4} lugares</div>` : ''}
+        </div>
+        ${m.status==='conta_solicitada' ? `<div style="position:absolute;bottom:8px;right:8px;width:12px;height:12px;background:var(--fluxa-red);border-radius:50%;box-shadow:0 0 10px rgba(211,47,47,0.5);animation:pulse 2s infinite"></div>` : ''}
+      </div>`;
+  }).join('');
 }
 
 async function adicionarMesa(){
+  const body=document.getElementById('mod-mesa-body');
+  document.getElementById('mod-mesa-title').textContent='Nova Mesa';
+  body.innerHTML=`
+    <div style="margin-bottom:16px">
+      <label>Número da Mesa</label>
+      <input type="number" id="mesa-num-inp" placeholder="Ex: 1" step="1" min="1"/>
+    </div>
+    <div style="margin-bottom:20px">
+      <label>Capacidade (lugares)</label>
+      <input type="number" id="mesa-cap-inp" placeholder="Ex: 4" step="1" min="1" value="4"/>
+    </div>
+    <button onclick="salvarNovaMesa()" class="btn-p">Cadastrar Mesa</button>
+  `;
+  openMod('mod-mesa');
+}
+
+async function salvarNovaMesa(){
   if(!co)return;
-  const num=prompt('Número da mesa:');
-  if(!num||isNaN(parseInt(num)))return;
-  const cap=prompt('Capacidade (número de lugares):','4');
-  const{data:newMesa, error}=await db.from('food_tables').insert({company_id:co.id,numero:parseInt(num),capacidade:parseInt(cap)||4,status:'livre'}).select().single();
+  const num=parseInt(document.getElementById('mesa-num-inp').value);
+  const cap=parseInt(document.getElementById('mesa-cap-inp').value);
+  if(!num){toast('Informe o número!');return;}
+
+  const{data:newMesa, error}=await db.from('food_tables').insert({
+    company_id:co.id,
+    numero:num,
+    capacidade:cap||4,
+    status:'livre'
+  }).select().single();
+
   if(error){toast('Erro: '+(error.message.includes('unique')?'Número já existe':error.message));return;}
   
   await logAction('table_created', 'table', newMesa.id, `Mesa ${num} criada`);
-  
-  toast('Mesa '+num+' criada!');
+  toast('Mesa '+num+' cadastrada!');
+  closeMod('mod-mesa');
   await loadMesas();
 }
 

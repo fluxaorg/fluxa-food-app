@@ -1287,77 +1287,23 @@ async function renderDashboardFull(){
   `;
 }
 
-// BOOT ÚNICO — offline-first: usa cache local imediatamente, valida em background
+// ── BOOT ──
 (async () => {
-  const safetyTimeout = setTimeout(() => {
-    console.warn('[BOOT] Limite de tempo excedido. Forçando interface.');
-    const loader = document.getElementById('s-loading');
-    if (loader && loader.classList.contains('on')) {
-      loader.innerHTML += '<div style="position:fixed;bottom:80px;color:rgba(255,255,255,0.4);font-size:10px">Conexão instável... Redirecionando...</div>';
-      setTimeout(() => show('s-login'), 2000);
-    }
-  }, 12000);
+  const saved = localStorage.getItem('quiosque_session_v2');
+  if (!saved) { show('s-login'); return; }
 
-  try {
-    console.log('[BOOT] Verificando sessão local...');
-    const saved = localStorage.getItem('quiosque_session_v2');
-    if (!saved) {
-      console.log('[BOOT] Sem sessão, indo para login');
-      clearTimeout(safetyTimeout);
-      show('s-login');
-      return;
-    }
+  let session;
+  try { session = JSON.parse(saved); } catch(e) { localStorage.removeItem('quiosque_session_v2'); show('s-login'); return; }
+  if (!session?.staff || !session?.company) { localStorage.removeItem('quiosque_session_v2'); show('s-login'); return; }
 
-    const { staff, company } = JSON.parse(saved);
-    
-    // RENDERIZAÇÃO INSTANTÂNEA DO CACHE
-    console.log('[BOOT] Hot-loading do cache...');
-    currentStaff = staff;
-    co = company;
-    setupRoleBasedAccess(staff.role);
-    show('app');
-    bootApp(company); 
+  const { staff, company } = session;
+  currentStaff = staff;
+  currentStaff.role = (staff.role === 'gestor') ? 'dono' : (staff.role || 'funcionario');
+  co = company;
 
-    // VALIDAÇÃO EM BACKGROUND
-    (async () => {
-      console.log('[BOOT] Validando sessão em background...');
-      const { data: freshStaff, error } = await db
-        .from('food_users')
-        .select('*, company:company_id(*)')
-        .eq('id', staff.id)
-        .single();
-
-      if (!error && freshStaff && freshStaff.active) {
-        console.log('[BOOT] Sessão validada e atualizada.');
-        currentStaff = freshStaff;
-        currentStaff.role = (freshStaff.role === 'gestor') ? 'dono' : (freshStaff.role || 'funcionario');
-        co = freshStaff.company;
-        localStorage.setItem('quiosque_session_v2', JSON.stringify({ staff: freshStaff, company: freshStaff.company }));
-      } else if (error && error.code !== 'PGRST116') {
-        console.warn('[BOOT] Erro na validação background, mas mantendo cache por enquanto.');
-      }
-    })();
-
-    console.log('[BOOT] Sessão OK! Iniciando app...');
-    currentStaff = staff;
-    currentStaff.role = (staff.role === 'gestor') ? 'dono' : (staff.role || 'funcionario');
-    
-    await bootApp(staff.company);
-    setupRoleBasedAccess(currentStaff.role);
-    show('app');
-
-  } catch(err) {
-    console.error('[BOOT] Erro:', err);
-    // Só limpamos se for erro de autenticação real, não falha de rede
-    if (err.message?.includes('JWT') || err.status === 401) {
-       localStorage.removeItem('kiosque_session_v2');
-       show('s-login');
-    } else {
-       console.warn('[BOOT] Erro na inicialização, mas mantendo sessão atual.');
-    }
-  } finally {
-    clearTimeout(safetyTimeout);
-  }
+  show('app');
+  setupRoleBasedAccess(currentStaff.role);
+  bootApp(company); // chamada ÚNICA, fire-and-forget (app já visível)
 })();
 
 function initFoodCascade(){
@@ -1494,12 +1440,9 @@ async function doLogin(){
     currentStaff.role = staffRole;
     co = staff.company;
 
-    // TRANSICÃO INSTANTÂNEA
     setupRoleBasedAccess(staffRole);
     show('app');
-    
-    // Boot em background (não aguardamos mais para mostrar a tela)
-    bootApp(staff.company);
+    bootApp(staff.company); // fire-and-forget intencional — app já visível
 
     db.from('food_users').update({ last_login: new Date().toISOString() }).eq('id', staff.id);
     db.from('food_activity_logs').insert({ 
@@ -1875,27 +1818,28 @@ async function toggleThemeAndSave(){
 // ══════════════════════════════════════════════════════════
 // ETAPA 7: Push Notifications (Web Push API)
 // ══════════════════════════════════════════════════════════
-let _rtRetryTimer=null;
+let _rtTimer=null;
 
-async function startRT(){
-  if(!co||!co.id)return;
-  if(_rtRetryTimer){clearTimeout(_rtRetryTimer);_rtRetryTimer=null;}
-  if(rtSub){db.removeChannel(rtSub);rtSub=null;}
-  // Sem filtro server-side — check por company_id no cliente (mais confiável)
-  rtSub=db.channel('food_rt_'+co.id)
+function startRT(){
+  if(!co?.id)return;
+  if(_rtTimer){clearTimeout(_rtTimer);_rtTimer=null;}
+  if(rtSub){try{db.removeChannel(rtSub);}catch(e){} rtSub=null;}
+
+  rtSub=db.channel('fluxa_kitchen_'+co.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
       const o=p.new;
-      if(o.company_id!==co.id)return;
-      if(orders.find(x=>x.id===o.id))return;
-      await new Promise(r=>setTimeout(r,400));
-      const{data:items}=await db.from('food_order_items').select('*').eq('order_id',o.id);
-      o._items=items||[];
+      if(o.company_id!==co.id||orders.find(x=>x.id===o.id))return;
+      // aguarda items serem salvos (race condition)
+      await new Promise(r=>setTimeout(r,500));
+      const{data:its}=await db.from('food_order_items').select('*').eq('order_id',o.id);
+      o._items=its||[];
       orders.unshift(o);
       renderOrders();
-      setTimeout(()=>{const el=document.getElementById('oc-'+o.id);if(el)el.classList.add('order-new');},50);
+      setTimeout(()=>document.getElementById('oc-'+o.id)?.classList.add('order-new'),50);
       playNotificationSound();
-      if(navigator.vibrate)navigator.vibrate([80,40,80]);
-      if(!document.getElementById('nav-pedidos')?.classList.contains('active'))toast('🛍 Novo pedido de '+o.cliente_nome+'!');
+      navigator.vibrate?.([80,40,80]);
+      if(!document.getElementById('nav-pedidos')?.classList.contains('active'))
+        toast('🛍 Novo pedido: '+o.cliente_nome);
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders'},p=>{
       const o=p.new;
@@ -1903,30 +1847,32 @@ async function startRT(){
       const idx=orders.findIndex(x=>x.id===o.id);
       if(idx>-1){
         if(['entregue','cancelado'].includes(o.status)){
-          const rem=orders.splice(idx,1)[0];
-          rem.status=o.status;rem.completed_at=o.updated_at||new Date().toISOString();
-          const hIdx=history.findIndex(x=>x.id===rem.id);
-          if(hIdx===-1)history.unshift(rem);else history[hIdx]=rem;
-        } else {
+          const [rem]=orders.splice(idx,1);
+          rem.status=o.status;
+          rem.completed_at=o.updated_at||new Date().toISOString();
+          const hi=history.findIndex(x=>x.id===rem.id);
+          if(hi===-1)history.unshift(rem);else history[hi]=rem;
+        }else{
           Object.assign(orders[idx],o);
         }
         renderOrders();renderHist();
-      } else {
-        const hIdx=history.findIndex(x=>x.id===o.id);
-        if(hIdx>-1){Object.assign(history[hIdx],o);renderHist();}
+      }else{
+        const hi=history.findIndex(x=>x.id===o.id);
+        if(hi>-1){Object.assign(history[hi],o);renderHist();}
       }
     })
-    .subscribe((status)=>{
-      if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
-        _rtRetryTimer=setTimeout(()=>{if(co)startRT();},5000);
+    .subscribe(s=>{
+      if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'||s==='CLOSED'){
+        console.warn('[RT] reconectando...');
+        _rtTimer=setTimeout(startRT,5000);
       }
     });
 }
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&co&&rtSub&&rtSub.state!=='joined')startRT();
+  if(document.visibilityState==='visible'&&co?.id&&rtSub?.state!=='joined')startRT();
 });
-window.addEventListener('online',()=>{if(co)startRT();});
+window.addEventListener('online',()=>co?.id&&startRT());
 
 async function registerPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;

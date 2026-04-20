@@ -653,12 +653,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       <!-- PEDIDOS -->
       <div id="tab-pedidos" class="tab active">
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-           <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Pedidos</h2>
-           <button onclick="loadData();toast('🔄 Sincronizando dados...')" style="display:flex;align-items:center;gap:6px;background:var(--bg2);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:6px 12px;cursor:pointer;font-size:11px;font-weight:700;">
-             <span class="ms" style="font-size:16px;">sync</span>Sincronizar
-           </button>
-        </div>
+        <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px">Pedidos</h2>
         <div id="pedidos-top-row" style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px">
           <div class="card" style="padding:12px 14px">
             <div class="section-lbl" style="margin-bottom:4px">Ao vivo</div>
@@ -1880,18 +1875,18 @@ async function toggleThemeAndSave(){
 // ══════════════════════════════════════════════════════════
 // ETAPA 7: Push Notifications (Web Push API)
 // ══════════════════════════════════════════════════════════
-let _rtRetryTimer=null,_rtFirstConnect=true;
+let _rtRetryTimer=null;
 
 async function startRT(){
   if(!co||!co.id)return;
   if(_rtRetryTimer){clearTimeout(_rtRetryTimer);_rtRetryTimer=null;}
   if(rtSub){db.removeChannel(rtSub);rtSub=null;}
-  rtSub=db.channel('public:food_orders:company_'+co.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},async p=>{
+  // Sem filtro server-side — check por company_id no cliente (mais confiável)
+  rtSub=db.channel('food_rt_'+co.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
       const o=p.new;
-      if(o.company_id!==co?.id)return;
+      if(o.company_id!==co.id)return;
       if(orders.find(x=>x.id===o.id))return;
-      // Aguarda itens serem inseridos antes de buscar
       await new Promise(r=>setTimeout(r,400));
       const{data:items}=await db.from('food_order_items').select('*').eq('order_id',o.id);
       o._items=items||[];
@@ -1902,9 +1897,9 @@ async function startRT(){
       if(navigator.vibrate)navigator.vibrate([80,40,80]);
       if(!document.getElementById('nav-pedidos')?.classList.contains('active'))toast('🛍 Novo pedido de '+o.cliente_nome+'!');
     })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},p=>{
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders'},p=>{
       const o=p.new;
-      if(o.company_id!==co?.id)return;
+      if(o.company_id!==co.id)return;
       const idx=orders.findIndex(x=>x.id===o.id);
       if(idx>-1){
         if(['entregue','cancelado'].includes(o.status)){
@@ -1919,27 +1914,19 @@ async function startRT(){
       } else {
         const hIdx=history.findIndex(x=>x.id===o.id);
         if(hIdx>-1){Object.assign(history[hIdx],o);renderHist();}
-        else if(!['entregue','cancelado'].includes(o.status))loadOrders();
       }
     })
-    .subscribe(async(status)=>{
-      console.log('[RT] Status:',status);
-      if(status==='SUBSCRIBED'){
-        if(_rtFirstConnect){_rtFirstConnect=false;loadOrders();}
-      } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
-        console.warn('[RT] Canal perdido ('+status+'), reconectando em 5s...');
+    .subscribe((status)=>{
+      if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
         _rtRetryTimer=setTimeout(()=>{if(co)startRT();},5000);
       }
     });
 }
 
 document.addEventListener('visibilitychange',()=>{
-  if(document.visibilityState==='visible'&&co&&rtSub){
-    const s=rtSub.state;
-    if(s!=='joined'&&s!=='joining'){_rtFirstConnect=false;startRT();}
-  }
+  if(document.visibilityState==='visible'&&co&&rtSub&&rtSub.state!=='joined')startRT();
 });
-window.addEventListener('online',()=>{if(co){_rtFirstConnect=false;startRT();}});
+window.addEventListener('online',()=>{if(co)startRT();});
 
 async function registerPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;

@@ -1880,50 +1880,66 @@ async function toggleThemeAndSave(){
 // ══════════════════════════════════════════════════════════
 // ETAPA 7: Push Notifications (Web Push API)
 // ══════════════════════════════════════════════════════════
-async function startRT(){
-  if(!co || !co.id) return;
-  if(rtSub) { db.removeChannel(rtSub); rtSub = null; }
-  console.log('[RT] Conectando canal dedicado: public:food_orders:company_'+co.id);
-  rtSub=db.channel('public:food_orders:company_'+co.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders', filter:'company_id=eq.'+co.id},async p=>{
-      const o=p.new;
-      if(o.company_id !== co?.id) return;
-      console.log('[RT] Novo pedido:', o.id);
-      
-      // Verifica se já não temos esse pedido (evitar drupas)
-      const exists = orders.find(x => x.id === o.id);
-      if(exists) return;
+let _rtRetryTimer=null,_rtFirstConnect=true;
 
-      // Carrega os itens deste pedido novo para vir completo
-      const {data:items} = await db.from('food_order_items').select('*').eq('order_id', o.id);
-      o._items = items || [];
-      
+async function startRT(){
+  if(!co||!co.id)return;
+  if(_rtRetryTimer){clearTimeout(_rtRetryTimer);_rtRetryTimer=null;}
+  if(rtSub){db.removeChannel(rtSub);rtSub=null;}
+  rtSub=db.channel('public:food_orders:company_'+co.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},async p=>{
+      const o=p.new;
+      if(o.company_id!==co?.id)return;
+      if(orders.find(x=>x.id===o.id))return;
+      // Aguarda itens serem inseridos antes de buscar
+      await new Promise(r=>setTimeout(r,400));
+      const{data:items}=await db.from('food_order_items').select('*').eq('order_id',o.id);
+      o._items=items||[];
       orders.unshift(o);
       renderOrders();
+      setTimeout(()=>{const el=document.getElementById('oc-'+o.id);if(el)el.classList.add('order-new');},50);
       playNotificationSound();
-      toast('🚀 Novo pedido recebido!', 5000);
+      if(navigator.vibrate)navigator.vibrate([80,40,80]);
+      if(!document.getElementById('nav-pedidos')?.classList.contains('active'))toast('🛍 Novo pedido de '+o.cliente_nome+'!');
     })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders', filter:'company_id=eq.'+co.id},p=>{
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},p=>{
       const o=p.new;
-      if(o.company_id !== co?.id) return;
-      console.log('[RT] Update no pedido:', o.id, '->', o.status);
+      if(o.company_id!==co?.id)return;
       const idx=orders.findIndex(x=>x.id===o.id);
       if(idx>-1){
-        orders[idx]={...orders[idx],...o};
-        renderOrders();
+        if(['entregue','cancelado'].includes(o.status)){
+          const rem=orders.splice(idx,1)[0];
+          rem.status=o.status;rem.completed_at=o.updated_at||new Date().toISOString();
+          const hIdx=history.findIndex(x=>x.id===rem.id);
+          if(hIdx===-1)history.unshift(rem);else history[hIdx]=rem;
+        } else {
+          Object.assign(orders[idx],o);
+        }
+        renderOrders();renderHist();
       } else {
-        // Se mudou pra um status ativo e não tínhamos ele, recarrega
-        if(!['entregue','cancelado'].includes(o.status)) loadOrders();
+        const hIdx=history.findIndex(x=>x.id===o.id);
+        if(hIdx>-1){Object.assign(history[hIdx],o);renderHist();}
+        else if(!['entregue','cancelado'].includes(o.status))loadOrders();
       }
     })
-    .subscribe(async (status) => {
-      console.log('[RT] Status:', status);
-      if(status === 'SUBSCRIBED') {
-        // Ao conectar, faz um sync final para garantir que nada foi perdido no handshake
-        loadOrders();
+    .subscribe(async(status)=>{
+      console.log('[RT] Status:',status);
+      if(status==='SUBSCRIBED'){
+        if(_rtFirstConnect){_rtFirstConnect=false;loadOrders();}
+      } else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+        console.warn('[RT] Canal perdido ('+status+'), reconectando em 5s...');
+        _rtRetryTimer=setTimeout(()=>{if(co)startRT();},5000);
       }
     });
 }
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&co&&rtSub){
+    const s=rtSub.state;
+    if(s!=='joined'&&s!=='joining'){_rtFirstConnect=false;startRT();}
+  }
+});
+window.addEventListener('online',()=>{if(co){_rtFirstConnect=false;startRT();}});
 
 async function registerPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;

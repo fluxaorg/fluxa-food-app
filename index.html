@@ -2019,22 +2019,19 @@ function startRT(){
   }
   
   console.log('[RT] Iniciando canal food_rt_global...');
-  rtSub=db.channel('food_rt_global')
+  rtSub=db.channel('food_rt_global_v2')
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
       const o=p.new;
       if(o.company_id !== co.id) return;
-      console.log('[RT] Novo pedido detectado:', o.order_number);
+      console.log('[RT] Novo pedido:', o.order_number, o.tipo_pedido);
       const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);
       o._items=it||[];
-      // Evita duplicata se já carregou via polling/sync
       if(!orders.find(x=>x.id===o.id)){
         orders.unshift(o);
         renderOrders();
         playNotificationSound();
         if(navigator.vibrate)navigator.vibrate([80,40,80]);
-        if(!document.getElementById('nav-pedidos').classList.contains('active')){
-           toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
-        }
+        toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
       }
       loadMesas();
       renderDashboardFull();
@@ -2042,7 +2039,7 @@ function startRT(){
     .on('postgres_changes', {event:'UPDATE',schema:'public',table:'food_orders'}, async p=>{
       const o=p.new;
       if(o.company_id !== co.id) return;
-      console.log('[RT] Atualização de pedido:', o.order_number, o.status);
+      console.log('[RT] Atualização:', o.order_number, o.status);
       const idx = orders.findIndex(x=>x.id===o.id);
       if(idx!==-1) {
          if(['entregue','cancelado'].includes(o.status)){
@@ -2054,20 +2051,22 @@ function startRT(){
          renderOrders();
          renderDashboardFull();
       } else if(!['entregue','cancelado'].includes(o.status)) {
-         // Se não estava na lista e agora é um status ativo, adiciona
          loadOrders();
       }
     })
     .on('postgres_changes', {event:'*',schema:'public',table:'food_tables'}, (p) => {
       const mesa = p.new || p.old;
       if(mesa && mesa.company_id !== co.id) return;
-      console.log('[RT] Mudança em mesas detectada');
       loadMesas();
     })
     .subscribe((status, err) => {
-      console.log('[RT] Status canal:', status, err || '');
-      if(status === 'CHANNEL_ERROR') {
-        console.warn('[RT] Erro no canal. Tentando reconectar em 5s...');
+      console.log('[RT] Canal status:', status, err||'');
+      if(status === 'SUBSCRIBED') {
+        // Recarrega pedidos para pegar qualquer coisa que chegou durante a conexão
+        loadOrders();
+      }
+      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        console.warn('[RT] Erro/timeout. Reconectando em 5s...');
         setTimeout(startRT, 5000);
       }
     });
@@ -3521,13 +3520,24 @@ function updateOrderTimers(){
 }
 
 function startTick(){
-  // Atualiza timers a cada 30s (exibição mais precisa)
+  // Atualiza timers a cada 30s
   setInterval(()=>{
     updateOrderTimers();
-    // Re-render completo a cada 60s para atualizar cores
     if(!co||isFounder)return;
-    if(document.getElementById('nav-pedidos')&&document.getElementById('nav-pedidos').classList.contains('active'))renderOrders();
-  },30000);
+    if(document.getElementById('nav-pedidos')?.classList.contains('active')) renderOrders();
+  }, 30000);
+
+  // 🔄 POLLING FALLBACK: garante que pedidos cheguem mesmo se RT falhar
+  // Roda a cada 30s em background — custo mínimo, confiabilidade máxima
+  setInterval(async ()=>{
+    if(!co) return;
+    console.log('[POLL] Verificando novos pedidos...');
+    const before = orders.length;
+    await loadOrders();
+    if(orders.length > before){
+      console.log('[POLL] Novos pedidos detectados via polling');
+    }
+  }, 30000);
 }
 
 // ══════════════════════════════════════════════════════════════════

@@ -620,6 +620,18 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
     </header>
 
     <main>
+      <!-- DASHBOARD -->
+      <div id="tab-dashboard" class="tab">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Dashboard</h2>
+          <select id="dash-period" onchange="window.dashPeriod=this.value;renderDashboardFull()" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:6px 10px;font-size:11px;font-weight:700;font-family:var(--hl)">
+            <option value="hoje">Hoje</option>
+            <option value="semana">Últimos 7 dias</option>
+          </select>
+        </div>
+        <div id="dash-full-content"></div>
+      </div>
+
       <!-- PEDIDOS -->
       <div id="tab-pedidos" class="tab active">
 
@@ -2230,11 +2242,11 @@ function renderOrders(){
       <div class="swipe-bg left" id="sb-l-${o.id}"><span class="swipe-lbl">Cancelar</span><div class="swipe-icon"><span class="ms" style="color:white;font-size:17px">close</span></div></div>
       <div class="order-card" id="oc-${o.id}" style="border-left:3px solid ${bc}" onclick="openOrder('${o.id}')">
         <div style="width:50px;height:50px;border-radius:10px;${avatarBg}display:flex;align-items:center;justify-content:center;flex-shrink:0;border:0.5px solid var(--border)">
-          <span class="hl" style="font-size:14px;font-weight:800;${avatarC}">${ini(o.cliente_nome)}</span>
+          <span class="hl" style="font-size:14px;font-weight:800;${avatarC}">${o.mesa_numero || ini(o.cliente_nome)}</span>
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
-            <span class="hl" style="font-size:13px;font-weight:700">${o.cliente_nome}</span>
+            <span class="hl" style="font-size:13px;font-weight:700">${o.mesa_numero ? `<span style="background:var(--accent);color:white;padding:2px 6px;border-radius:6px;font-size:10px;margin-right:5px">MESA ${o.mesa_numero}</span>` : ''}${o.cliente_nome}</span>
             <div class="timer ${tc}" data-order-time="${orderTs}"><span class="ms" style="font-size:12px">${icon}</span>${tim}m</div>
           </div>
           <div style="font-size:11px;color:var(--text2);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ttl}</div>
@@ -3638,8 +3650,27 @@ async function abrirMesa(id){
       ${mesa.capacidade?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${mesa.capacidade} lugares</div>`:''}
     </div>
     ${acoes}
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button onclick="copiarLinkMesa(${mesa.numero})" class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px">
+        <span class="ms" style="font-size:16px">link</span> Copiar Link
+      </button>
+      <button onclick="abrirLinkMesa(${mesa.numero})" class="btn-s" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px">
+        <span class="ms" style="font-size:16px">open_in_new</span> Testar
+      </button>
+    </div>
     <button onclick="excluirMesa('${id}')" style="width:100%;padding:10px;border-radius:12px;border:1.5px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.06);color:#EF4444;font-weight:600;font-size:12px;cursor:pointer;font-family:var(--hl)">Excluir Mesa</button>`;
   openMod('mod-mesa');
+}
+
+function copiarLinkMesa(num){
+  if(!co)return;
+  const url=`https://fluxa-cardapio.vercel.app/?mesa=${num}`;
+  navigator.clipboard.writeText(url);
+  toast('Link da mesa '+num+' copiado!');
+}
+function abrirLinkMesa(num){
+  if(!co)return;
+  window.open(`https://fluxa-cardapio.vercel.app/?mesa=${num}`,'_blank');
 }
 
 async function mudarStatusMesa(id,status){

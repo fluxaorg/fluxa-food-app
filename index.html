@@ -3359,16 +3359,14 @@ function startTick(){
   }, 30000);
 
   // 🔄 POLLING FALLBACK: garante que pedidos cheguem mesmo se RT falhar
-  // Roda a cada 30s em background — custo mínimo, confiabilidade máxima
   setInterval(async ()=>{
     if(!co) return;
-    console.log('[POLL] Verificando novos pedidos...');
     const before = orders.length;
     await loadOrders();
     if(orders.length > before){
       console.log('[POLL] Novos pedidos detectados via polling');
     }
-  }, 30000);
+  }, 5000);
 }
 
 // ══════════════════════════════════════════════════════════════════

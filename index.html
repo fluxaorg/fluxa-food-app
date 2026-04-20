@@ -685,7 +685,6 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
           <button class="order-tab" id="otab-delivery" onclick="setOrderTab('delivery')">Delivery <span id="otab-delivery-count" style="font-size:10px;opacity:.6"></span></button>
           <button class="order-tab" id="otab-retirada" onclick="setOrderTab('retirada')">Retirada <span id="otab-retirada-count" style="font-size:10px;opacity:.6"></span></button>
           <button class="order-tab" id="otab-mesa" onclick="setOrderTab('mesa')">Mesa <span id="otab-mesa-count" style="font-size:10px;opacity:.6"></span></button>
-          <button class="order-tab" id="otab-quiosque" onclick="setOrderTab('quiosque')">Quiosque <span id="otab-quiosque-count" style="font-size:10px;opacity:.6"></span></button>
         </div>
 
         <div id="ptr-indicator"><span class="ms" style="font-size:14px">refresh</span>Atualizando...</div>
@@ -1880,10 +1879,11 @@ async function toggleThemeAndSave(){
 // ETAPA 7: Push Notifications (Web Push API)
 // ══════════════════════════════════════════════════════════
 async function startRT(){
-  if(rtSub) return;
-  console.log('[RT] Conectando canal food_rt_global_v3...');
-  rtSub=db.channel('food_rt_global_v3')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
+  if(!co || !co.id) return;
+  if(rtSub) { db.removeChannel(rtSub); rtSub = null; }
+  console.log('[RT] Conectando canal dedicado: public:food_orders:company_'+co.id);
+  rtSub=db.channel('public:food_orders:company_'+co.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders', filter:'company_id=eq.'+co.id},async p=>{
       const o=p.new;
       if(o.company_id !== co?.id) return;
       console.log('[RT] Novo pedido:', o.id);
@@ -1901,7 +1901,7 @@ async function startRT(){
       playNotificationSound();
       toast('🚀 Novo pedido recebido!', 5000);
     })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders'},p=>{
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders', filter:'company_id=eq.'+co.id},p=>{
       const o=p.new;
       if(o.company_id !== co?.id) return;
       console.log('[RT] Update no pedido:', o.id, '->', o.status);
@@ -2205,7 +2205,7 @@ function renderOrders(){
   const active=orders.filter(o=>!['entregue','cancelado'].includes(o.status));
 
   // Contagens por tipo para as abas
-  const tipos=['delivery','retirada','mesa','quiosque'];
+  const tipos=['delivery','retirada','mesa'];
   document.getElementById('otab-todos-count').textContent=active.length?'('+active.length+')':'';
   tipos.forEach(t=>{
     const el=document.getElementById('otab-'+t+'-count');

@@ -1461,8 +1461,13 @@ function openCliente(c){
 
   } catch(err) {
     console.error('[BOOT] Erro:', err);
-    localStorage.removeItem('kiosque_session');
-    show('s-login');
+    // Só limpamos se for erro de autenticação real, não falha de rede
+    if (err.message?.includes('JWT') || err.status === 401) {
+       localStorage.removeItem('kiosque_session_v2');
+       show('s-login');
+    } else {
+       console.warn('[BOOT] Erro na inicialização, mas mantendo sessão atual.');
+    }
   } finally {
     clearTimeout(safetyTimeout);
   }
@@ -2004,41 +2009,37 @@ function startRT(){
   if(rtSub){db.removeChannel(rtSub);rtSub=null;}
   rtSub=db.channel('food_rt_'+co.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},async p=>{
-      console.log('[RT] Novo pedido recebido:', p.new); // DEBUG
       const o=p.new;
       const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);
-      o._items=it||[];orders.unshift(o);renderOrders();
-      // Animação de entrada no novo card
-      setTimeout(()=>{const el=document.getElementById('oc-'+o.id);if(el)el.classList.add('order-new');},50);
-      // V2: som + vibração sempre que chega pedido novo
+      o._items=it||[];orders.unshift(o);
+      renderOrders();
+      loadMesas(); // Refresh tables grid
+      renderDashboardFull(); // Refresh KPIs
       playNotificationSound();
       if(navigator.vibrate)navigator.vibrate([80,40,80]);
-      if(!document.getElementById('nav-pedidos').classList.contains('active')){toast('🛍 Novo pedido de '+o.cliente_nome+'!');}
+      if(!document.getElementById('nav-pedidos').classList.contains('active')){
+         toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
+      }
     })
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},async p=>{
+    .on('postgres_changes', {event:'UPDATE',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id}, async p=>{
       const o=p.new;
       const idx = orders.findIndex(x=>x.id===o.id);
       if(idx!==-1) {
          if(['entregue','cancelado'].includes(o.status)){
-            const rem = orders.splice(idx,1)[0];
-            rem.status = o.status;
-            rem.completed_at = o.updated_at || new Date().toISOString();
-            const hIdx = history.findIndex(x=>x.id===rem.id);
-            if(hIdx===-1) history.unshift(rem); else history[hIdx]=rem;
+            orders.splice(idx,1);
+            loadMesas(); // A mesa pode ter sido liberada
          } else {
             Object.assign(orders[idx], o);
          }
-         renderOrders(); renderHist();
-      } else {
-         const hIdx = history.findIndex(x=>x.id===o.id);
-         if(hIdx!==-1) {
-             Object.assign(history[hIdx], o);
-             renderHist();
-         }
+         renderOrders();
+         renderDashboardFull();
       }
     })
+    .on('postgres_changes', {event:'*',schema:'public',table:'food_tables',filter:'company_id=eq.'+co.id}, () => {
+      loadMesas(); // Qualquer mudança nas mesas (status, etc) reflete no grid
+    })
     .subscribe((status) => {
-      console.log('[RT] Status canal:', status); // DEBUG — SUBSCRIBED = OK | CHANNEL_ERROR = RLS bloqueando
+      console.log('[RT] Status canal:', status);
     });
 }
 
@@ -2406,6 +2407,11 @@ async function advOrder(id){
   }
   if(ns==='entregue'){
     const o=orders.splice(idx,1)[0];o.completed_at=new Date().toISOString();history.unshift(o);renderHist();
+    // Se era pedido de mesa, libera a mesa
+    if(o.mesa_numero){
+      await db.from('food_tables').update({status:'disponivel',opened_at:null}).eq('company_id',co.id).eq('numero',parseInt(o.mesa_numero));
+      loadMesas();
+    }
     const tot=getTotal(o);
     const{count}=await db.from('food_commission_log').select('id',{count:'exact',head:true}).eq('order_id',o.id);
     if(!count||count===0){const pct=co.stripe_commission_pct||10;await db.from('food_commission_log').insert({company_id:co.id,order_id:o.id,order_total:tot,commission_pct:pct,commission_value:parseFloat((tot*pct/100).toFixed(2))});}

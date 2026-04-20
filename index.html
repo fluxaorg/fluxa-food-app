@@ -648,7 +648,12 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       <!-- PEDIDOS -->
       <div id="tab-pedidos" class="tab active">
 
-        <!-- Linha topo: contadores -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+           <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Pedidos</h2>
+           <button onclick="loadData();toast('🔄 Sincronizando dados...')" style="display:flex;align-items:center;gap:6px;background:var(--bg2);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:6px 12px;cursor:pointer;font-size:11px;font-weight:700;">
+             <span class="ms" style="font-size:16px;">sync</span>Sincronizar
+           </button>
+        </div>
         <div id="pedidos-top-row" style="display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-bottom:12px">
           <div class="card" style="padding:12px 14px">
             <div class="section-lbl" style="margin-bottom:4px">Ao vivo</div>
@@ -1685,6 +1690,7 @@ function doLogout(){
       details: { ip: 'browser', ua: navigator.userAgent } 
     });
   }
+  localStorage.removeItem('kiosque_session_v2');
   localStorage.removeItem('kiosque_session');
   if(rtSub){db.removeChannel(rtSub);rtSub=null;}
   currentStaff=null;co=null;isFounder=false;orders=[];history=[];menuItems=[];
@@ -2006,40 +2012,64 @@ async function registerPushNotifications(){
 
 // ── REALTIME ──
 function startRT(){
-  if(rtSub){db.removeChannel(rtSub);rtSub=null;}
-  rtSub=db.channel('food_rt_'+co.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id},async p=>{
+  if(rtSub){
+    console.log('[RT] Removendo canal antigo...');
+    db.removeChannel(rtSub);
+    rtSub=null;
+  }
+  
+  console.log('[RT] Iniciando canal food_rt_global...');
+  rtSub=db.channel('food_rt_global')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
       const o=p.new;
+      if(o.company_id !== co.id) return;
+      console.log('[RT] Novo pedido detectado:', o.order_number);
       const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);
-      o._items=it||[];orders.unshift(o);
-      renderOrders();
-      loadMesas(); // Refresh tables grid
-      renderDashboardFull(); // Refresh KPIs
-      playNotificationSound();
-      if(navigator.vibrate)navigator.vibrate([80,40,80]);
-      if(!document.getElementById('nav-pedidos').classList.contains('active')){
-         toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
+      o._items=it||[];
+      // Evita duplicata se já carregou via polling/sync
+      if(!orders.find(x=>x.id===o.id)){
+        orders.unshift(o);
+        renderOrders();
+        playNotificationSound();
+        if(navigator.vibrate)navigator.vibrate([80,40,80]);
+        if(!document.getElementById('nav-pedidos').classList.contains('active')){
+           toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
+        }
       }
+      loadMesas();
+      renderDashboardFull();
     })
-    .on('postgres_changes', {event:'UPDATE',schema:'public',table:'food_orders',filter:'company_id=eq.'+co.id}, async p=>{
+    .on('postgres_changes', {event:'UPDATE',schema:'public',table:'food_orders'}, async p=>{
       const o=p.new;
+      if(o.company_id !== co.id) return;
+      console.log('[RT] Atualização de pedido:', o.order_number, o.status);
       const idx = orders.findIndex(x=>x.id===o.id);
       if(idx!==-1) {
          if(['entregue','cancelado'].includes(o.status)){
             orders.splice(idx,1);
-            loadMesas(); // A mesa pode ter sido liberada
+            loadMesas();
          } else {
             Object.assign(orders[idx], o);
          }
          renderOrders();
          renderDashboardFull();
+      } else if(!['entregue','cancelado'].includes(o.status)) {
+         // Se não estava na lista e agora é um status ativo, adiciona
+         loadOrders();
       }
     })
-    .on('postgres_changes', {event:'*',schema:'public',table:'food_tables',filter:'company_id=eq.'+co.id}, () => {
-      loadMesas(); // Qualquer mudança nas mesas (status, etc) reflete no grid
+    .on('postgres_changes', {event:'*',schema:'public',table:'food_tables'}, (p) => {
+      const mesa = p.new || p.old;
+      if(mesa && mesa.company_id !== co.id) return;
+      console.log('[RT] Mudança em mesas detectada');
+      loadMesas();
     })
-    .subscribe((status) => {
-      console.log('[RT] Status canal:', status);
+    .subscribe((status, err) => {
+      console.log('[RT] Status canal:', status, err || '');
+      if(status === 'CHANNEL_ERROR') {
+        console.warn('[RT] Erro no canal. Tentando reconectar em 5s...');
+        setTimeout(startRT, 5000);
+      }
     });
 }
 
@@ -2106,13 +2136,63 @@ function fmtTime(d){return new Date(d).toLocaleTimeString('pt-BR',{hour:'2-digit
 function fmtDate(d){const dd=new Date(d);return dd.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
 
 // ── ORDERS ──
+async function loadData() {
+  if(!co) return;
+  console.log('[SYNC] Iniciando sincronização forçada...');
+  const tasks = [
+    loadOrders(),
+    loadMenu(),
+    loadMesas(),
+    renderStats()
+  ];
+  await Promise.all(tasks);
+  renderDashboardFull();
+  toast('✅ Sistema Sincronizado');
+}
+
 async function loadOrders(){
-  const{data}=await db.from('food_orders').select('*').eq('company_id',co.id).not('status','in','("entregue","cancelado")').order('created_at',{ascending:false});
-  if(data){for(const o of data){const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);o._items=it||[];}orders=data;}
-  const today=new Date();today.setHours(0,0,0,0);
-  const{data:hist}=await db.from('food_orders').select('*').eq('company_id',co.id).in('status',['entregue','cancelado']).gte('created_at',today.toISOString()).order('created_at',{ascending:false});
-  if(hist){for(const o of hist){const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);o._items=it||[];}history=hist;}
-  renderOrders();renderHist();
+  if(!co) return;
+  const {data: oData, error: oErr} = await db.from('food_orders')
+    .select('*')
+    .eq('company_id', co.id)
+    .not('status', 'in', '("entregue","cancelado")')
+    .order('created_at', {ascending:false});
+  
+  if(oErr) { console.error('[LOAD] Erro pedidos ativos:', oErr); return; }
+
+  // Batch fetch items
+  if(oData && oData.length > 0) {
+    const ids = oData.map(o => o.id);
+    const {data: iData} = await db.from('food_order_items').select('*').in('order_id', ids);
+    oData.forEach(o => {
+      o._items = iData ? iData.filter(it => it.order_id === o.id) : [];
+    });
+    orders = oData;
+  } else {
+    orders = [];
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const {data: hData} = await db.from('food_orders')
+    .select('*')
+    .eq('company_id', co.id)
+    .in('status', ['entregue','cancelado'])
+    .gte('created_at', today.toISOString())
+    .order('created_at', {ascending:false});
+
+  if(hData && hData.length > 0) {
+    const hIds = hData.map(o => o.id);
+    const {data: hiData} = await db.from('food_order_items').select('*').in('order_id', hIds);
+    hData.forEach(o => {
+      o._items = hiData ? hiData.filter(it => it.order_id === o.id) : [];
+    });
+    history = hData;
+  } else {
+    history = [];
+  }
+
+  renderOrders();
+  renderHist();
 }
 
 // Fase 3 — Filtro de tipo dentro da aba Pedidos (apenas Todos/Delivery/Retirada/Mesa)

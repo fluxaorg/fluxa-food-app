@@ -173,6 +173,11 @@ main{flex:1;overflow-y:auto;padding-bottom:120px;scroll-behavior:smooth}
 .tog-dot{width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:3px;transition:left 0.2s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.15)}
 .tog.on .tog-dot{left:21px}.tog.off .tog-dot{left:3px}
 
+.perfil-nav{display:flex;gap:12px;background:var(--bg2);padding:6px;border-radius:18px;margin-bottom:24px;border:1px solid var(--border)}
+.p-nav-btn{flex:1;padding:12px;border-radius:14px;border:none;background:transparent;color:var(--text3);font-size:12px;font-weight:700;font-family:var(--hl);cursor:pointer;transition:all 0.3s cubic-bezier(0.16,1,0.3,1)}
+.p-nav-btn.active{background:var(--bg3);color:var(--text);box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+.p-nav-btn:hover:not(.active){color:var(--text2)}
+
 /* SWIPE */
 .swipe-wrap{position:relative;overflow:hidden;border-radius:14px;margin-bottom:10px;touch-action:pan-y}
 .swipe-bg{position:absolute;inset:0;border-radius:14px;display:flex;align-items:center;opacity:0;transition:opacity 0.05s}
@@ -552,7 +557,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
 <div class="screen" id="s-login">
   <div class="food-cascade" id="food-cascade"></div>
   <div class="login-box">
-    <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:8px;text-transform:uppercase">FLÜXA KIOSQUE</div>
+    <div style="font-size:10px;font-weight:800;letter-spacing:0.1em;color:rgba(255,255,255,0.4);margin-bottom:8px;text-transform:uppercase">FLÜXA QUIOSQUE</div>
     <h1 style="font-size:28px;font-weight:700;margin-bottom:8px">Acesso</h1>
     <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-bottom:32px">Email e senha do operador</p>
 
@@ -566,7 +571,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
 
     <div style="margin-bottom:16px">
       <label class="dark-label">EMAIL DO OPERADOR</label>
-      <input type="email" id="lg-email" class="dark-input" placeholder="admin@kiosque" autocomplete="email"/>
+      <input type="email" id="lg-email" class="dark-input" placeholder="admin@quiosque" autocomplete="email"/>
     </div>
     <div style="margin-bottom:24px">
       <label class="dark-label">SENHA</label>
@@ -580,7 +585,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
     </button>
 
     <div id="lg-hint" style="font-size:10px;color:rgba(255,255,255,0.3);text-align:center;margin-top:16px">
-      Exemplo: admin@kiosque
+      Exemplo: admin@quiosque
     </div>
   </div>
 </div>
@@ -680,6 +685,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
           <button class="order-tab" id="otab-delivery" onclick="setOrderTab('delivery')">Delivery <span id="otab-delivery-count" style="font-size:10px;opacity:.6"></span></button>
           <button class="order-tab" id="otab-retirada" onclick="setOrderTab('retirada')">Retirada <span id="otab-retirada-count" style="font-size:10px;opacity:.6"></span></button>
           <button class="order-tab" id="otab-mesa" onclick="setOrderTab('mesa')">Mesa <span id="otab-mesa-count" style="font-size:10px;opacity:.6"></span></button>
+          <button class="order-tab" id="otab-quiosque" onclick="setOrderTab('quiosque')">Quiosque <span id="otab-quiosque-count" style="font-size:10px;opacity:.6"></span></button>
         </div>
 
         <div id="ptr-indicator"><span class="ms" style="font-size:14px">refresh</span>Atualizando...</div>
@@ -764,64 +770,76 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       </div>
 
       <!-- PERFIL -->
-      <!-- PERFIL -->
       <div id="tab-perfil" class="tab">
-        <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em;margin-bottom:16px">Perfil</h2>
+        <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em;margin-bottom:16px">Configurações</h2>
 
-        <div id="perfil-restaurante-section">
-        <div class="card" style="margin-bottom:14px">
-          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
-            <div class="avatar-upload" id="perfil-avatar-btn" onclick="document.getElementById('perfil-photo-inp').click()">
-              <img id="perfil-avatar-img" src="" style="display:none"/>
-              <div class="avatar-over"><span class="ms" style="color:white;font-size:18px">photo_camera</span></div>
-              <span class="ms" style="color:var(--text3);font-size:28px" id="perfil-avatar-icon">store</span>
-            </div>
-            <div>
-              <div class="hl" style="font-size:16px;font-weight:800" id="perfil-nome-display">—</div>
-              <div style="font-size:12px;color:var(--text3)" id="perfil-slug-display">—</div>
-            </div>
-          </div>
-          <input type="file" id="perfil-photo-inp" accept="image/*" style="display:none" onchange="uploadAvatarRestaurante(this)"/>
-          
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div><label>Nome do restaurante</label><input type="text" id="perfil-nome" placeholder="Nome visível para os clientes"/></div>
-            <div><label>Descrição curta</label><textarea id="perfil-desc" rows="2" placeholder="Ex: A melhor pizzaria da cidade!"></textarea></div>
-            <div><label>Horário de funcionamento</label><input type="text" id="perfil-horario" placeholder="Ex: Seg-Dom: 18h-23h"/></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><label>Telefone</label><input type="text" id="perfil-tel" placeholder="(47) 9xxxx-xxxx"/></div>
-              <div><label>Cidade</label><input type="text" id="perfil-city" placeholder="Ex: Blumenau, SC"/></div>
-            </div>
-            <div><label>WhatsApp (Instância Eli)</label><input type="text" id="perfil-wp" placeholder="5547999999999"/></div>
-            <div>
-              <label>Webhook N8N</label>
-              <input type="url" id="perfil-n8n-webhook" placeholder="https://n8n..."/>
-            </div>
-            
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin:8px 0">
+        <div style="display:flex;gap:10px;background:var(--bg2);padding:4px;border-radius:12px;margin-bottom:16px">
+          <button style="flex:1;padding:8px;border-radius:10px;border:none;background:var(--bg1);color:var(--text1);font-size:11px;font-weight:700;font-family:var(--hl);cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.05)" id="per-btn-dados" onclick="perSubTab('dados',this)">Dados</button>
+          <button style="flex:1;padding:8px;border-radius:10px;border:none;background:transparent;color:var(--text3);font-size:11px;font-weight:700;font-family:var(--hl);cursor:pointer" id="per-btn-links" onclick="perSubTab('links',this)">Link & Integrações</button>
+        </div>
+
+        <div id="perfil-sub-dados">
+          <div class="card" style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+              <div class="avatar-upload" id="perfil-avatar-btn" onclick="document.getElementById('perfil-photo-inp').click()">
+                <img id="perfil-avatar-img" src="" style="display:none"/>
+                <div class="avatar-over"><span class="ms" style="color:white;font-size:18px">photo_camera</span></div>
+                <span class="ms" style="color:var(--text3);font-size:28px" id="perfil-avatar-icon">store</span>
+              </div>
               <div>
-                <div class="hl" style="font-size:14px;font-weight:700">Loja Aberta</div>
-                <div style="font-size:11px;color:var(--text3)">Permitir receber pedidos agora</div>
-              </div>
-              <button class="tog on" id="perfil-is-open" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
-            </div>
-            
-            <div>
-              <label>Link do cardápio digital</label>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="perfil-link" readonly style="font-size:11px;color:var(--blue);cursor:pointer" onclick="this.select();document.execCommand('copy');toast('Link copiado!')"/>
-                <button onclick="document.getElementById('perfil-link').select();document.execCommand('copy');toast('Copiado!')" style="padding:8px 12px;background:var(--blue-l);color:var(--blue);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--hl);white-space:nowrap">Copiar</button>
+                <div class="hl" style="font-size:16px;font-weight:800" id="perfil-nome-display">—</div>
+                <div style="font-size:12px;color:var(--text3)" id="perfil-slug-display">—</div>
               </div>
             </div>
+            <input type="file" id="perfil-photo-inp" accept="image/*" style="display:none" onchange="uploadAvatarRestaurante(this)"/>
             
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
-              <button class="btn-p" onclick="salvarTudo()" style="flex:1">Salvar Alterações</button>
-              <button class="btn-s" style="width:auto;padding:8px 12px;font-size:11px;margin-left:12px;display:flex;align-items:center;gap:4px" onclick="toast('Gerando relatório de fechamento...')">
-                <span class="ms" style="font-size:14px">account_balance_wallet</span> Fechar Caixa
-              </button>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div><label>Nome do restaurante</label><input type="text" id="perfil-nome" placeholder="Nome visível para os clientes"/></div>
+              <div><label>Descrição curta</label><textarea id="perfil-desc" rows="2" placeholder="Ex: A melhor pizzaria da cidade!"></textarea></div>
+              <div><label>Horário de funcionamento</label><input type="text" id="perfil-horario" placeholder="Ex: Seg-Dom: 18h-23h"/></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div><label>Telefone</label><input type="text" id="perfil-tel" placeholder="(47) 9xxxx-xxxx"/></div>
+                <div><label>Cidade</label><input type="text" id="perfil-city" placeholder="Ex: Blumenau, SC"/></div>
+              </div>
+              <div><label>WhatsApp (Instância Eli)</label><input type="text" id="perfil-wp" placeholder="5547999999999"/></div>
+              
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin:8px 0">
+                <div>
+                  <div class="hl" style="font-size:14px;font-weight:700">Loja Aberta</div>
+                  <div style="font-size:11px;color:var(--text3)">Permitir receber pedidos agora</div>
+                </div>
+                <button class="tog on" id="perfil-is-open" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
+              </div>
             </div>
-            
           </div>
         </div>
+
+        <div id="perfil-sub-links" style="display:none">
+          <div class="card" style="margin-bottom:14px">
+            <h3 class="hl" style="font-size:14px;font-weight:800;margin-bottom:12px">Cardápio Digital</h3>
+            <div style="margin-bottom:16px">
+              <label>Seu link exclusivo:</label>
+              <div style="display:flex;gap:8px;margin-top:6px">
+                <input type="text" id="perfil-link" readonly style="font-size:12px;color:var(--blue);cursor:pointer;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:10px" onclick="this.select();document.execCommand('copy');toast('Link copiado!')"/>
+                <button onclick="document.getElementById('perfil-link').select();document.execCommand('copy');toast('Copiado!')" style="padding:10px 16px;background:var(--blue);color:white;border:none;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;font-family:var(--hl);white-space:nowrap">Copiar</button>
+              </div>
+              <p style="font-size:10px;color:var(--text3);margin-top:8px">Divulgue este link no Instagram, WhatsApp e QR Codes das mesas.</p>
+            </div>
+
+            <h3 class="hl" style="font-size:14px;font-weight:800;margin-bottom:12px;margin-top:20px;border-top:0.5px solid var(--border);padding-top:16px">Integrações Automáticas</h3>
+            <div>
+              <label>Webhook N8N (Notificações)</label>
+              <input type="url" id="perfil-n8n-webhook" placeholder="https://n8n..." style="margin-top:6px"/>
+              <div id="perfil-n8n-aviso" style="font-size:10px;color:var(--amber);margin-top:6px;display:none">Conecte o N8N para automações avançadas.</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top:16px;padding:0 16px">
+          <button class="btn-p" onclick="salvarTudo()">Salvar Alterações</button>
+          <button class="btn-s" style="width:100%;padding:11px;font-size:12px;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="toast('Gerando relatório de fechamento...')">
+            <span class="ms" style="font-size:16px">account_balance_wallet</span> Fechar Caixa do Dia
+          </button>
         </div>
       </div>
 
@@ -1186,45 +1204,7 @@ function playNotificationSound(){
 }
 
 // ══ V2 — DASHBOARD DE MÉTRICAS ══
-function renderDashboard(){
-  const fat=document.getElementById('dash-faturamento');
-  const tick=document.getElementById('dash-ticket');
-  const dscR=document.getElementById('dsc-recebido');
-  const dscP=document.getElementById('dsc-preparo');
-  const dscPr=document.getElementById('dsc-pronto');
-  const dscE=document.getElementById('dsc-entregue');
-  const origRows=document.getElementById('dash-origem-rows');
-  if(!fat)return; // dashboard não existe no DOM ainda
-
-  const active=orders.filter(o=>!['entregue','cancelado'].includes(o.status));
-  const entregueHoje=history.filter(o=>o.status==='entregue');
-  const totalFat=entregueHoje.reduce((a,o)=>a+getTotal(o),0);
-  const ticketMedio=entregueHoje.length?totalFat/entregueHoje.length:0;
-
-  fat.textContent=fmtP(totalFat);
-  tick.textContent=entregueHoje.length?fmtP(ticketMedio):'—';
-  if(dscR)dscR.textContent=active.filter(o=>o.status==='recebido').length;
-  if(dscP)dscP.textContent=active.filter(o=>o.status==='preparo').length;
-  if(dscPr)dscPr.textContent=active.filter(o=>o.status==='pronto').length;
-  if(dscE)dscE.textContent=entregueHoje.length;
-
-  // Origem dos pedidos hoje (ativos + entregues)
-  if(origRows){
-    const allHoje=[...active,...entregueHoje];
-    const origCount={};
-    allHoje.forEach(o=>{const s=(o.order_source||'direto').toLowerCase();origCount[s]=(origCount[s]||0)+1;});
-    const entries=Object.entries(origCount).sort((a,b)=>b[1]-a[1]);
-    if(!entries.length){origRows.innerHTML='<span style="font-size:12px;color:var(--text3)">Sem dados</span>';return;}
-    origRows.innerHTML=entries.map(([src,cnt])=>{
-      const info=SRC_MAP[src]||{emoji:'📍',label:src};
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--border)"><span>${info.emoji} ${info.label}</span><span class="hl" style="font-weight:700">${cnt}</span></div>`;
-    }).join('');
-  }
-}
-
-// ══ FASE 3 — DASHBOARD TAB COMPLETO ══
-// renderDashboard() → mini-cards no #v2-dashboard (mantido p/ compatibilidade; agora vazio)
-function renderDashboard(){} // removido side panel — ver renderDashboardFull()
+function renderDashboard(){} 
 
 async function renderDashboardFull(){
   const el=document.getElementById('dash-full-content');if(!el||!co)return;
@@ -1311,99 +1291,6 @@ async function renderDashboardFull(){
   `;
 }
 
-// ══ FASE 3 — ADS TAB (nav principal) ══
-async function renderAdsView(){
-  const el=document.getElementById('ads-full-content');if(!el||!co)return;
-  el.innerHTML=`<div style="text-align:center;padding:32px"><div class="spin"></div></div>`;
-  const today=new Date();today.setHours(0,0,0,0);
-  const[{data:adsOrders},{data:allDay}]=await Promise.all([
-    db.from('food_orders').select('*').eq('company_id',co.id).eq('order_source','ads').gte('created_at',today.toISOString()).order('created_at',{ascending:false}),
-    db.from('food_orders').select('id',{count:'exact',head:false}).eq('company_id',co.id).gte('created_at',today.toISOString())
-  ]);
-  const ao=adsOrders||[];
-  const totalDay=allDay?.length||1;
-  const entreguesAds=ao.filter(o=>o.status==='entregue');
-  const fat=entreguesAds.reduce((a,o)=>a+Number(o.total||0),0);
-  const ticket=entreguesAds.length?fat/entreguesAds.length:0;
-  const conv=Math.round(ao.length/totalDay*100);
-  el.innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="ads-metric-card"><div class="ads-metric-lbl">Total pedidos</div><div class="ads-metric-val">${ao.length}</div></div>
-      <div class="ads-metric-card"><div class="ads-metric-lbl">Faturamento ads</div><div class="ads-metric-val">${fmtP(fat)}</div></div>
-      <div class="ads-metric-card"><div class="ads-metric-lbl">Ticket médio</div><div class="ads-metric-val">${ao.length?fmtP(ticket):'—'}</div></div>
-      <div class="ads-metric-card"><div class="ads-metric-lbl">Taxa de conversão</div><div class="ads-metric-val">${conv}%<span style="font-size:11px;font-weight:500;margin-left:3px">do dia</span></div></div>
-    </div>
-    <div class="section-lbl" style="margin-bottom:8px">Pedidos via Ads — hoje</div>
-    ${ao.length?ao.map(o=>{const sc=SL[o.status]||SL.recebido;return `<div class="card" style="padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;border-radius:10px;background:rgba(14,165,233,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:16px">🎯</span></div><div style="flex:1;min-width:0"><div class="hl" style="font-size:13px;font-weight:700">${o.cliente_nome}</div><div style="font-size:11px;color:var(--text2)">${o.order_number} · ${fmtTime(o.created_at)}</div></div><div style="text-align:right;flex-shrink:0"><span class="status-pill" style="background:${sc.bg};color:${sc.c};display:block;margin-bottom:3px">${SLB[o.status]||o.status}</span><span class="hl" style="font-size:12px;font-weight:700">${fmtP(Number(o.total||0))}</span></div></div>`;}).join(''):`<div style="text-align:center;padding:40px;color:var(--text3)"><span style="font-size:40px;display:block;margin-bottom:10px">🎯</span><div class="hl" style="font-size:14px;font-weight:700">Sem pedidos via Ads hoje</div><div style="font-size:12px;margin-top:4px">Use ?src=ads na URL do cardápio</div></div>`}`;
-}
-
-// ══ FASE 2 — CLIENTES ══
-async function loadClientes(){
-  const el=document.getElementById('clientes-list');if(!el||!co)return;
-  el.innerHTML=`<div style="text-align:center;padding:32px"><div class="spin"></div></div>`;
-  // Agregar clientes dos pedidos (histórico + ativos) — usa food_orders como fonte
-  const today=new Date();today.setHours(0,0,0,0);
-  const sevenDays=new Date(today);sevenDays.setDate(sevenDays.getDate()-7);
-  const{data}=await db.from('food_orders').select('cliente_nome,cliente_telefone,total,status,created_at').eq('company_id',co.id).gte('created_at',sevenDays.toISOString()).order('created_at',{ascending:false});
-  if(!data){el.innerHTML='<div style="text-align:center;padding:32px;color:var(--text3)">Erro ao carregar</div>';return;}
-  // Agrupa por telefone
-  const map={};
-  data.forEach(o=>{
-    const k=o.cliente_telefone||o.cliente_nome;
-    if(!map[k])map[k]={nome:o.cliente_nome,tel:o.cliente_telefone,pedidos:0,gasto:0,ultimo:o.created_at};
-    map[k].pedidos++;
-    if(o.status==='entregue')map[k].gasto+=Number(o.total||0);
-    if(o.created_at>map[k].ultimo)map[k].ultimo=o.created_at;
-  });
-  clientes=Object.values(map);
-  document.getElementById('clientes-count').textContent=clientes.length+' clientes (7 dias)';
-  renderClientes();
-}
-
-function fClientes(fil,btn){
-  clientesFil=fil;
-  document.querySelectorAll('#tab-clientes .filter-pill').forEach(x=>x.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  renderClientes();
-}
-
-function renderClientes(){
-  const el=document.getElementById('clientes-list');if(!el)return;
-  let sorted=[...clientes];
-  if(clientesFil==='mais_gasto')sorted.sort((a,b)=>b.gasto-a.gasto);
-  else if(clientesFil==='mais_pedidos')sorted.sort((a,b)=>b.pedidos-a.pedidos);
-  else if(clientesFil==='recentes')sorted.sort((a,b)=>b.ultimo.localeCompare(a.ultimo));
-  if(!sorted.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3)"><span class="ms" style="font-size:36px;display:block;margin-bottom:10px">group</span><div>Sem clientes nos últimos 7 dias</div></div>';return;}
-  el.innerHTML=sorted.map(c=>`
-    <div class="cliente-card" onclick="openCliente(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-      <div class="cliente-avatar"><span class="hl" style="font-size:14px;font-weight:800;color:var(--blue)">${ini(c.nome)}</span></div>
-      <div style="flex:1;min-width:0">
-        <div class="hl" style="font-size:13px;font-weight:700">${c.nome}</div>
-        <div style="font-size:11px;color:var(--text2)">${c.tel||'—'} · ${c.pedidos} pedido${c.pedidos!==1?'s':''}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div class="hl" style="font-size:13px;font-weight:700">${fmtP(c.gasto)}</div>
-        <div style="font-size:10px;color:var(--text3)">${fmtDate(c.ultimo)}</div>
-      </div>
-    </div>`).join('');
-}
-
-function openCliente(c){
-  document.getElementById('mod-cliente-body').innerHTML=`
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-      <div class="cliente-avatar" style="width:52px;height:52px"><span class="hl" style="font-size:16px;font-weight:800;color:var(--blue)">${ini(c.nome)}</span></div>
-      <div><div class="hl" style="font-size:16px;font-weight:800">${c.nome}</div><div style="font-size:12px;color:var(--text3)">${c.tel||'Sem telefone'}</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
-      <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div class="section-lbl">Pedidos</div><div class="hl" style="font-size:18px;font-weight:800">${c.pedidos}</div></div>
-      <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div class="section-lbl">Gasto</div><div class="hl" style="font-size:16px;font-weight:800;color:#4CAF50">${fmtP(c.gasto)}</div></div>
-      <div style="background:var(--bg2);border-radius:12px;padding:12px;text-align:center"><div class="section-lbl">Último</div><div class="hl" style="font-size:13px;font-weight:800">${fmtDate(c.ultimo)}</div></div>
-    </div>
-    ${c.tel?`<a href="https://wa.me/${c.tel}" target="_blank" class="btn-p" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:8px"><span class="ms" style="font-size:18px;color:#fff">chat</span>Enviar mensagem via Eli</a>`:''}
-    <button class="btn-s" onclick="closeMod('mod-cliente')" style="width:100%">Fechar</button>`;
-  openMod('mod-cliente');
-}
-
 // BOOT ÚNICO — offline-first: usa cache local imediatamente, valida em background
 (async () => {
   const safetyTimeout = setTimeout(() => {
@@ -1417,7 +1304,7 @@ function openCliente(c){
 
   try {
     console.log('[BOOT] Verificando sessão local...');
-    const saved = localStorage.getItem('kiosque_session_v2');
+    const saved = localStorage.getItem('quiosque_session_v2');
     if (!saved) {
       console.log('[BOOT] Sem sessão, indo para login');
       clearTimeout(safetyTimeout);
@@ -1433,7 +1320,7 @@ function openCliente(c){
     co = company;
     setupRoleBasedAccess(staff.role);
     show('app');
-    bootApp(company); // Chama sem await para não travar a UI
+    bootApp(company); 
 
     // VALIDAÇÃO EM BACKGROUND
     (async () => {
@@ -1449,8 +1336,7 @@ function openCliente(c){
         currentStaff = freshStaff;
         currentStaff.role = (freshStaff.role === 'gestor') ? 'dono' : (freshStaff.role || 'funcionario');
         co = freshStaff.company;
-        localStorage.setItem('kiosque_session_v2', JSON.stringify({ staff: freshStaff, company: freshStaff.company }));
-        // Não resetamos o bootApp aqui para não causar flicker, as atualizações normais seguem via RT
+        localStorage.setItem('quiosque_session_v2', JSON.stringify({ staff: freshStaff, company: freshStaff.company }));
       } else if (error && error.code !== 'PGRST116') {
         console.warn('[BOOT] Erro na validação background, mas mantendo cache por enquanto.');
       }
@@ -1547,6 +1433,18 @@ function show(id){
   }
 }
 
+function perSubTab(tab, btn){
+  const dados = document.getElementById('perfil-sub-dados');
+  const links = document.getElementById('perfil-sub-links');
+  if(!dados || !links) return;
+  
+  dados.style.display = tab==='dados'?'block':'none';
+  links.style.display = tab==='links'?'block':'none';
+  
+  document.querySelectorAll('.p-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
 // ── LOGIN (Etapa 2: email + role) ──
 async function doLogin(){
   const email=document.getElementById('lg-email').value.trim().toLowerCase();
@@ -1591,7 +1489,7 @@ async function doLogin(){
     const staffRole = (staff.role === 'gestor') ? 'dono' : (staff.role || 'funcionario');
     
     // Salva sessão completa para boot instantâneo na próxima vez
-    localStorage.setItem('kiosque_session_v2', JSON.stringify({
+    localStorage.setItem('quiosque_session_v2', JSON.stringify({
       staff: staff,
       company: staff.company
     }));
@@ -1690,8 +1588,8 @@ function doLogout(){
       details: { ip: 'browser', ua: navigator.userAgent } 
     });
   }
-  localStorage.removeItem('kiosque_session_v2');
-  localStorage.removeItem('kiosque_session');
+  localStorage.removeItem('quiosque_session_v2');
+  localStorage.removeItem('quiosque_session');
   if(rtSub){db.removeChannel(rtSub);rtSub=null;}
   currentStaff=null;co=null;isFounder=false;orders=[];history=[];menuItems=[];
   document.getElementById('demo-btn').style.display='none';
@@ -1703,7 +1601,7 @@ function doLogout(){
 // ── HELPERS DE ROLE (Etapa 2) ──
 function setLoginMode(mode){
   loginMode=mode;
-  const hints={'dono':'Exemplo: admin@kiosque','funcionario':'Exemplo: funcionario@kiosque','motoboy':'Exemplo: entregador@kiosque'};
+  const hints={'dono':'Exemplo: admin@quiosque','funcionario':'Exemplo: funcionario@quiosque','motoboy':'Exemplo: entregador@quiosque'};
   const el=document.getElementById('lg-hint');
   if(el)el.textContent=hints[mode]||'Insira seu email';
 }
@@ -1981,6 +1879,50 @@ async function toggleThemeAndSave(){
 // ══════════════════════════════════════════════════════════
 // ETAPA 7: Push Notifications (Web Push API)
 // ══════════════════════════════════════════════════════════
+async function startRT(){
+  if(rtSub) return;
+  console.log('[RT] Conectando canal food_rt_global_v3...');
+  rtSub=db.channel('food_rt_global_v3')
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
+      const o=p.new;
+      if(o.company_id !== co?.id) return;
+      console.log('[RT] Novo pedido:', o.id);
+      
+      // Verifica se já não temos esse pedido (evitar drupas)
+      const exists = orders.find(x => x.id === o.id);
+      if(exists) return;
+
+      // Carrega os itens deste pedido novo para vir completo
+      const {data:items} = await db.from('food_order_items').select('*').eq('order_id', o.id);
+      o.food_order_items = items || [];
+      
+      orders.unshift(o);
+      renderOrders();
+      playNotificationSound();
+      toast('🚀 Novo pedido recebido!', 5000);
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'food_orders'},p=>{
+      const o=p.new;
+      if(o.company_id !== co?.id) return;
+      console.log('[RT] Update no pedido:', o.id, '->', o.status);
+      const idx=orders.findIndex(x=>x.id===o.id);
+      if(idx>-1){
+        orders[idx]={...orders[idx],...o};
+        renderOrders();
+      } else {
+        // Se mudou pra um status ativo e não tínhamos ele, recarrega
+        if(!['entregue','cancelado'].includes(o.status)) loadOrders();
+      }
+    })
+    .subscribe(async (status) => {
+      console.log('[RT] Status:', status);
+      if(status === 'SUBSCRIBED') {
+        // Ao conectar, faz um sync final para garantir que nada foi perdido no handshake
+        loadOrders();
+      }
+    });
+}
+
 async function registerPushNotifications(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
   try{
@@ -2008,68 +1950,6 @@ async function registerPushNotifications(){
     console.log('[PUSH] Inscrito:',sub.endpoint);
     if(!existingSub)toast('🔔 Notificações push ativadas!');
   }catch(e){console.warn('[PUSH]',e);}
-}
-
-// ── REALTIME ──
-function startRT(){
-  if(rtSub){
-    console.log('[RT] Removendo canal antigo...');
-    db.removeChannel(rtSub);
-    rtSub=null;
-  }
-  
-  console.log('[RT] Iniciando canal food_rt_global...');
-  rtSub=db.channel('food_rt_global_v2')
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'food_orders'},async p=>{
-      const o=p.new;
-      if(o.company_id !== co.id) return;
-      console.log('[RT] Novo pedido:', o.order_number, o.tipo_pedido);
-      const{data:it}=await db.from('food_order_items').select('*').eq('order_id',o.id);
-      o._items=it||[];
-      if(!orders.find(x=>x.id===o.id)){
-        orders.unshift(o);
-        renderOrders();
-        playNotificationSound();
-        if(navigator.vibrate)navigator.vibrate([80,40,80]);
-        toast('🛍 Novo pedido: '+(o.mesa_numero?'Mesa '+o.mesa_numero:o.cliente_nome));
-      }
-      loadMesas();
-      renderDashboardFull();
-    })
-    .on('postgres_changes', {event:'UPDATE',schema:'public',table:'food_orders'}, async p=>{
-      const o=p.new;
-      if(o.company_id !== co.id) return;
-      console.log('[RT] Atualização:', o.order_number, o.status);
-      const idx = orders.findIndex(x=>x.id===o.id);
-      if(idx!==-1) {
-         if(['entregue','cancelado'].includes(o.status)){
-            orders.splice(idx,1);
-            loadMesas();
-         } else {
-            Object.assign(orders[idx], o);
-         }
-         renderOrders();
-         renderDashboardFull();
-      } else if(!['entregue','cancelado'].includes(o.status)) {
-         loadOrders();
-      }
-    })
-    .on('postgres_changes', {event:'*',schema:'public',table:'food_tables'}, (p) => {
-      const mesa = p.new || p.old;
-      if(mesa && mesa.company_id !== co.id) return;
-      loadMesas();
-    })
-    .subscribe((status, err) => {
-      console.log('[RT] Canal status:', status, err||'');
-      if(status === 'SUBSCRIBED') {
-        // Recarrega pedidos para pegar qualquer coisa que chegou durante a conexão
-        loadOrders();
-      }
-      if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-        console.warn('[RT] Erro/timeout. Reconectando em 5s...');
-        setTimeout(startRT, 5000);
-      }
-    });
 }
 
 // ── TABS ──
@@ -2194,7 +2074,7 @@ async function loadOrders(){
   renderHist();
 }
 
-// Fase 3 — Filtro de tipo dentro da aba Pedidos (apenas Todos/Delivery/Retirada/Mesa)
+// Fase 3 — Filtro de tipo dentro da aba Pedidos (apenas Todos/Delivery/Retirada/Mesa/Quiosque)
 function setOrderTab(tab){
   orderTypeFil=tab;
   document.querySelectorAll('.order-tab').forEach(el=>el.classList.remove('active'));
@@ -2325,7 +2205,7 @@ function renderOrders(){
   const active=orders.filter(o=>!['entregue','cancelado'].includes(o.status));
 
   // Contagens por tipo para as abas
-  const tipos=['delivery','retirada','mesa'];
+  const tipos=['delivery','retirada','mesa','quiosque'];
   document.getElementById('otab-todos-count').textContent=active.length?'('+active.length+')':'';
   tipos.forEach(t=>{
     const el=document.getElementById('otab-'+t+'-count');
@@ -2355,7 +2235,7 @@ function renderOrders(){
     const tc=tim>15?'t-late':tim>8?'t-warn':'t-ok',icon=tim>15?'warning':'schedule';
     const orderTs=o.created_at?new Date(o.created_at).getTime():Date.now();
     // Badge de tipo de pedido
-    let tipoLabel={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[(o.tipo_pedido||'').toLowerCase()]||'';
+    let tipoLabel={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa',quiosque:'🖥️ Quiosque'}[(o.tipo_pedido||'').toLowerCase()]||'';
     if((o.tipo_pedido||'').toLowerCase()==='mesa' && o.mesa_numero) tipoLabel=`🪑 Mesa ${o.mesa_numero}`;
     // Badge de origem
     const srcInfo=SRC_MAP[(o.order_source||'').toLowerCase()];
@@ -2518,7 +2398,7 @@ function openOrder(id){
   const srcInfoMod=SRC_MAP[(o.order_source||'').toLowerCase()];
   const srcBadgeMod=srcInfoMod?`<span class="src-badge ${srcInfoMod.cls}" style="margin-left:6px">${srcInfoMod.emoji} ${srcInfoMod.label}</span>`:'';
   const tipoStr=(o.tipo_pedido||'').toLowerCase();
-  let tipoLabelMod={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[tipoStr]||'';
+  let tipoLabelMod={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa',quiosque:'🖥️ Quiosque'}[tipoStr]||'';
   if(tipoStr==='mesa' && o.mesa_numero) tipoLabelMod=`🪑 Mesa ${o.mesa_numero}`;
   document.getElementById('mod-order-body').innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
@@ -3562,11 +3442,11 @@ async function loadFechamento(){
   document.getElementById('fc-ticket').textContent=fmtP(ticket);
   document.getElementById('fc-cancelados').textContent=cancelados.length;
   // Tipos
-  const tipos={delivery:0,retirada:0,mesa:0};
+  const tipos={delivery:0,retirada:0,mesa:0,quiosque:0};
   entregues.forEach(o=>{const t=(o.tipo_pedido||'').toLowerCase();if(tipos[t]!==undefined)tipos[t]++;});
   document.getElementById('fc-tipos').innerHTML=Object.entries(tipos).map(([k,v])=>
     `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px">${{delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[k]||k}</span>
+      <span style="font-size:13px">${{delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa',quiosque:'🖥️ Quiosque'}[k]||k}</span>
       <span class="hl" style="font-size:13px;font-weight:700">${v} pedido${v!==1?'s':''}</span>
     </div>`).join('');
   // Lista

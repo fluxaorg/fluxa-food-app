@@ -579,7 +579,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       <span class="ms" style="color:var(--blue);font-size:18px">local_fire_department</span>
       <span class="hl" style="font-size:13px;font-weight:800;letter-spacing:-0.02em" id="sn-name">Kitchen</span>
     </div>
-      <button class="nav-item" id="nav-dashboard" onclick="go('dashboard')" style="display:none">
+      <button class="nav-item" id="nav-dashboard" onclick="go('dashboard')">
         <span class="ms">bar_chart</span><span class="nav-lbl">Dashboard</span>
       </button>
       <button class="nav-item active" id="nav-pedidos" onclick="go('pedidos')">
@@ -589,47 +589,11 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       <button class="nav-item" id="nav-cardapio" onclick="go('cardapio')">
         <span class="ms">menu_book</span><span class="nav-lbl">Cardápio</span>
       </button>
-      <button class="nav-item" id="nav-ifood" onclick="go('ifood')" style="display:none">
-        <span class="ms">moped</span><span class="nav-lbl">iFood</span>
-      </button>
-      <button class="nav-item" id="nav-clientes" onclick="go('clientes')" style="display:none">
-        <span class="ms">group</span><span class="nav-lbl">Clientes</span>
-      </button>
-      <button class="nav-item" id="nav-logistica" onclick="go('logistica')" style="display:none">
-        <span class="ms">route</span><span class="nav-lbl">Logística</span>
-      </button>
-      <button class="nav-item" id="nav-caixa" onclick="go('fechamento')" style="display:none">
-        <span class="ms">point_of_sale</span><span class="nav-lbl">Caixa</span>
-      </button>
-      <button class="nav-item" id="nav-historico" onclick="go('historico')">
-        <span class="ms">history</span><span class="nav-lbl">Histórico</span>
-      </button>
-      <button class="nav-item" id="nav-ads" onclick="go('ads')" style="display:none">
-        <span class="ms">ads_click</span><span class="nav-lbl">Ads</span>
-      </button>
-      <button class="nav-item" id="nav-elistats" onclick="go('elistats')">
-        <span class="ms">analytics</span><span class="nav-lbl">Eli Stats</span>
-      </button>
-      <button class="nav-item" id="nav-pdv" onclick="go('pdv')" style="display:none">
-        <span class="ms">point_of_sale</span><span class="nav-lbl">PDV</span>
-      </button>
-      <button class="nav-item" id="nav-mesas" onclick="go('mesas')" style="display:none">
+      <button class="nav-item" id="nav-mesas" onclick="go('mesas')">
         <span class="ms">table_restaurant</span><span class="nav-lbl">Mesas</span>
       </button>
-      <button class="nav-item" id="nav-estoque" onclick="go('estoque')" style="display:none">
-        <span class="ms">inventory_2</span><span class="nav-lbl">Estoque</span>
-      </button>
-      <button class="nav-item" id="nav-fiscal" onclick="go('fiscal')" style="display:none">
-        <span class="ms">receipt_long</span><span class="nav-lbl">Fiscal</span>
-      </button>
-      <button class="nav-item" id="nav-rede" onclick="go('rede')" style="display:none">
-        <span class="ms">apartment</span><span class="nav-lbl">Redes</span>
-      </button>
-      <button class="nav-item" id="nav-colaboradores" onclick="go('colaboradores')" style="display:none">
-        <span class="ms">badge</span><span class="nav-lbl">Equipe</span>
-      </button>
-      <button class="nav-item" id="nav-assinatura" onclick="go('assinatura')" style="display:none">
-        <span class="ms">credit_card</span><span class="nav-lbl">Plano</span>
+      <button class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')">
+        <span class="ms">badge</span><span class="nav-lbl">Funcionários</span>
       </button>
       <button class="nav-item" id="nav-perfil" onclick="go('perfil')">
         <span class="ms">person</span><span class="nav-lbl">Perfil</span>
@@ -703,167 +667,7 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
         <div id="menu-grid"></div>
       </div>
 
-      <!-- ELI STATS -->
-      <div id="tab-elistats" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Eli Stats</h2>
-          <div style="display:flex;gap:6px">
-            <button class="filter-pill active" onclick="fStats(this,'hoje')">Hoje</button>
-            <button class="filter-pill" onclick="fStats(this,'semana')">Semana</button>
-          </div>
-        </div>
-        <div class="eli-toggle-row">
-          <div>
-            <div class="hl" style="font-size:13px;font-weight:600">Eli Pedidos</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px" id="eli-lbl">Ativo — atendendo automaticamente</div>
-          </div>
-          <button class="tog on" id="eli-tog" onclick="toggleEli()"><div class="tog-dot"></div></button>
-        </div>
-        <div class="metric-grid" id="s-metrics"></div>
 
-        <!-- ── FRP — RETENÇÃO ── -->
-        <div class="card" style="margin:16px 0;background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(37,99,235,0.02));border:1px solid rgba(37,99,235,0.1)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:32px;height:32px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff"><span class="ms" style="font-size:18px">loyalty</span></div>
-              <div>
-                <div class="hl" style="font-size:14px;font-weight:800">FRP — Programa de Retenção</div>
-                <div style="font-size:11px;color:var(--text3)">Recupere clientes inativos (> 7 dias)</div>
-              </div>
-            </div>
-            <button class="btn-s" style="width:auto;padding:8px 12px;font-size:11px" onclick="runFRPAudit()" id="btn-audit-frp">Auditar</button>
-          </div>
-          <div id="frp-results" style="display:none">
-            <div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:12px;border:1px solid var(--border)">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <span style="font-size:12px;color:var(--text2)" id="frp-count">0 clientes detectados</span>
-                <span style="font-size:10px;font-weight:800;color:var(--blue);background:var(--blue-l);padding:2px 8px;border-radius:10px">CUPOM: VOLTA20</span>
-              </div>
-            </div>
-            <button class="btn-p" style="background:var(--blue);color:white" onclick="triggerFRP()" id="btn-trigger-frp">Disparar Campanha WhatsApp</button>
-          </div>
-        </div>
-        <div class="card" style="margin-bottom:12px"><div class="section-lbl">Avaliações recentes</div><div id="s-ratings"><p style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Nenhuma avaliação ainda</p></div></div>
-        <div class="card" style="margin-bottom:12px"><div class="section-lbl">Horários de pico</div><div id="s-peaks"><p style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Sem dados suficientes</p></div></div>
-        <div class="card"><div class="section-lbl">Mais pedidos</div><div id="s-top"><p style="font-size:12px;color:var(--text3);text-align:center;padding:16px">Nenhum pedido ainda</p></div></div>
-      </div>
-
-      <!-- HISTÓRICO -->
-      <div id="tab-historico" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Histórico</h2>
-          <button onclick="exportCSV()" style="display:flex;align-items:center;gap:4px;background:var(--bg3);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;font-family:var(--hl)"><span class="ms" style="font-size:14px">download</span>CSV</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-          <div style="background:var(--bg2);border-radius:12px;padding:12px"><div class="section-lbl" style="margin-bottom:4px">Total hoje</div><div class="hl" style="font-size:18px;font-weight:800;color:var(--blue)" id="h-total">R$ 0,00</div></div>
-          <div style="background:var(--bg2);border-radius:12px;padding:12px"><div class="section-lbl" style="margin-bottom:4px">Pedidos</div><div class="hl" style="font-size:18px;font-weight:800" id="h-count">0</div></div>
-        </div>
-        <div class="scroll-x" style="display:flex;gap:7px;margin-bottom:14px">
-          <button class="filter-pill active" onclick="fHist('todos',this)">Todos</button>
-          <button class="filter-pill" onclick="fHist('entregue',this)">Pagos</button>
-          <button class="filter-pill" onclick="fHist('cancelado',this)">Cancelados</button>
-        </div>
-        <div class="card" id="h-list"><div style="text-align:center;padding:28px;color:var(--text3)"><span class="ms" style="font-size:30px;display:block;margin-bottom:8px">receipt_long</span><div style="font-size:13px">Nenhum registro ainda</div></div></div>
-      </div>
-
-      <!-- IFOOD -->
-      <div id="tab-ifood" class="tab">
-        <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em;margin-bottom:20px">Injeção iFood</h2>
-        <div class="card" style="text-align:center;padding:40px;margin-bottom:12px;border:1px solid rgba(234, 29, 44, 0.3)">
-           <span class="ms" style="font-size:40px;color:var(--text);margin-bottom:10px;background:#ea1d2c;border-radius:12px;padding:12px">storefront</span>
-           <div class="hl" style="font-size:16px;font-weight:700">Conecte sua chave iFood</div>
-           <p style="font-size:12px;color:var(--text3);margin-top:5px;max-width:300px;margin-inline:auto">Receba pedidos automaticamente direto no Kanban do Flüxa, sem precisar do Gestor de Pedidos aberto. Tudo no mesmo ecossistema financeiro.</p>
-           <button class="btn-p" style="margin-top:20px;background:#ea1d2c;color:white;width:auto;padding:12px 24px">Autenticar Restaurante</button>
-        </div>
-      </div>
-
-      <!-- LOGÍSTICA -->
-      <div id="tab-logistica" class="tab" onload="renderLogistica()">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Despacho & Motoboys</h2>
-          <button onclick="renderLogistica()" style="background:var(--blue-l);color:var(--blue);border:none;border-radius:10px;padding:8px 12px;font-size:11px;font-weight:700;font-family:var(--hl);cursor:pointer"><span class="ms" style="font-size:14px;vertical-align:middle">refresh</span> Atualizar</button>
-        </div>
-        <div class="card" style="margin-bottom:12px">
-          <div class="section-lbl" style="margin-bottom:12px">Pedidos prontos para entrega</div>
-          <div id="log-prontos-count" style="font-size:13px;color:var(--text3)">Carregando...</div>
-        </div>
-        <div class="card">
-          <div class="section-lbl" style="margin-bottom:12px">Entregadores</div>
-          <div id="log-motoboys">Carregando...</div>
-        </div>
-      </div>
-
-      <!-- FECHAMENTO DE CAIXA -->
-      <div id="tab-fechamento" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Fechamento de Caixa</h2>
-          <button onclick="gerarPDFFechamento()" style="display:flex;align-items:center;gap:6px;background:var(--blue-l);color:var(--blue);border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--hl)">
-            <span class="ms" style="font-size:16px">picture_as_pdf</span>Exportar PDF
-          </button>
-        </div>
-        <div id="fechamento-content">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-            <div class="card" style="padding:16px;border-left:3px solid var(--green)"><div class="section-lbl">Faturamento Hoje</div><div class="hl" style="font-size:20px;font-weight:800" id="fc-faturamento">—</div></div>
-            <div class="card" style="padding:16px;border-left:3px solid var(--blue)"><div class="section-lbl">Pedidos</div><div class="hl" style="font-size:20px;font-weight:800" id="fc-pedidos">—</div></div>
-            <div class="card" style="padding:16px;border-left:3px solid var(--amber)"><div class="section-lbl">Ticket Médio</div><div class="hl" style="font-size:20px;font-weight:800" id="fc-ticket">—</div></div>
-            <div class="card" style="padding:16px;border-left:3px solid var(--red)"><div class="section-lbl">Cancelados</div><div class="hl" style="font-size:20px;font-weight:800" id="fc-cancelados">—</div></div>
-          </div>
-          <div class="card" style="margin-bottom:12px">
-            <div class="section-lbl" style="margin-bottom:12px">Pedidos por Tipo</div>
-            <div id="fc-tipos" style="display:flex;flex-direction:column;gap:8px"></div>
-          </div>
-          <div class="card">
-            <div class="section-lbl" style="margin-bottom:12px">Últimos pedidos do dia</div>
-            <div id="fc-lista" style="font-size:12px"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ PDV ══ -->
-      <div id="tab-pdv" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">PDV</h2>
-          <div id="pdv-session-badge" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;background:var(--green-l);color:var(--green);font-family:var(--hl)">Caixa Fechado</div>
-        </div>
-        <div id="pdv-open-section">
-          <div class="card" style="margin-bottom:16px;text-align:center;padding:32px 16px">
-            <span class="ms" style="font-size:48px;color:var(--text3);display:block;margin-bottom:12px">point_of_sale</span>
-            <div class="hl" style="font-size:16px;font-weight:700;margin-bottom:8px">Caixa Fechado</div>
-            <div style="font-size:12px;color:var(--text3);margin-bottom:20px">Abra o caixa para registrar transações</div>
-            <div style="margin-bottom:16px"><label>Troco inicial (R$)</label><input type="number" id="pdv-troco-ini" placeholder="0,00" step="0.01" min="0" style="max-width:200px;margin:8px auto 0"/></div>
-            <button onclick="abrirCaixa()" class="btn-p" style="max-width:200px;margin:0 auto">Abrir Caixa</button>
-          </div>
-        </div>
-        <div id="pdv-active-section" style="display:none">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-            <div class="card" style="padding:16px;border-left:3px solid var(--green)"><div class="section-lbl">Total do Turno</div><div class="hl" style="font-size:22px;font-weight:800" id="pdv-total-turno">R$ 0,00</div></div>
-            <div class="card" style="padding:16px;border-left:3px solid var(--blue)"><div class="section-lbl">Transações</div><div class="hl" style="font-size:22px;font-weight:800" id="pdv-count-turno">0</div></div>
-          </div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="section-lbl" style="margin-bottom:12px">Nova Transação</div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div><label>Descrição</label><input type="text" id="pdv-desc" placeholder="Ex: Pedido #001, Venda avulsa..."/></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div><label>Valor (R$)</label><input type="number" id="pdv-valor" placeholder="0,00" step="0.01" min="0"/></div>
-                <div><label>Forma de Pagamento</label>
-                  <select id="pdv-forma" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--hl);font-size:13px">
-                    <option value="dinheiro">Dinheiro</option>
-                    <option value="pix">Pix</option>
-                    <option value="debito">Débito</option>
-                    <option value="credito">Crédito</option>
-                  </select>
-                </div>
-              </div>
-              <button onclick="registrarTransacao()" class="btn-p">Registrar</button>
-            </div>
-          </div>
-          <div class="card" style="margin-bottom:16px">
-            <div class="section-lbl" style="margin-bottom:8px">Transações do Turno</div>
-            <div id="pdv-lista-transacoes"></div>
-          </div>
-          <button onclick="fecharCaixa()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#EF4444;font-weight:700;font-size:14px;cursor:pointer;font-family:var(--hl)">Fechar Caixa</button>
-        </div>
-      </div>
 
       <!-- ══ MESAS ══ -->
       <div id="tab-mesas" class="tab">
@@ -889,319 +693,50 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
       </div>
 
       <!-- ══ ESTOQUE ══ -->
-      <div id="tab-estoque" class="tab">
+      <!-- ══ FUNCIONÁRIOS ══ -->
+      <div id="tab-funcionarios" class="tab">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Estoque</h2>
-          <button onclick="abrirModalNovoItem()" style="display:flex;align-items:center;gap:6px;background:var(--accent);color:white;border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--hl)">
-            <span class="ms" style="font-size:16px;color:white">add</span>Novo Item
+          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Funcionários</h2>
+          <button onclick="adicionarFuncionario()" style="display:flex;align-items:center;gap:6px;background:var(--accent);color:white;border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--hl)">
+            <span class="ms" style="font-size:16px;color:white">add</span>Novo Funcionário
           </button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
-          <div class="card" style="padding:12px;text-align:center"><div class="section-lbl">Total itens</div><div class="hl" style="font-size:20px;font-weight:800" id="est-total-itens">—</div></div>
-          <div class="card" style="padding:12px;text-align:center;border-left:3px solid var(--amber)"><div class="section-lbl">Baixo estoque</div><div class="hl" style="font-size:20px;font-weight:800" id="est-baixo">—</div></div>
-          <div class="card" style="padding:12px;text-align:center;border-left:3px solid var(--red)"><div class="section-lbl">Zerados</div><div class="hl" style="font-size:20px;font-weight:800" id="est-zerado">—</div></div>
-        </div>
-        <div id="estoque-lista"></div>
+        <div id="colab-list" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
-      <!-- ══ MODAL ESTOQUE ITEM ══ -->
-      <div class="modal-overlay" id="mod-estoque-item" onclick="closeMod('mod-estoque-item',event)">
+      <!-- MODAL FUNCIONARIO -->
+      <div class="modal-overlay" id="mod-funcionario" onclick="closeMod('mod-funcionario',event)">
         <div class="modal-sheet">
           <div class="drag-h"></div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <h3 class="hl" style="font-size:17px;font-weight:800" id="mod-est-title">Novo Item</h3>
-            <button onclick="closeMod('mod-estoque-item')" style="border:none;background:none;cursor:pointer"><span class="ms" style="color:var(--text3)">close</span></button>
+            <h3 class="hl" style="font-size:17px;font-weight:800" id="mod-func-title">Funcionário</h3>
+            <button onclick="closeMod('mod-funcionario')" style="border:none;background:none;cursor:pointer"><span class="ms" style="color:var(--text3)">close</span></button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <input type="hidden" id="est-edit-id"/>
-            <div><label>Nome do item *</label><input type="text" id="est-nome" placeholder="Ex: Farinha de trigo"/></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><label>Quantidade atual *</label><input type="number" id="est-qtd" placeholder="0" min="0" step="0.01"/></div>
-              <div><label>Unidade</label>
-                <select id="est-unidade" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--hl);font-size:13px">
-                  <option value="un">Unidade (un)</option>
-                  <option value="kg">Quilograma (kg)</option>
-                  <option value="g">Grama (g)</option>
-                  <option value="l">Litro (l)</option>
-                  <option value="ml">Mililitro (ml)</option>
-                  <option value="cx">Caixa (cx)</option>
-                  <option value="pct">Pacote (pct)</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><label>Estoque mínimo</label><input type="number" id="est-minimo" placeholder="0" min="0" step="0.01"/></div>
-              <div><label>Custo unitário (R$)</label><input type="number" id="est-custo" placeholder="0,00" min="0" step="0.01"/></div>
-            </div>
-            <div><label>Categoria</label><input type="text" id="est-categoria" placeholder="Ex: Insumos, Bebidas, Embalagens..."/></div>
-            <div style="display:flex;gap:8px;margin-top:4px">
-              <button id="est-del-btn" onclick="deletarItemEstoque()" style="display:none;flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#EF4444;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--hl)">Excluir</button>
-              <button onclick="salvarItemEstoque()" class="btn-p" style="flex:2;padding:12px">Salvar</button>
-            </div>
+          <input type="hidden" id="func-id" />
+          <label>Nome Completo</label><input type="text" id="func-nome" style="margin-bottom:12px"/>
+          <label>Cargo / Role</label>
+          <select id="func-role" style="width:100%;margin-bottom:12px;padding:10px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);">
+             <option value="admin">Administrador (Acesso total)</option>
+             <option value="caixa">Caixa / Atendente</option>
+             <option value="cozinha">Cozinha (Visualização cardápio)</option>
+             <option value="garcom">Garçom</option>
+          </select>
+          <label>Senha de Acesso (Deixe em branco para não alterar)</label><input type="password" id="func-senha" style="margin-bottom:12px"/>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:12px;background:var(--bg2);border-radius:12px">
+            <span style="font-size:14px;font-weight:600">Funcionário Ativo</span>
+            <button class="tog on" id="func-ativo" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
           </div>
-        </div>
-      </div>
-
-      <!-- ══ FISCAL ══ -->
-      <div id="tab-fiscal" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Fiscal</h2>
-          <button onclick="openMod('mod-fiscal-config')" style="display:flex;align-items:center;gap:6px;background:var(--blue-l);color:var(--blue);border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--hl)">
-            <span class="ms" style="font-size:16px">settings</span>Configurar
-          </button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
-          <div class="card" style="padding:12px;text-align:center"><div class="section-lbl">Emitidas hoje</div><div class="hl" style="font-size:20px;font-weight:800" id="nfe-hoje">—</div></div>
-          <div class="card" style="padding:12px;text-align:center;border-left:3px solid var(--amber)"><div class="section-lbl">Pendentes</div><div class="hl" style="font-size:20px;font-weight:800" id="nfe-pendentes">—</div></div>
-          <div class="card" style="padding:12px;text-align:center;border-left:3px solid var(--red)"><div class="section-lbl">Rejeitadas</div><div class="hl" style="font-size:20px;font-weight:800" id="nfe-rejeitadas">—</div></div>
-        </div>
-        <div class="card" style="margin-bottom:16px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div class="section-lbl">NF-e Emitidas</div>
-            <button onclick="emitirNFeManual()" style="display:flex;align-items:center;gap:6px;background:var(--accent);color:white;border:none;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--hl)">
-              <span class="ms" style="font-size:14px;color:white">add</span>Emitir NF-e
-            </button>
-          </div>
-          <div id="nfe-lista"></div>
-        </div>
-        <div class="card" id="card-fiscal-status" style="background:linear-gradient(135deg,rgba(59,130,246,0.06),transparent)">
-          <div class="section-lbl" style="margin-bottom:8px">Status da Configuração</div>
-          <div id="fiscal-status-body" style="font-size:12px;color:var(--text3)">Carregando...</div>
-        </div>
-      </div>
-
-      <!-- ══ MODAL CONFIG FISCAL ══ -->
-      <div class="modal-overlay" id="mod-fiscal-config" onclick="closeMod('mod-fiscal-config',event)">
-        <div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
-          <div class="drag-h"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <h3 class="hl" style="font-size:17px;font-weight:800">Configuração Fiscal</h3>
-            <button onclick="closeMod('mod-fiscal-config')" style="border:none;background:none;cursor:pointer"><span class="ms" style="color:var(--text3)">close</span></button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div><label>Razão Social *</label><input type="text" id="fc-razao" placeholder="Nome completo da empresa"/></div>
-            <div><label>CNPJ *</label><input type="text" id="fc-cnpj" placeholder="00.000.000/0001-00" maxlength="18"/></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><label>Inscrição Estadual</label><input type="text" id="fc-ie" placeholder="000.000.000.000"/></div>
-              <div><label>Regime Tributário</label>
-                <select id="fc-regime" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--hl);font-size:13px">
-                  <option value="simples">Simples Nacional</option>
-                  <option value="lucro_presumido">Lucro Presumido</option>
-                  <option value="lucro_real">Lucro Real</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:2fr 1fr;gap:10px">
-              <div><label>Logradouro</label><input type="text" id="fc-end" placeholder="Rua, Av..."/></div>
-              <div><label>Número</label><input type="text" id="fc-num" placeholder="123"/></div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <div><label>Município</label><input type="text" id="fc-municipio" placeholder="Blumenau"/></div>
-              <div><label>UF</label><input type="text" id="fc-uf" placeholder="SC" maxlength="2"/></div>
-            </div>
-            <div><label>CEP</label><input type="text" id="fc-cep" placeholder="00000-000" maxlength="9"/></div>
-            <div>
-              <label>Ambiente SEFAZ</label>
-              <select id="fc-ambiente" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--hl);font-size:13px">
-                <option value="homologacao">Homologação (Teste)</option>
-                <option value="producao">Produção (Real)</option>
-              </select>
-            </div>
-            <div><label>Webhook N8N para NF-e</label><input type="url" id="fc-webhook" placeholder="https://n8n.seu-dominio.com/webhook/nfe"/></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:12px">
-              <div><div class="hl" style="font-size:13px;font-weight:700">Emissão automática</div><div style="font-size:11px;color:var(--text3)">Emite NF-e ao marcar pedido como entregue</div></div>
-              <button class="tog off" id="fc-auto" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
-            </div>
-            <button onclick="salvarConfigFiscal()" class="btn-p" style="margin-top:4px">Salvar Configuração</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- REDE / FRANQUIAS -->
-      <div id="tab-rede" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Redes / Filiais</h2>
-          <button onclick="abrirModalNovaFilial()" style="display:flex;align-items:center;gap:6px;background:var(--blue);color:white;border:none;border-radius:12px;padding:10px 16px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--hl)">
-            <span class="ms" style="font-size:16px;color:white">add_business</span>Nova Filial
-          </button>
-        </div>
-        <div id="rede-list">
-          <div style="text-align:center;padding:40px;color:var(--text3)"><div class="spin"></div></div>
-        </div>
-      </div>
-
-      <!-- DASHBOARD -->
-      <div id="tab-dashboard" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Dashboard</h2>
-          <div style="display:flex;gap:6px">
-            <button class="filter-pill active" id="dbf-hoje" onclick="setDashPeriod('hoje',this)">Hoje</button>
-            <button class="filter-pill" id="dbf-semana" onclick="setDashPeriod('semana',this)">Semana</button>
-          </div>
-        </div>
-        <div id="dash-full-content">
-          <div style="text-align:center;padding:40px"><div class="spin"></div></div>
-        </div>
-      </div>
-
-      <!-- ADS (Etapa 5) -->
-      <div id="tab-ads" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div style="display:flex;align-items:center;gap:10px">
-            <span style="font-size:22px">🎯</span>
-            <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Ads</h2>
-          </div>
-          <button onclick="renderAds()" style="background:var(--bg3);border:none;border-radius:10px;padding:7px 12px;font-size:11px;font-weight:700;font-family:var(--hl);cursor:pointer;color:var(--text2)"><span class="ms" style="font-size:14px;vertical-align:middle">refresh</span></button>
-        </div>
-        <!-- Banner de configuração (quando sem token) -->
-        <div id="ads-setup-banner" style="display:none">
-          <div class="card" style="text-align:center;padding:40px 24px;border:1.5px dashed var(--border)">
-            <span class="ms" style="font-size:48px;color:var(--text3);display:block;margin-bottom:12px">ads_click</span>
-            <div class="hl" style="font-size:16px;font-weight:800;margin-bottom:8px">Configure suas integrações</div>
-            <p style="font-size:12px;color:var(--text3);margin-bottom:20px">Conecte Meta Ads ou Google Ads para ver seus dados reais aqui.</p>
-            <button onclick="go('perfil')" class="btn-p" style="width:auto;padding:10px 24px;font-size:12px">
-              <span class="ms" style="font-size:16px;vertical-align:middle">settings</span> Ir para Integrações
-            </button>
-          </div>
-        </div>
-        <!-- Dados reais (quando token configurado) -->
-        <div id="ads-real-content" style="display:none">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-            <div class="card" style="padding:14px"><div class="section-lbl">Investimento</div><div class="hl" id="ads-spend" style="font-size:20px;font-weight:800">R$ —</div></div>
-            <div class="card" style="padding:14px"><div class="section-lbl">ROAS</div><div class="hl" id="ads-roas" style="font-size:20px;font-weight:800">—x</div></div>
-            <div class="card" style="padding:14px"><div class="section-lbl">Cliques</div><div class="hl" id="ads-clicks" style="font-size:20px;font-weight:800">—</div></div>
-            <div class="card" style="padding:14px"><div class="section-lbl">Leads</div><div class="hl" id="ads-leads" style="font-size:20px;font-weight:800">—</div></div>
-          </div>
-          <div class="card" style="padding:14px">
-            <div class="section-lbl" style="margin-bottom:10px">Por plataforma</div>
-            <div id="ads-by-source"></div>
-          </div>
-        </div>
-        <!-- Loading padrão -->
-        <div id="ads-loading"><div style="text-align:center;padding:40px"><div class="spin"></div></div></div>
-      </div>
-
-      <!-- CLIENTES -->
-      <div id="tab-clientes" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Clientes</h2>
-          <span style="font-size:12px;color:var(--text3)" id="clientes-count"></span>
-        </div>
-        <div class="clientes-filter-row">
-          <button class="filter-pill active" onclick="fClientes('todos',this)">Todos</button>
-          <button class="filter-pill" onclick="fClientes('mais_gasto',this)">Maior gasto</button>
-          <button class="filter-pill" onclick="fClientes('mais_pedidos',this)">Mais pedidos</button>
-          <button class="filter-pill" onclick="fClientes('recentes',this)">Recentes</button>
-        </div>
-        <div id="clientes-list"><div style="text-align:center;padding:40px;color:var(--text3)"><span class="ms" style="font-size:36px;display:block;margin-bottom:10px">group</span><div style="font-size:13px">Carregando clientes...</div></div></div>
-      </div>
-
-      <!-- COLABORADORES (só dono) -->
-      <div id="tab-colaboradores" class="tab">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Equipe</h2>
-          <button onclick="abrirModalNovoColaborador()" style="display:flex;align-items:center;gap:6px;background:var(--accent);color:white;border:none;border-radius:12px;padding:10px 16px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--hl)">
-            <span class="ms" style="font-size:16px;color:white">person_add</span>Adicionar
-          </button>
-        </div>
-        <div id="colab-list">
-          <div style="text-align:center;padding:40px;color:var(--text3)"><span class="ms" style="font-size:40px;display:block;margin-bottom:8px">badge</span>Nenhum colaborador cadastrado</div>
-        </div>
-      </div>
-
-      <!-- MODAL NOVO/EDITAR COLABORADOR -->
-      <div class="modal-overlay" id="mod-colab" onclick="closeMod('mod-colab',event)">
-        <div class="modal-sheet">
-          <div class="drag-h"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <h3 class="hl" style="font-size:17px;font-weight:800" id="mod-colab-title">Novo Colaborador</h3>
-            <button onclick="closeMod('mod-colab')" style="border:none;background:none;cursor:pointer"><span class="ms" style="color:var(--text3)">close</span></button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <input type="hidden" id="colab-edit-id"/>
-            <div><label>Nome completo *</label><input type="text" id="colab-nome" placeholder="Ex: João Silva"/></div>
-            <div><label>Email *</label><input type="email" id="colab-email" placeholder="joao@kiosque"/></div>
-            <div><label>Senha *</label><input type="password" id="colab-senha" placeholder="Senha de acesso"/></div>
-            <div>
-              <label>Cargo *</label>
-              <select id="colab-role" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--hl);font-size:13px">
-                <option value="funcionario">Funcionário</option>
-                <option value="motoboy">Motoboy</option>
-                <option value="dono">Dono / Gestor</option>
-              </select>
-            </div>
-            <div><label>Telefone</label><input type="text" id="colab-tel" placeholder="(47) 9xxxx-xxxx"/></div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:12px">
-              <div>
-                <div class="hl" style="font-size:13px;font-weight:700">Ativo</div>
-                <div style="font-size:11px;color:var(--text3)">Permite acesso ao sistema</div>
-              </div>
-              <button class="tog on" id="colab-ativo" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:4px">
-              <button id="colab-del-btn" onclick="deletarColaborador()" style="display:none;flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#EF4444;font-weight:700;font-size:13px;cursor:pointer;font-family:var(--hl)">Excluir</button>
-              <button onclick="salvarColaborador()" class="btn-p" style="flex:2;padding:12px">Salvar</button>
-            </div>
-          </div>
+          <button class="btn-p" onclick="salvarFuncionario()" style="margin-bottom:10px">Salvar Alterações</button>
+          
+          <div class="section-lbl" style="margin-top:20px;margin-bottom:10px">Últimas Ações (Mês)</div>
+          <div id="func-logs" style="font-size:12px;color:var(--text3);max-height:200px;overflow-y:auto;background:var(--bg2);padding:10px;border-radius:10px"></div>
         </div>
       </div>
 
       <!-- PERFIL -->
+      <!-- PERFIL -->
       <div id="tab-perfil" class="tab">
         <h2 class="hl" style="font-size:20px;font-weight:800;letter-spacing:-0.02em;margin-bottom:16px">Perfil</h2>
-
-        <!-- ══ CARD DO OPERADOR LOGADO ══ -->
-        <div class="card" id="card-staff-perfil" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(var(--blue-rgb,59,130,246),0.06),transparent)">
-          <div style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--text3);margin-bottom:12px;text-transform:uppercase">Meu Perfil</div>
-          <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-            <div class="avatar-upload" id="staff-avatar-btn" style="width:64px;height:64px;flex-shrink:0" onclick="document.getElementById('staff-photo-inp').click()">
-              <img id="staff-avatar-img" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%"/>
-              <div class="avatar-over" style="border-radius:50%"><span class="ms" style="color:white;font-size:16px">photo_camera</span></div>
-              <span class="ms" style="color:var(--text3);font-size:28px" id="staff-avatar-icon">person</span>
-            </div>
-            <input type="file" id="staff-photo-inp" accept="image/*" style="display:none" onchange="uploadAvatarStaff(this)"/>
-            <div>
-              <div class="hl" style="font-size:17px;font-weight:800" id="staff-nome-display">—</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px" id="staff-email-display">—</div>
-              <div style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 10px;border-radius:20px;background:var(--blue-l)">
-                <span class="ms" style="font-size:13px;color:var(--blue)" id="staff-role-icon">badge</span>
-                <span style="font-size:11px;font-weight:700;color:var(--blue);font-family:var(--hl)" id="staff-role-display">—</span>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div><label>Meu nome</label><input type="text" id="staff-nome-inp" placeholder="Seu nome completo"/></div>
-            <div><label>Nova senha (deixe em branco para não alterar)</label><input type="password" id="staff-senha-inp" placeholder="••••••"/></div>
-            <button onclick="salvarPerfilStaff()" class="btn-p" style="margin-top:4px">Salvar meu perfil</button>
-          </div>
-        </div>
-
-        <!-- ══ CARD LINK CARDÁPIO (visível só para dono) ══ -->
-        <div id="card-link-cardapio-wrap">
-        <div class="card" id="card-link-cardapio" style="margin-bottom:16px;border:1.5px solid var(--accent);background:linear-gradient(135deg,rgba(211,47,47,0.06),rgba(211,47,47,0.02))">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-            <div style="width:36px;height:36px;border-radius:10px;background:rgba(211,47,47,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <span class="ms" style="font-size:20px;color:var(--accent)">restaurant_menu</span>
-            </div>
-            <div>
-              <div class="hl" style="font-size:14px;font-weight:800;color:var(--accent)">Cardápio Online</div>
-              <div style="font-size:11px;color:var(--text3)">Compartilhe com seus clientes</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;margin-bottom:10px">
-            <input type="text" id="perfil-link-top" readonly style="flex:1;font-size:11px;color:var(--accent);background:var(--bg3);border-color:var(--border);cursor:pointer;font-family:monospace" onclick="this.select();document.execCommand('copy');toast('Link copiado! 🔗')"/>
-            <button onclick="document.getElementById('perfil-link-top').select();document.execCommand('copy');toast('Copiado! 🔗')" class="btn-s" style="white-space:nowrap;font-size:11px;padding:8px 12px"><span class="ms" style="font-size:14px">content_copy</span></button>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <a id="perfil-link-open" href="#" target="_blank" class="btn-p" style="display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-size:12px;padding:10px">
-              <span class="ms" style="font-size:16px;color:#fff">open_in_new</span>Visualizar
-            </a>
-            <button onclick="shareCardapioLink()" class="btn-s" style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;padding:10px">
-              <span class="ms" style="font-size:16px">share</span>Compartilhar
-            </button>
-          </div>
-        </div>
-        </div><!-- /card-link-cardapio-wrap -->
 
         <div id="perfil-restaurante-section">
         <div class="card" style="margin-bottom:14px">
@@ -1214,183 +749,50 @@ if(localStorage.getItem('theme')==='light'){document.body.setAttribute('data-the
             <div>
               <div class="hl" style="font-size:16px;font-weight:800" id="perfil-nome-display">—</div>
               <div style="font-size:12px;color:var(--text3)" id="perfil-slug-display">—</div>
-              <span id="perfil-plan-badge" class="plan-badge" style="margin-top:4px;background:var(--blue-l);color:var(--blue)">trial</span>
             </div>
           </div>
           <input type="file" id="perfil-photo-inp" accept="image/*" style="display:none" onchange="uploadAvatarRestaurante(this)"/>
+          
           <div style="display:flex;flex-direction:column;gap:10px">
             <div><label>Nome do restaurante</label><input type="text" id="perfil-nome" placeholder="Nome visível para os clientes"/></div>
-            <div><label>Descrição</label><textarea id="perfil-desc" rows="2" placeholder="Especialidade, horário de funcionamento..."></textarea></div>
-            <div><label>Horário de funcionamento</label><input type="text" id="perfil-horario" placeholder="Seg-Sex: 11h-22h · Sab-Dom: 11h-23h"/></div>
+            <div><label>Descrição curta</label><textarea id="perfil-desc" rows="2" placeholder="Ex: A melhor pizzaria da cidade!"></textarea></div>
+            <div><label>Horário de funcionamento</label><input type="text" id="perfil-horario" placeholder="Ex: Seg-Dom: 18h-23h"/></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <div><label>Telefone</label><input type="text" id="perfil-tel" placeholder="(47) 9xxxx-xxxx"/></div>
-              <div><label>Cidade</label><input type="text" id="perfil-city" placeholder="Blumenau, SC"/></div>
+              <div><label>Cidade</label><input type="text" id="perfil-city" placeholder="Ex: Blumenau, SC"/></div>
             </div>
-            <div><label>WhatsApp (instância Eli)</label><input type="text" id="perfil-wp" placeholder="5547999999999"/></div>
+            <div><label>WhatsApp (Instância Eli)</label><input type="text" id="perfil-wp" placeholder="5547999999999"/></div>
             <div>
-              <label style="display:flex;align-items:center;gap:4px">Webhook N8N <span style="color:var(--red);font-size:10px;font-weight:700">OBRIGATÓRIO</span></label>
-              <input type="url" id="perfil-n8n-webhook" placeholder="https://n8n.seudominio.com/webhook/xxx"/>
-              <div id="perfil-n8n-aviso" style="display:none;margin-top:4px;padding:6px 10px;background:var(--amber-l);border:1px solid var(--amber);border-radius:8px;font-size:11px;color:var(--amber);font-weight:600">⚠️ Configure para que o Eli envie notificações via WhatsApp</div>
+              <label>Webhook N8N</label>
+              <input type="url" id="perfil-n8n-webhook" placeholder="https://n8n..."/>
             </div>
-            <div><label>Nova senha (deixe em branco para não alterar)</label><input type="password" id="perfil-senha" placeholder="••••••"/></div>
-            <div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0">
-                <div>
-                  <div class="hl" style="font-size:14px;font-weight:700">Loja Aberta</div>
-                  <div style="font-size:11px;color:var(--text3)">Permitir receber pedidos agora</div>
-                </div>
-                <button class="tog on" id="perfil-is-open" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
+            
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin:8px 0">
+              <div>
+                <div class="hl" style="font-size:14px;font-weight:700">Loja Aberta</div>
+                <div style="font-size:11px;color:var(--text3)">Permitir receber pedidos agora</div>
               </div>
+              <button class="tog on" id="perfil-is-open" onclick="this.classList.toggle('on');this.classList.toggle('off')"><div class="tog-dot"></div></button>
             </div>
-            <!-- ══ 3 SUB-ABAS DE PERSONALIZAÇÃO VISUAL ══ -->
-            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin:8px 0">
-              <div class="hl" style="font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px"><span class="ms" style="color:var(--blue)">palette</span> Visual do Cardápio Online</div>
-              <!-- ── PANE VISUAL ── -->
-              <div id="pane-visual">
-                <p style="font-size:11px;color:var(--text3);margin-bottom:12px">Escolha o tema do seu cardápio. O template cuida de tudo automaticamente.</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
-                  <!-- MODO CLARO -->
-                  <div class="tpl-card" id="tpl-light" onclick="selTemplate('light')" style="cursor:pointer;border-radius:14px;overflow:hidden;border:2px solid transparent;transition:all .2s">
-                    <div style="background:#F8F5F0;padding:10px 8px;border-bottom:1px solid #eee">
-                      <div style="height:6px;border-radius:3px;background:#D62828;width:60%;margin-bottom:7px"></div>
-                      <div style="display:flex;gap:4px">
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#E8E4DE"></div>
-                          <div style="height:2px;background:#1F3D2B"></div>
-                          <div style="height:16px;background:#1C1C1C"></div>
-                        </div>
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#E8E4DE"></div>
-                          <div style="height:2px;background:#1F3D2B"></div>
-                          <div style="height:16px;background:#1C1C1C"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="background:#fff;padding:7px 8px">
-                      <div style="font-size:11px;font-weight:800;color:#1A1A1A;margin-bottom:4px">Claro</div>
-                      <div style="display:flex;gap:3px">
-                        <div style="width:10px;height:10px;border-radius:50%;background:#F8F5F0;border:1px solid #ddd"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#1C1C1C"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#D62828"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- MODO ESCURO -->
-                  <div class="tpl-card" id="tpl-dark" onclick="selTemplate('dark')" style="cursor:pointer;border-radius:14px;overflow:hidden;border:2px solid transparent;transition:all .2s">
-                    <div style="background:#0D0D14;padding:10px 8px;border-bottom:1px solid #1a1a28">
-                      <div style="height:6px;border-radius:3px;background:#FF6B35;width:60%;margin-bottom:7px"></div>
-                      <div style="display:flex;gap:4px">
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#252538"></div>
-                          <div style="height:2px;background:#FF6B35"></div>
-                          <div style="height:16px;background:#111118"></div>
-                        </div>
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#252538"></div>
-                          <div style="height:2px;background:#FF6B35"></div>
-                          <div style="height:16px;background:#111118"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="background:#1C1C28;padding:7px 8px">
-                      <div style="font-size:11px;font-weight:800;color:#F2F2F7;margin-bottom:4px">Escuro</div>
-                      <div style="display:flex;gap:3px">
-                        <div style="width:10px;height:10px;border-radius:50%;background:#0D0D14;border:1px solid #333"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#252538"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#FF6B35"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- VERDINHO -->
-                  <div class="tpl-card" id="tpl-colorful" onclick="selTemplate('colorful')" style="cursor:pointer;border-radius:14px;overflow:hidden;border:2px solid transparent;transition:all .2s">
-                    <div style="background:#F0F7F4;padding:10px 8px;border-bottom:1px solid #dceee6">
-                      <div style="height:6px;border-radius:3px;background:#1F3D2B;width:60%;margin-bottom:7px"></div>
-                      <div style="display:flex;gap:4px">
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#C8E6D4"></div>
-                          <div style="height:2px;background:#1F3D2B"></div>
-                          <div style="height:16px;background:#1C1C1C"></div>
-                        </div>
-                        <div style="flex:1;border-radius:7px;overflow:hidden">
-                          <div style="height:26px;background:#C8E6D4"></div>
-                          <div style="height:2px;background:#1F3D2B"></div>
-                          <div style="height:16px;background:#1C1C1C"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div style="background:#fff;padding:7px 8px">
-                      <div style="font-size:11px;font-weight:800;color:#1A3028;margin-bottom:4px">Verde</div>
-                      <div style="display:flex;gap:3px">
-                        <div style="width:10px;height:10px;border-radius:50%;background:#F0F7F4;border:1px solid #ddd"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#1F3D2B"></div>
-                        <div style="width:10px;height:10px;border-radius:50%;background:#D62828"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
-
-              <!-- ── INTEGRAÇÕES (Etapa 5) ── -->
-              <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px;">
-                <div class="hl" style="font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px"><span class="ms" style="color:var(--amber)">hub</span> Integrações Externas</div>
-
-                <!-- iFood -->
-                <div class="card" style="padding:16px;margin-bottom:10px">
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                    <div style="width:32px;height:32px;background:#D32F2F;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:16px">i</div>
-                    <div style="flex:1"><div class="hl" style="font-size:14px;font-weight:800">iFood</div></div>
-                    <span id="int-status-ifood" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3)">inativo</span>
-                  </div>
-                  <div><label style="font-size:11px;color:var(--text3)">TOKEN MERCHANT API</label><input type="text" id="int-ifood-token" placeholder="Cole o token do iFood aqui" style="font-size:12px"/></div>
-                  <button onclick="salvarIntegracao('ifood')" class="btn-s" style="width:100%;margin-top:8px;font-size:12px">Conectar iFood</button>
-                </div>
-
-                <!-- Meta Ads -->
-                <div class="card" style="padding:16px;margin-bottom:10px">
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                    <div style="width:32px;height:32px;background:#1877F2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px">f</div>
-                    <div style="flex:1"><div class="hl" style="font-size:14px;font-weight:800">Meta Ads</div></div>
-                    <span id="int-status-meta_ads" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3)">inativo</span>
-                  </div>
-                  <div style="margin-bottom:8px"><label style="font-size:11px;color:var(--text3)">ACCESS TOKEN</label><input type="text" id="int-meta-token" placeholder="EAAxxxx..." style="font-size:12px"/></div>
-                  <div><label style="font-size:11px;color:var(--text3)">AD ACCOUNT ID</label><input type="text" id="int-meta-account" placeholder="act_123456..." style="font-size:12px"/></div>
-                  <button onclick="salvarIntegracao('meta_ads')" class="btn-s" style="width:100%;margin-top:8px;font-size:12px">Conectar Meta Ads</button>
-                </div>
-
-                <!-- Google Ads -->
-                <div class="card" style="padding:16px">
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                    <div style="width:32px;height:32px;background:#4285F4;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px">G</div>
-                    <div style="flex:1"><div class="hl" style="font-size:14px;font-weight:800">Google Ads</div></div>
-                    <span id="int-status-google_ads" style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:var(--bg3);color:var(--text3)">inativo</span>
-                  </div>
-                  <div style="margin-bottom:8px"><label style="font-size:11px;color:var(--text3)">CUSTOMER ID</label><input type="text" id="int-google-account" placeholder="123-456-7890" style="font-size:12px"/></div>
-                  <div><label style="font-size:11px;color:var(--text3)">OAUTH TOKEN</label><input type="text" id="int-google-token" placeholder="ya29.xxx..." style="font-size:12px"/></div>
-                  <button onclick="salvarIntegracao('google_ads')" class="btn-s" style="width:100%;margin-top:8px;font-size:12px">Conectar Google Ads</button>
-                </div>
-              </div>
-
-              <!-- ── FECHAMENTO DE CAIXA ── -->
-              <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px;display:flex;justify-content:flex-end">
-                <button class="btn-s" style="width:auto;padding:8px 16px;font-size:11px;display:flex;align-items:center;gap:6px" onclick="toast('Gerando relatório de fechamento...')">
-                  <span class="ms" style="font-size:14px">account_balance_wallet</span> Fechamento de Caixa
-                </button>
-              </div>
-            </div>
-
-            </div>
+            
             <div>
               <label>Link do cardápio digital</label>
               <div style="display:flex;gap:8px">
                 <input type="text" id="perfil-link" readonly style="font-size:11px;color:var(--blue);cursor:pointer" onclick="this.select();document.execCommand('copy');toast('Link copiado!')"/>
                 <button onclick="document.getElementById('perfil-link').select();document.execCommand('copy');toast('Copiado!')" style="padding:8px 12px;background:var(--blue-l);color:var(--blue);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--hl);white-space:nowrap">Copiar</button>
               </div>
-              <p style="font-size:10px;color:var(--text3);margin-top:4px">Compartilhe com seus clientes</p>
             </div>
+            
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;">
+              <button class="btn-p" onclick="salvarTudo()" style="flex:1">Salvar Alterações</button>
+              <button class="btn-s" style="width:auto;padding:8px 12px;font-size:11px;margin-left:12px;display:flex;align-items:center;gap:4px" onclick="toast('Gerando relatório de fechamento...')">
+                <span class="ms" style="font-size:14px">account_balance_wallet</span> Fechar Caixa
+              </button>
+            </div>
+            
           </div>
-          <button class="btn-p" onclick="salvarTudo()" style="margin-top:16px">Salvar alterações</button>
         </div>
-        </div><!-- /perfil-restaurante-section -->
+        </div>
       </div>
 
       <!-- ASSINATURA (Etapa 6) -->
@@ -1827,8 +1229,11 @@ async function renderDashboardFull(){
         <div style="font-size:11px;color:var(--text3);margin-top:2px">Ativos agora: ${active.length}</div>
       </div>
       <div class="card" style="padding:16px;border-left:3px solid #D32F2F">
-        <div class="section-lbl">Status ativos</div>
-        ${['recebido','preparo','pronto'].map(s=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px">${SLB[s]}</span><span class="hl" style="font-weight:700;color:${BC[s]}">${active.filter(o=>o.status===s).length}</span></div>`).join('')}
+        <div class="section-lbl">Pedidos por status (${periodLabel})</div>
+        ${['recebido','preparo','pronto','entregue'].map(s=>{
+          const count = s === 'entregue' ? entregues.length : active.filter(o=>o.status===s).length;
+          return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px">${SLB[s]}</span><span class="hl" style="font-weight:700;color:${BC[s]||'var(--text)'}">${count}</span></div>`;
+        }).join('')}
       </div>
       <div class="card" style="padding:16px;border-left:3px solid #2196F3">
         <div class="section-lbl">Por tipo (${periodLabel})</div>
@@ -1840,22 +1245,7 @@ async function renderDashboardFull(){
       <div style="display:flex;align-items:flex-end;gap:4px;height:80px">
         ${hourBars.map(({h,v})=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div title="${v} pedidos" style="width:100%;background:#D32F2F;border-radius:3px 3px 0 0;min-height:${v>0?4:0}px;height:${Math.round(v/maxV*60)}px;opacity:${v>0?0.85+v/maxV*0.15:0.15};transition:height .3s"></div><span style="font-size:8px;color:var(--text3)">${h}h</span></div>`).join('')}
       </div>
-    </div>
-    <div class="card" style="padding:16px">
-      <div class="section-lbl" style="margin-bottom:10px">Origem (${periodLabel})</div>
-      <div id="dash-full-origem"></div>
     </div>`;
-  // Breakdown origem
-  const origCount={};pd.forEach(o=>{const s=(o.order_source||'direto').toLowerCase();origCount[s]=(origCount[s]||0)+1;});
-  const origEl=document.getElementById('dash-full-origem');
-  if(origEl){
-    const entries=Object.entries(origCount).sort((a,b)=>b[1]-a[1]);
-    origEl.innerHTML=entries.length?entries.map(([src,cnt])=>{
-      const info=SRC_MAP[src]||{emoji:'📍',label:src};
-      const pct=Math.round(cnt/pd.length*100);
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)"><span style="font-size:12px">${info.emoji} ${info.label}</span><div style="display:flex;align-items:center;gap:8px"><div style="width:60px;height:4px;border-radius:2px;background:var(--border);overflow:hidden"><div style="width:${pct}%;height:100%;background:#D32F2F;border-radius:2px"></div></div><span class="hl" style="font-size:12px;font-weight:700">${cnt}</span></div></div>`;
-    }).join(''):'<span style="font-size:12px;color:var(--text3)">Sem dados no período</span>';
-  }
 }
 
 // ══ FASE 3 — ADS TAB (nav principal) ══
@@ -2622,7 +2012,7 @@ function go(tab){
   if(tab==='ads')      renderAdsView();
   if(tab==='clientes') loadClientes();
   if(tab==='perfil'){preencherPerfilStaff();if(currentStaff?.role==='dono'&&co)preencherPerfil(co);}
-  if(tab==='colaboradores')loadColaboradores();
+  if(tab==='funcionarios')loadColaboradores();
   if(tab==='rede')loadRede();
   if(tab==='fechamento')loadFechamento();
   if(tab==='pdv')loadPDV();
@@ -2827,7 +2217,8 @@ function renderOrders(){
     const tc=tim>15?'t-late':tim>8?'t-warn':'t-ok',icon=tim>15?'warning':'schedule';
     const orderTs=o.created_at?new Date(o.created_at).getTime():Date.now();
     // Badge de tipo de pedido
-    const tipoLabel={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[(o.tipo_pedido||'').toLowerCase()]||'';
+    let tipoLabel={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[(o.tipo_pedido||'').toLowerCase()]||'';
+    if((o.tipo_pedido||'').toLowerCase()==='mesa' && o.mesa_numero) tipoLabel=`🪑 Mesa ${o.mesa_numero}`;
     // Badge de origem
     const srcInfo=SRC_MAP[(o.order_source||'').toLowerCase()];
     const srcBadge=srcInfo?`<span class="src-badge ${srcInfo.cls}">${srcInfo.emoji} ${srcInfo.label}</span>`:'';
@@ -2885,8 +2276,22 @@ const ELI_MESSAGES={
   preparo:{key:'msg_preparo',text:'Iniciamos o seu pedido 👨‍🍳 Estamos preparando com carinho!'},
   pronto:{key:'msg_pronto',text:'Seu pedido está pronto! 🎉 Pode retirar ou aguardar o entregador.'},
   saiu:{key:'msg_saiu',text:'Seu pedido saiu para entrega! 🚗 Chegará em breve!'},
-  entregue:{key:'msg_entregue',text:'Pedido entregue! 🙌 Obrigado pela preferência! Avalie seu pedido.'}
+  entregue:{key:'msg_entregue',text:'Pedido entregue! 🙌 Obrigado pela preferência! Avalie seu pedido.'},
+  cancelado:{key:'msg_cancelado',text:'Seu pedido foi cancelado. Entre em contato conosco.'}
 };
+
+async function logAction(action, entity, entityId, description) {
+  if (!co || !currentStaff) return;
+  await db.from('food_activity_logs').insert({
+    company_id: co.id,
+    user_id: currentStaff.id,
+    user_name: currentStaff.name || currentStaff.nome_completo,
+    action,
+    entity,
+    entity_id: String(entityId),
+    details: { description }
+  });
+}
 
 async function sendEliNotification(order,newStatus){
   const msgInfo=ELI_MESSAGES[newStatus];
@@ -2906,6 +2311,7 @@ async function sendEliNotification(order,newStatus){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
+        event_type:"order_status_changed",
         order_id:order.id,
         order_number:order.order_number,
         cliente_nome:order.cliente_nome,
@@ -2931,6 +2337,7 @@ async function advOrder(id){
   const orderSnap={...orders[idx]};
   orders[idx].status=ns;
   await db.from('food_orders').update({status:ns,updated_at:new Date().toISOString()}).eq('id',id);
+  logAction('order_advanced', 'order', id, `Pedido #${orderSnap.order_number} avançado para ${SLB[ns]||ns}`);
   // Fase 2: dispara notificação Eli
   sendEliNotification(orderSnap,ns);
   // Etapa 4: Notificar motoboys disponíveis quando pedido fica pronto para delivery
@@ -2950,9 +2357,12 @@ async function advOrder(id){
 
 async function cancelOrder(id){
   const idx=orders.findIndex(o=>o.id===id);if(idx===-1)return;
+  const orderSnap={...orders[idx]};
   await db.from('food_orders').update({status:'cancelado',updated_at:new Date().toISOString()}).eq('id',id);
   const o=orders.splice(idx,1)[0];o.status='cancelado';o.completed_at=new Date().toISOString();
   history.unshift(o);renderOrders();renderHist();toast('Pedido cancelado');
+  logAction('order_cancelled', 'order', id, `Pedido #${orderSnap.order_number} cancelado`);
+  sendEliNotification(orderSnap, 'cancelado');
 }
 
 function openOrder(id){
@@ -2964,7 +2374,9 @@ function openOrder(id){
   }).join(''):'<div style="font-size:13px;color:var(--text2)">—</div>';
   const srcInfoMod=SRC_MAP[(o.order_source||'').toLowerCase()];
   const srcBadgeMod=srcInfoMod?`<span class="src-badge ${srcInfoMod.cls}" style="margin-left:6px">${srcInfoMod.emoji} ${srcInfoMod.label}</span>`:'';
-  const tipoLabelMod={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[(o.tipo_pedido||'').toLowerCase()]||'';
+  const tipoStr=(o.tipo_pedido||'').toLowerCase();
+  let tipoLabelMod={delivery:'🛵 Delivery',retirada:'🏪 Retirada',mesa:'🪑 Mesa'}[tipoStr]||'';
+  if(tipoStr==='mesa' && o.mesa_numero) tipoLabelMod=`🪑 Mesa ${o.mesa_numero}`;
   document.getElementById('mod-order-body').innerHTML=`
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
       <div style="width:46px;height:46px;border-radius:10px;background:${SL[o.status]?SL[o.status].bg:'rgba(211,47,47,0.12)'};display:flex;align-items:center;justify-content:center;border:0.5px solid var(--border)"><span class="hl" style="font-size:13px;font-weight:800;color:${SL[o.status]?SL[o.status].c:'#D32F2F'}">${ini(o.cliente_nome)}</span></div>
@@ -3479,83 +2891,89 @@ async function loadColaboradores(){
   }).join('');
 }
 
+function adicionarFuncionario(){ abrirModalNovoColaborador(); }
+
 function abrirModalNovoColaborador(){
-  document.getElementById('mod-colab-title').textContent='Novo Colaborador';
-  document.getElementById('colab-edit-id').value='';
-  document.getElementById('colab-nome').value='';
-  document.getElementById('colab-email').value='';
-  document.getElementById('colab-senha').value='';
-  document.getElementById('colab-tel').value='';
-  document.getElementById('colab-role').value='funcionario';
-  document.getElementById('colab-ativo').className='tog on';
-  document.getElementById('colab-del-btn').style.display='none';
-  openMod('mod-colab');
+  document.getElementById('mod-func-title').textContent='Novo Funcionário';
+  document.getElementById('func-id').value='';
+  document.getElementById('func-nome').value='';
+  document.getElementById('func-role').value='funcionario';
+  document.getElementById('func-senha').value='';
+  document.getElementById('func-ativo').className='tog on';
+  document.getElementById('func-logs').innerHTML='';
+  openMod('mod-funcionario');
 }
 
-function editarColaborador(id){
+async function editarColaborador(id){
   const s=staffList.find(x=>x.id===id);
   if(!s)return;
-  document.getElementById('mod-colab-title').textContent='Editar Colaborador';
-  document.getElementById('colab-edit-id').value=s.id;
-  document.getElementById('colab-nome').value=s.nome_completo||'';
-  document.getElementById('colab-email').value=s.email||'';
-  document.getElementById('colab-senha').value='';
-  document.getElementById('colab-tel').value=s.telefone||'';
-  document.getElementById('colab-role').value=s.food_roles?.name||'funcionario';
-  document.getElementById('colab-ativo').className='tog '+(s.ativo&&!s.bloqueado?'on':'off');
-  document.getElementById('colab-del-btn').style.display='block';
-  openMod('mod-colab');
+  document.getElementById('mod-func-title').textContent='Editar Funcionário';
+  document.getElementById('func-id').value=s.id;
+  document.getElementById('func-nome').value=s.name||s.nome_completo||'';
+  document.getElementById('func-role').value=s.role==='gestor'?'admin':(s.role||'funcionario');
+  document.getElementById('func-senha').value='';
+  document.getElementById('func-ativo').className='tog '+(s.active?'on':'off');
+  
+  // Carrega logs do funcionário (Etapa 10)
+  const {data:logs} = await db.from('food_activity_logs').select('*').eq('user_id', s.id).order('created_at', {ascending:false}).limit(20);
+  const logEl = document.getElementById('func-logs');
+  if(logs && logs.length){
+    logEl.innerHTML = logs.map(l => `<div style="margin-bottom:6px;padding-bottom:4px;border-bottom:0.5px solid var(--border)">
+      <div style="font-weight:700">${l.action}</div>
+      <div style="font-size:10px">${l.details?.description || ''}</div>
+      <div style="font-size:9px;opacity:0.6">${fmtDate(l.created_at)} ${fmtTime(l.created_at)}</div>
+    </div>`).join('');
+  } else {
+    logEl.innerHTML = 'Nenhuma atividade registrada.';
+  }
+
+  openMod('mod-funcionario');
 }
 
-async function salvarColaborador(){
-  const editId=document.getElementById('colab-edit-id').value;
-  const nome=document.getElementById('colab-nome').value.trim();
-  const email=document.getElementById('colab-email').value.trim().toLowerCase();
-  const senha=document.getElementById('colab-senha').value.trim();
-  const tel=document.getElementById('colab-tel').value.trim();
-  const roleNome=document.getElementById('colab-role').value;
-  const ativo=document.getElementById('colab-ativo').classList.contains('on');
+async function salvarFuncionario(){
+  const editId=document.getElementById('func-id').value;
+  const nome=document.getElementById('func-nome').value.trim();
+  const role=document.getElementById('func-role').value;
+  const senha=document.getElementById('func-senha').value.trim();
+  const ativo=document.getElementById('func-ativo').classList.contains('on');
 
-  if(!nome||!email){toast('Nome e email são obrigatórios');return;}
-  if(!editId&&!senha){toast('Senha obrigatória para novo colaborador');return;}
-
-  const{data:roleData}=await db.from('food_roles').select('id').eq('name',roleNome).single();
-  if(!roleData){toast('Role não encontrado');return;}
-
-  const payload={nome_completo:nome,email,telefone:tel||null,role_id:roleData.id,ativo,bloqueado:false,updated_at:new Date().toISOString()};
-  if(senha)payload.password_hash=await bcrypt.hash(senha,10);
-
-  let error;
-  const userPayload = {
+  if(!nome){toast('Nome obrigatório');return;}
+  
+  const payload = {
     name: nome,
-    email,
-    phone: tel || null,
-    role: roleNome === 'dono' ? 'gestor' : roleNome,
+    role: role==='admin'?'gestor':role,
     active: ativo,
     updated_at: new Date().toISOString()
   };
-  if(senha) userPayload.password = senha; // Nota: o app parece usar 'password' ou 'password_hash' variando. food_users usa 'password'.
+  if(senha) payload.password = senha;
 
+  let error, data;
   if(editId){
-    ({error}=await db.from('food_users').update(userPayload).eq('id',editId));
+    ({error}=await db.from('food_users').update(payload).eq('id',editId));
+    await logAction('staff_updated', 'user', editId, `Funcionário ${nome} atualizado`);
   }else{
-    userPayload.company_id=co.id;
-    ({error}=await db.from('food_users').insert(userPayload));
+    payload.company_id = co.id;
+    payload.email = nome.toLowerCase().replace(/\s+/g,'.') + '@' + co.slug + '.com'; // E-mail gerado simples
+    const {data:newStaff, error:insErr} = await db.from('food_users').insert(payload).select().single();
+    error = insErr;
+    if(!error && newStaff) await logAction('staff_created', 'user', newStaff.id, `Funcionário ${nome} criado`);
   }
+
   if(error){toast('Erro: '+error.message);return;}
-  closeMod('mod-colab');
-  toast(editId?'Colaborador atualizado!':'Colaborador cadastrado!');
+  closeMod('mod-funcionario');
+  toast(editId?'Funcionário atualizado!':'Funcionário cadastrado!');
   await loadColaboradores();
 }
 
 async function deletarColaborador(){
-  const editId=document.getElementById('colab-edit-id').value;
+  const editId=document.getElementById('func-id').value;
   if(!editId)return;
-  if(!confirm('Excluir este colaborador?'))return;
-  const{error}=await db.from('food_staff').delete().eq('id',editId);
+  if(!confirm('Exclusão lógica: O funcionário será desativado. Confirmar?'))return;
+  const{error}=await db.from('food_users').update({active:false, updated_at:new Date().toISOString()}).eq('id',editId);
   if(error){toast('Erro: '+error.message);return;}
-  closeMod('mod-colab');
-  toast('Colaborador removido');
+  await logAction('staff_deactivated', 'user', editId, `Funcionário desativado`);
+  closeMod('mod-funcionario');
+  toast('Funcionário desativado');
   await loadColaboradores();
 }
 
@@ -4187,8 +3605,11 @@ async function adicionarMesa(){
   const num=prompt('Número da mesa:');
   if(!num||isNaN(parseInt(num)))return;
   const cap=prompt('Capacidade (número de lugares):','4');
-  const{error}=await db.from('food_tables').insert({company_id:co.id,numero:parseInt(num),capacidade:parseInt(cap)||4,status:'livre'});
+  const{data:newMesa, error}=await db.from('food_tables').insert({company_id:co.id,numero:parseInt(num),capacidade:parseInt(cap)||4,status:'livre'}).select().single();
   if(error){toast('Erro: '+(error.message.includes('unique')?'Número já existe':error.message));return;}
+  
+  await logAction('table_created', 'table', newMesa.id, `Mesa ${num} criada`);
+  
   toast('Mesa '+num+' criada!');
   await loadMesas();
 }
@@ -4227,13 +3648,19 @@ async function mudarStatusMesa(id,status){
   if(status==='livre')payload.opened_at=null;
   const{error}=await db.from('food_tables').update(payload).eq('id',id);
   if(error){toast('Erro: '+error.message);return;}
+  
+  const m=mesasList.find(x=>x.id===id);
+  await logAction('table_status_changed', 'table', id, `Status da mesa ${m?.numero} alterado para ${status}`);
+  
   toast('Mesa atualizada!');
   await loadMesas();
 }
 
 async function excluirMesa(id){
   if(!confirm('Excluir esta mesa?'))return;
+  const m=mesasList.find(x=>x.id===id);
   await db.from('food_tables').delete().eq('id',id);
+  await logAction('table_deleted', 'table', id, `Mesa ${m?.numero} excluída`);
   closeMod('mod-mesa');
   toast('Mesa removida');
   await loadMesas();

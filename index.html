@@ -1666,13 +1666,13 @@ function setupRoleBasedAccess(role){
   if(ff.rede)donoNav.push('nav-rede');
 
   const navVisibility={
-    'dono':        ['nav-pedidos','nav-cardapio','nav-historico','nav-elistats','nav-perfil'],
+    'dono':        ['nav-dashboard','nav-pedidos','nav-cardapio','nav-mesas','nav-funcionarios','nav-historico','nav-elistats','nav-perfil'],
     'funcionario': ['nav-pedidos','nav-cardapio','nav-historico','nav-perfil'],
     'motoboy':     ['nav-pedidos','nav-logistica','nav-perfil']
   };
 
   const screenAccess={
-    'dono':        ['pedidos','cardapio','historico','elistats','perfil'],
+    'dono':        ['dashboard','pedidos','cardapio','mesas','funcionarios','historico','elistats','perfil'],
     'funcionario': ['pedidos','cardapio','historico','perfil'],
     'motoboy':     ['pedidos','logistica','perfil']
   };

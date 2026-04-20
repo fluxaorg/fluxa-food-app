@@ -1986,7 +1986,7 @@ function startRT(){
 
 // ── TABS ──
 function go(tab){
-  const betaTabs=['pedidos','cardapio','historico','elistats','perfil'];
+  const betaTabs=['dashboard','pedidos','cardapio','mesas','funcionarios','historico','elistats','perfil','logistica','ads','assinatura','rede','pdv','estoque'];
   if(!betaTabs.includes(tab)){go('pedidos');return;}
   // Esconde TODAS as tabs (sem exceção)
   document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');});

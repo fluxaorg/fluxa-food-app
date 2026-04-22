@@ -115,6 +115,7 @@
     <div class="sidebar">
       <div class="login-logo hl" style="font-size:20px; margin-bottom:20px">F</div>
       <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')"><span class="ms">receipt_long</span></div>
+      <div class="nav-item" id="nav-novo-pedido" onclick="go('novo-pedido')"><span class="ms">add_circle</span></div>
       <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')"><span class="ms">analytics</span></div>
       <div class="nav-item" id="nav-cardapio" onclick="go('cardapio')"><span class="ms">restaurant_menu</span></div>
       <div class="nav-item" id="nav-mesas" onclick="go('mesas')"><span class="ms">table_restaurant</span></div>
@@ -147,7 +148,41 @@
               <button class="btn-s" onclick="setOrderFil('pronto',this)">Prontos</button>
             </div>
           </div>
-          <div id="orders-wrap"></div>
+          <div id="orders-wrap"><div style="text-align:center;padding:60px 20px;color:var(--text3)"><span class="ms" style="font-size:48px">receipt_long</span><p style="margin-top:12px;font-weight:600">Nenhum pedido ativo</p></div></div>
+        </div>
+
+        <!-- NOVO PEDIDO -->
+        <div id="tab-novo-pedido" class="tab">
+          <h1 class="hl-title">Novo Pedido</h1>
+          <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;height:calc(100vh - 160px)">
+            <!-- Cardápio p/ seleção -->
+            <div style="overflow-y:auto">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="np-cats"></div>
+              <div id="np-menu-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+            </div>
+            <!-- Carrinho / Comanda -->
+            <div class="card" style="display:flex;flex-direction:column;height:100%">
+              <div class="hl" style="font-weight:800;font-size:16px;margin-bottom:12px">Comanda</div>
+              <div style="margin-bottom:12px">
+                <label>Nome do cliente</label><input type="text" id="np-nome" placeholder="Cliente / Mesa">
+                <label>Tipo</label>
+                <select id="np-tipo">
+                  <option value="mesa">Mesa</option>
+                  <option value="balcao">Balcão</option>
+                  <option value="delivery">Delivery</option>
+                </select>
+                <div id="np-mesa-wrap"><label>Número da Mesa</label><input type="number" id="np-mesa-num" min="1"></div>
+              </div>
+              <div id="np-cart" style="flex:1;overflow-y:auto;margin-bottom:12px"></div>
+              <div style="border-top:1px solid var(--border);padding-top:12px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+                  <span style="font-weight:600">Total</span>
+                  <b class="hl" id="np-total" style="color:var(--blue);font-size:18px">R$ 0,00</b>
+                </div>
+                <button class="btn-p" style="width:100%" onclick="enviarPedidoManual()">ENVIAR PEDIDO</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- DASHBOARD -->
@@ -342,7 +377,8 @@
       document.getElementById('sn-name').textContent = co.name;
       if (co.logo_url) document.getElementById('logo-avatar').innerHTML = `<img src="${co.logo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px"/>`;
       preencherPerfil(co);
-      loadAll();
+      await loadAll();
+      renderDashboardFull();
       setInterval(loadOrders, 5000);
     }
 
@@ -358,19 +394,35 @@
       }
     }
 
+    let orderFil = 'todos';
+    function setOrderFil(f, btn) {
+      orderFil = f;
+      document.querySelectorAll('#order-filters button').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderOrders();
+    }
+
     function renderOrders() {
-      const active = orders.filter(o => !['entregue','cancelado'].includes(o.status));
-      document.getElementById('p-count').textContent = active.length;
-      document.getElementById('orders-wrap').innerHTML = active.map(o => `
-        <div class="order-card" onclick="openOrderMod('${o.id}')">
+      const show = orderFil === 'todos'
+        ? orders.filter(o => !['entregue','cancelado'].includes(o.status))
+        : orders.filter(o => o.status === orderFil);
+      document.getElementById('p-count').textContent = show.length;
+      if (!show.length) {
+        document.getElementById('orders-wrap').innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text3)"><span class="ms" style="font-size:48px">receipt_long</span><p style="margin-top:12px;font-weight:600">Nenhum pedido ativo</p></div>`;
+        return;
+      }
+      document.getElementById('orders-wrap').innerHTML = show.map(o => {
+        const sl = SL[o.status] || SL['recebido'];
+        return `<div class="order-card" onclick="openOrderMod('${o.id}')">
           <div class="order-header">
             <div class="order-id hl">#${o.order_number || o.id.slice(0,5)}</div>
-            <div class="status-pill" style="background:${SL[o.status].bg}; color:${SL[o.status].c}">${SLB[o.status]}</div>
+            <div class="status-pill" style="background:${sl.bg}; color:${sl.c}">${SLB[o.status]||o.status}</div>
           </div>
-          <div class="order-client">${o.cliente_nome} ${o.mesa_numero ? '· Mesa '+o.mesa_numero : ''}</div>
+          <div class="order-client">${o.cliente_nome||'—'} ${o.mesa_numero ? '· Mesa '+o.mesa_numero : ''}</div>
           <div class="order-footer"><span>${fmtTime(o.created_at)}</span><b class="hl">${fmtP(o.total)}</b></div>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
+      renderDashboardFull();
     }
 
     let selectedOrder = null;
@@ -393,10 +445,15 @@
     async function go(tab) {
       const curr = document.querySelector('.tab.active');
       const target = document.getElementById('tab-'+tab);
-      if (curr===target) return;
+      if (!target || curr===target) return;
       document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.id==='nav-'+tab));
       if (curr) { curr.classList.add('leaving'); await new Promise(r=>setTimeout(r,300)); curr.classList.remove('active','leaving'); }
       target.classList.add('active');
+      if (tab==='dashboard') renderDashboardFull();
+      if (tab==='cardapio') loadMenu();
+      if (tab==='mesas') loadTables();
+      if (tab==='funcionarios') loadStaff();
+      if (tab==='novo-pedido') renderNpMenu();
     }
 
     async function uploadToBucket(file, folder) {
@@ -449,7 +506,22 @@
       if (!error) { toast('Item salvo'); closeMod('mod-item'); loadMenu(); }
     }
 
-    function openNewItem() { editId=null; document.getElementById('item-title').textContent='Novo Item'; ['item-name','item-price','item-desc'].forEach(i=>document.getElementById(i).value=''); document.getElementById('item-prev').style.display='none'; openMod('mod-item'); }
+    function openNewItem() { editId=null; document.getElementById('item-title').textContent='Novo Item'; ['item-name','item-price','item-desc'].forEach(i=>document.getElementById(i).value=''); document.getElementById('item-prev').style.display='none'; document.getElementById('item-photo').dataset.url=''; openMod('mod-item'); }
+
+    function editarItem(id) {
+      const i = menuItems.find(x => x.id === id);
+      if (!i) return;
+      editId = i.id;
+      document.getElementById('item-title').textContent = 'Editar Item';
+      document.getElementById('item-name').value = i.name;
+      document.getElementById('item-price').value = i.price;
+      document.getElementById('item-cat').value = i.category || 'lanches';
+      document.getElementById('item-desc').value = i.description || '';
+      document.getElementById('item-photo').dataset.url = i.image_url || '';
+      if (i.image_url) { document.getElementById('item-prev').src = i.image_url; document.getElementById('item-prev').style.display = 'block'; }
+      else { document.getElementById('item-prev').style.display = 'none'; }
+      openMod('mod-item');
+    }
 
     async function loadTables() {
       const { data } = await db.from('food_tables').select('*').eq('company_id', co.id).order('number');
@@ -501,7 +573,22 @@
       }
     }
 
-    function novoColaborador() { editId=null; ['colab-name','colab-email','colab-pass'].forEach(i=>document.getElementById(i).value=''); document.getElementById('colab-prev').style.display='none'; openMod('mod-colab'); }
+    function novoColaborador() { document.getElementById('colab-id').value=''; document.getElementById('colab-title').textContent='Novo Colaborador'; ['colab-name','colab-email','colab-pass'].forEach(i=>document.getElementById(i).value=''); document.getElementById('colab-prev').style.display='none'; document.getElementById('colab-photo').dataset.url=''; openMod('mod-colab'); }
+
+    function editarColaborador(id) {
+      const s = staffList.find(x => x.id === id);
+      if (!s) return;
+      document.getElementById('colab-id').value = s.id;
+      document.getElementById('colab-title').textContent = 'Editar Colaborador';
+      document.getElementById('colab-name').value = s.name;
+      document.getElementById('colab-email').value = s.email || '';
+      document.getElementById('colab-pass').value = s.password || '';
+      document.getElementById('colab-role').value = s.role || 'funcionario';
+      document.getElementById('colab-photo').dataset.url = s.avatar_url || '';
+      if (s.avatar_url) { document.getElementById('colab-prev').src = s.avatar_url; document.getElementById('colab-prev').style.display='block'; }
+      else { document.getElementById('colab-prev').style.display='none'; }
+      openMod('mod-colab');
+    }
     async function saveColaborador() {
       const id = document.getElementById('colab-id').value;
       const p = { 
@@ -518,13 +605,128 @@
     }
 
     function renderDashboardFull() {
-      const sales = orders.filter(o=>o.status==='entregue').reduce((a,b)=>a+Number(b.total),0);
-      document.getElementById('dash-full-content').innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-          <div class="card" style="background:var(--blue-l); border-color:var(--blue)"><div>Vendas</div><div class="hl" style="font-size:24px; font-weight:900">${fmtP(sales)}</div></div>
-          <div class="card" style="background:var(--green-l); border-color:var(--green)"><div>Pedidos</div><div class="hl" style="font-size:24px; font-weight:900">${orders.length}</div></div>
+      const entregues = orders.filter(o=>o.status==='entregue');
+      const ativos = orders.filter(o=>!['entregue','cancelado'].includes(o.status));
+      const sales = entregues.reduce((a,b)=>a+Number(b.total),0);
+      const mesas = tables.filter(t=>t.status==='ocupada').length;
+      const ticket = entregues.length ? sales/entregues.length : 0;
+      const el = document.getElementById('dash-full-content');
+      if (!el) return;
+      el.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px">
+          <div class="card" style="background:var(--blue-l); border-color:var(--blue)">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:8px">Receita do dia</div>
+            <div class="hl" style="font-size:26px; font-weight:900">${fmtP(sales)}</div>
+          </div>
+          <div class="card" style="background:var(--green-l); border-color:var(--green)">
+            <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:8px">Pedidos finalizados</div>
+            <div class="hl" style="font-size:26px; font-weight:900">${entregues.length}</div>
+          </div>
+          <div class="card" style="background:var(--amber-l); border-color:var(--amber)">
+            <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:8px">Pedidos ativos</div>
+            <div class="hl" style="font-size:26px; font-weight:900">${ativos.length}</div>
+          </div>
+          <div class="card" style="background:var(--red-l); border-color:var(--red)">
+            <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">Mesas ocupadas</div>
+            <div class="hl" style="font-size:26px; font-weight:900">${mesas}</div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:700;margin-bottom:16px">Ticket Médio</div>
+          <div class="hl" style="font-size:32px;font-weight:900;color:var(--blue)">${fmtP(ticket)}</div>
         </div>
       `;
+    }
+
+    // ── NOVO PEDIDO MANUAL ──
+    let npCart = [];
+    let npCatFil = 'todos';
+
+    function renderNpMenu() {
+      const cats = ['todos', ...new Set(menuItems.map(i=>i.category))];
+      document.getElementById('np-cats').innerHTML = cats.map(c => `
+        <button class="btn-s" style="padding:6px 14px;font-size:12px;${npCatFil===c?'background:var(--accent);color:black':''}" onclick="setNpCat('${c}',this)">${c==='todos'?'Todos':c}</button>
+      `).join('');
+      const filtered = npCatFil==='todos' ? menuItems : menuItems.filter(i=>i.category===npCatFil);
+      document.getElementById('np-menu-grid').innerHTML = filtered.map(i => `
+        <div class="card" style="cursor:pointer;padding:12px" onclick="npAddItem('${i.id}')">
+          <div style="height:80px;border-radius:10px;background:var(--bg3);overflow:hidden;margin-bottom:8px">${i.image_url?`<img src="${i.image_url}" style="width:100%;height:100%;object-fit:cover"/>`:''}</div>
+          <div class="hl" style="font-size:13px;font-weight:700">${i.name}</div>
+          <div style="font-size:12px;color:var(--blue);margin-top:4px">${fmtP(i.price)}</div>
+        </div>
+      `).join('');
+      renderNpCart();
+      document.getElementById('np-tipo').onchange = function() {
+        document.getElementById('np-mesa-wrap').style.display = this.value==='mesa' ? 'block' : 'none';
+      };
+    }
+
+    function setNpCat(c) { npCatFil=c; renderNpMenu(); }
+
+    function npAddItem(id) {
+      const item = menuItems.find(x=>x.id===id);
+      if (!item) return;
+      const existing = npCart.find(x=>x.id===id);
+      if (existing) existing.qty++;
+      else npCart.push({ id: item.id, name: item.name, price: Number(item.price), qty: 1 });
+      renderNpCart();
+    }
+
+    function npRemoveItem(id) {
+      const idx = npCart.findIndex(x=>x.id===id);
+      if (idx===-1) return;
+      npCart[idx].qty--;
+      if (npCart[idx].qty<=0) npCart.splice(idx,1);
+      renderNpCart();
+    }
+
+    function renderNpCart() {
+      const total = npCart.reduce((a,b)=>a+b.price*b.qty, 0);
+      document.getElementById('np-total').textContent = fmtP(total);
+      document.getElementById('np-cart').innerHTML = npCart.length
+        ? npCart.map(i=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${i.name}</div>
+              <div style="font-size:12px;color:var(--text3)">${fmtP(i.price)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button onclick="npRemoveItem('${i.id}')" style="border:none;background:var(--bg3);color:var(--text);border-radius:6px;width:24px;height:24px;cursor:pointer">-</button>
+              <span style="font-weight:700">${i.qty}</span>
+              <button onclick="npAddItem('${i.id}')" style="border:none;background:var(--bg3);color:var(--text);border-radius:6px;width:24px;height:24px;cursor:pointer">+</button>
+            </div>
+          </div>`).join('')
+        : `<div style="text-align:center;padding:30px;color:var(--text3)">Nenhum item</div>`;
+    }
+
+    async function enviarPedidoManual() {
+      if (!npCart.length) { toast('Adicione itens ao pedido'); return; }
+      const nome = document.getElementById('np-nome').value.trim() || 'Balcão';
+      const tipo = document.getElementById('np-tipo').value;
+      const mesa = tipo==='mesa' ? document.getElementById('np-mesa-num').value : null;
+      const total = npCart.reduce((a,b)=>a+b.price*b.qty, 0);
+      const items = npCart.map(i=>({ id:i.id, name:i.name, price:i.price, quantity:i.qty }));
+      const order_number = Math.floor(Math.random()*9000)+1000;
+      const payload = {
+        company_id: co.id,
+        cliente_nome: nome,
+        tipo_pedido: tipo,
+        mesa_numero: mesa ? Number(mesa) : null,
+        items: JSON.stringify(items),
+        total,
+        status: 'recebido',
+        order_number
+      };
+      const { error } = await db.from('food_orders').insert(payload);
+      if (!error) {
+        toast('Pedido enviado!');
+        npCart = [];
+        document.getElementById('np-nome').value = '';
+        renderNpCart();
+        loadOrders();
+      } else {
+        toast('Erro ao enviar pedido');
+      }
     }
 
     function fmtP(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); }
@@ -532,7 +734,19 @@
     function toast(m) { const t=document.getElementById('toast'); t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3000); }
     function openMod(id) { document.getElementById(id).style.display='flex'; }
     function closeMod(id,e) { if(e && e.target !== e.currentTarget) return; document.getElementById(id).style.display='none'; }
-    function preencherPerfil(d) { document.getElementById('perfil-nome').value=d.name; document.getElementById('perfil-wa').value=d.whatsapp; document.getElementById('perfil-end').value=d.address; document.getElementById('perfil-link').value=`https://fluxa-cardapio.vercel.app/${d.slug}`; }
+    function preencherPerfil(d) {
+      document.getElementById('perfil-nome').value = d.name || '';
+      document.getElementById('perfil-wa').value = d.whatsapp || '';
+      document.getElementById('perfil-end').value = d.address || '';
+      document.getElementById('perfil-link').value = `https://fluxa-cardapio.vercel.app/${d.slug||''}`;
+      if (d.logo_url) { document.getElementById('co-logo-prev').src=d.logo_url; document.getElementById('co-logo-prev').style.display='block'; }
+    }
+
+    async function salvarTudo() {
+      const payload = { name: document.getElementById('perfil-nome').value, whatsapp: document.getElementById('perfil-wa').value, address: document.getElementById('perfil-end').value };
+      const { error } = await db.from('food_companies').update(payload).eq('id', co.id);
+      if (!error) { Object.assign(co, payload); toast('Configurações salvas!'); } else toast('Erro ao salvar');
+    }
     function copyMenuLink() { document.getElementById('perfil-link').select(); document.execCommand('copy'); toast('Link copiado'); }
     function copyMesaLink() { document.getElementById('mesa-link').select(); document.execCommand('copy'); toast('Link copiado'); }
     function simEli() { toast('Eli está analisando sua operação...'); }

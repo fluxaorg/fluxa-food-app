@@ -84,9 +84,14 @@
     .photo-up:hover { border-color:var(--text3); }
 
     .mesa-item { aspect-ratio:1; background:var(--bg2); border:1px solid var(--border); border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.3s; }
-    .mesa-item.ocupada { border-color:var(--blue); background:var(--blue-l); }
+    .mesa-item.ocupada { border-color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.06); }
     .mesa-num { font-size:24px; font-weight:900; font-family:var(--hl); }
     .mesa-status { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text3); }
+    .chart-bar { background:rgba(255,255,255,0.08); border-radius:6px 6px 0 0; transition:0.5s; }
+    .chart-bar:hover { background:rgba(255,255,255,0.18); }
+    .kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:20px; }
+    .kpi-val { font-size:28px; font-weight:900; font-family:var(--hl); margin-top:6px; }
+    .kpi-label { font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
 
     /* SCROLLBAR */
     ::-webkit-scrollbar { width:6px; }
@@ -457,11 +462,15 @@
     }
 
     async function uploadToBucket(file, folder) {
-      const ext = file.name.split('.').pop();
+      const ext = file.name.split('.').pop().toLowerCase();
+      const bucket = folder === 'logos' ? 'logos' : folder === 'avatars' ? 'avatars' : 'food-images';
       const path = `${folder}/${Date.now()}.${ext}`;
-      const { data, error } = await db.storage.from('food-assets').upload(path, file);
-      if (error) throw error;
-      return db.storage.from('food-assets').getPublicUrl(path).data.publicUrl;
+      toast('Enviando imagem...');
+      const { data, error } = await db.storage.from(bucket).upload(path, file, { upsert: true });
+      if (error) { toast('Erro no upload: ' + error.message); throw error; }
+      const { data: { publicUrl } } = db.storage.from(bucket).getPublicUrl(path);
+      toast('Imagem carregada!');
+      return publicUrl;
     }
 
     async function handleItemPhoto(input) {
@@ -524,40 +533,54 @@
     }
 
     async function loadTables() {
-      const { data } = await db.from('food_tables').select('*').eq('company_id', co.id).order('number');
+      const { data, error } = await db.from('food_tables').select('*').eq('company_id', co.id).order('numero');
+      if (error) { console.error('loadTables error:', error); return; }
       if (data) {
         tables = data;
-        document.getElementById('mesas-grid').innerHTML = data.map(t => `
+        const grid = document.getElementById('mesas-grid');
+        if (!grid) return;
+        grid.innerHTML = data.length ? data.map(t => `
           <div class="mesa-item ${t.status==='ocupada'?'ocupada':''}" onclick="openMesaMod('${t.id}')">
-            <div class="mesa-num">${t.number}</div>
+            <div class="mesa-num">${t.numero}</div>
             <div class="mesa-status">${t.status}</div>
           </div>
-        `).join('');
+        `).join('') : `<div style="color:var(--text3);font-size:13px;padding:20px">Nenhuma mesa cadastrada. Clique em + Nova Mesa.</div>`;
       }
     }
 
     let selectedMesa = null;
     function openMesaMod(id) {
       selectedMesa = tables.find(t => t.id === id);
-      document.getElementById('mesa-mod-num').textContent = selectedMesa.number;
+      if (!selectedMesa) return;
+      document.getElementById('mesa-mod-num').textContent = 'Mesa ' + selectedMesa.numero;
       document.getElementById('mesa-mod-status').textContent = selectedMesa.status.toUpperCase();
-      document.getElementById('mesa-link').value = `https://fluxa-cardapio.vercel.app/${co.slug}/mesa/${selectedMesa.number}`;
+      const link = `https://fluxa-cardapio.vercel.app/${co.slug}/mesa/${selectedMesa.numero}`;
+      document.getElementById('mesa-link').value = link;
       openMod('mod-mesa');
     }
 
     async function setMesaStatus(status) {
-      await db.from('food_tables').update({ status }).eq('id', selectedMesa.id);
-      toast('Status atualizado'); closeMod('mod-mesa'); loadTables();
+      const { error } = await db.from('food_tables').update({ status }).eq('id', selectedMesa.id);
+      if (!error) { toast('Mesa ' + selectedMesa.numero + ' → ' + status); closeMod('mod-mesa'); loadTables(); }
+      else toast('Erro: ' + error.message);
     }
 
     async function addMesa() {
-      const n = tables.length ? Math.max(...tables.map(t=>t.number))+1 : 1;
-      await db.from('food_tables').insert({ company_id: co.id, number: n, status: 'livre' });
-      loadTables();
+      if (!co) { toast('Sessão inválida'); return; }
+      const n = tables.length ? Math.max(...tables.map(t => t.numero)) + 1 : 1;
+      const { data, error } = await db.from('food_tables').insert({ company_id: co.id, numero: n, status: 'livre' }).select().single();
+      if (error) { toast('Erro ao criar mesa: ' + error.message); return; }
+      toast('Mesa ' + n + ' criada!');
+      await loadTables();
+      // Abrir modal com o link gerado automaticamente
+      openMesaMod(data.id);
     }
 
     async function delMesa() {
-      if (confirm('Excluir?')) { await db.from('food_tables').delete().eq('id', selectedMesa.id); closeMod('mod-mesa'); loadTables(); }
+      if (!confirm(`Excluir Mesa ${selectedMesa.numero}? Esta ação não pode ser desfeita.`)) return;
+      const { error } = await db.from('food_tables').delete().eq('id', selectedMesa.id);
+      if (!error) { toast('Mesa excluída'); closeMod('mod-mesa'); loadTables(); }
+      else toast('Erro: ' + error.message);
     }
 
     async function loadStaff() {
@@ -607,33 +630,52 @@
     function renderDashboardFull() {
       const entregues = orders.filter(o=>o.status==='entregue');
       const ativos = orders.filter(o=>!['entregue','cancelado'].includes(o.status));
+      const cancelados = orders.filter(o=>o.status==='cancelado');
       const sales = entregues.reduce((a,b)=>a+Number(b.total),0);
-      const mesas = tables.filter(t=>t.status==='ocupada').length;
+      const mesasOcupadas = tables.filter(t=>t.status==='ocupada').length;
       const ticket = entregues.length ? sales/entregues.length : 0;
       const el = document.getElementById('dash-full-content');
       if (!el) return;
+
+      // Gráfico de barras por status
+      const statusData = [
+        { label:'Novos', count: orders.filter(o=>o.status==='recebido').length },
+        { label:'Preparo', count: orders.filter(o=>o.status==='preparo').length },
+        { label:'Prontos', count: orders.filter(o=>o.status==='pronto').length },
+        { label:'Saiu', count: orders.filter(o=>o.status==='saiu').length },
+        { label:'Entregues', count: entregues.length },
+        { label:'Cancelados', count: cancelados.length },
+      ];
+      const maxCount = Math.max(...statusData.map(d=>d.count), 1);
+      const bars = statusData.map(d => {
+        const pct = Math.round((d.count / maxCount) * 100);
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:1">
+          <div style="font-size:11px;font-weight:700;color:var(--text3)">${d.count}</div>
+          <div style="width:100%;height:80px;display:flex;align-items:flex-end">
+            <div class="chart-bar" style="width:100%;height:${Math.max(pct,4)}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);text-align:center">${d.label}</div>
+        </div>`;
+      }).join('');
+
       el.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px">
-          <div class="card" style="background:var(--blue-l); border-color:var(--blue)">
-            <div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:8px">Receita do dia</div>
-            <div class="hl" style="font-size:26px; font-weight:900">${fmtP(sales)}</div>
-          </div>
-          <div class="card" style="background:var(--green-l); border-color:var(--green)">
-            <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:8px">Pedidos finalizados</div>
-            <div class="hl" style="font-size:26px; font-weight:900">${entregues.length}</div>
-          </div>
-          <div class="card" style="background:var(--amber-l); border-color:var(--amber)">
-            <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:8px">Pedidos ativos</div>
-            <div class="hl" style="font-size:26px; font-weight:900">${ativos.length}</div>
-          </div>
-          <div class="card" style="background:var(--red-l); border-color:var(--red)">
-            <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:8px">Mesas ocupadas</div>
-            <div class="hl" style="font-size:26px; font-weight:900">${mesas}</div>
-          </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+          <div class="kpi-card"><div class="kpi-label">Receita do dia</div><div class="kpi-val">${fmtP(sales)}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Ticket médio</div><div class="kpi-val">${fmtP(ticket)}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Pedidos ativos</div><div class="kpi-val">${ativos.length}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Mesas ocupadas</div><div class="kpi-val">${mesasOcupadas}/${tables.length}</div></div>
+        </div>
+        <div class="card" style="margin-bottom:20px">
+          <div style="font-size:13px;font-weight:700;margin-bottom:20px">Volume por status</div>
+          <div style="display:flex;gap:8px;align-items:flex-end;height:100px">${bars}</div>
         </div>
         <div class="card">
-          <div style="font-size:13px;font-weight:700;margin-bottom:16px">Ticket Médio</div>
-          <div class="hl" style="font-size:32px;font-weight:900;color:var(--blue)">${fmtP(ticket)}</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:16px">Últimos pedidos finalizados</div>
+          ${entregues.slice(0,5).map(o=>`
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+              <div><div style="font-weight:700">${o.cliente_nome||'—'}</div><div style="font-size:11px;color:var(--text3)">${fmtTime(o.created_at)}</div></div>
+              <div class="hl" style="font-weight:900">${fmtP(o.total)}</div>
+            </div>`).join('') || '<div style="color:var(--text3);font-size:13px">Nenhum pedido finalizado ainda.</div>'}
         </div>
       `;
     }

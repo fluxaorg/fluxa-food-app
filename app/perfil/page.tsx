@@ -23,13 +23,13 @@ export default function PerfilPage() {
   }, [loading, session, router]);
 
   useEffect(() => {
-    if (session) setName(session.staff.nome_completo);
+    if (session) setName(session.staff.name);
   }, [session]);
 
   async function handleSaveName() {
     if (!name || !session) return;
     setSaving(true);
-    const { error } = await db.from('food_users').update({ nome_completo: name }).eq('id', session.staff.id);
+    const { error } = await db.from('food_users').update({ name: name }).eq('id', session.staff.id);
     setSaving(false);
     if (error) { toast('Erro ao salvar', 'error'); return; }
     toast('Nome atualizado!', 'success');
@@ -48,7 +48,7 @@ export default function PerfilPage() {
   }
 
   if (!session) return null;
-  const initials = session.staff.nome_completo.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
+  const initials = session.staff.name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
 
   return (
     <MainLayout>
@@ -62,7 +62,7 @@ export default function PerfilPage() {
               {initials}
             </div>
             <div>
-              <p className="text-lg font-bold text-[#333]">{session.staff.nome_completo}</p>
+              <p className="text-lg font-bold text-[#333]">{session.staff.name}</p>
               <p className="text-sm text-gray-400">{session.staff.email}</p>
               <span className="inline-block mt-1 px-2 py-0.5 rounded-lg bg-fluxa-beige text-fluxa-brown text-xs font-semibold">
                 {roleLabels[session.staff.role] ?? session.staff.role}

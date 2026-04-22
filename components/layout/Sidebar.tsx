@@ -68,7 +68,7 @@ export function Sidebar() {
       <div className="border-t border-[#E5E0D8] p-3 flex flex-col gap-2">
         {!collapsed && session && (
           <div className="px-2 py-1.5">
-            <p className="text-xs font-bold text-[#333] truncate">{session.staff.nome_completo}</p>
+            <p className="text-xs font-bold text-[#333] truncate">{session.staff.name}</p>
             <p className="text-[10px] text-gray-400">{roleLabels[role] ?? role}</p>
           </div>
         )}

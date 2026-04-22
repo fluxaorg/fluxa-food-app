@@ -35,7 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!staff.active) throw new Error('Acesso bloqueado pelo administrador');
     if (staff.company?.blocked) throw new Error('Conta suspensa. Contate o suporte Flüxa.');
 
-    const s: Session = { staff: staff as FoodUser, company: staff.company as FoodCompany };
+    const company = staff.company ?? { id: '', name: 'Flüxa', slug: 'fluxa', blocked: false };
+    const s: Session = { staff: staff as FoodUser, company: company as FoodCompany };
     saveSession(s);
     setSession(s);
 

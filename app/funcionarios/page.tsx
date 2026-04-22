@@ -47,7 +47,7 @@ export default function FuncionariosPage() {
       .from('food_users')
       .select('*')
       .eq('company_id', session.company.id)
-      .order('nome_completo');
+      .order('name');
     setStaff((data as FoodUser[]) ?? []);
     setFetching(false);
   }, [session]);
@@ -56,7 +56,7 @@ export default function FuncionariosPage() {
 
   function openEdit(s: FoodUser) {
     setEditStaff(s);
-    setFName(s.nome_completo);
+    setFName(s.name);
     setFEmail(s.email);
     setFPass('');
     setFRole(s.role);
@@ -75,7 +75,7 @@ export default function FuncionariosPage() {
 
     setSaving(true);
     const payload: Record<string, unknown> = {
-      nome_completo: fName,
+      name: fName,
       email: fEmail.toLowerCase(),
       role: fRole,
       company_id: session!.company.id,
@@ -100,7 +100,7 @@ export default function FuncionariosPage() {
   }
 
   async function deleteStaff(s: FoodUser) {
-    if (!confirm(`Deletar ${s.nome_completo}?`)) return;
+    if (!confirm(`Deletar ${s.name}?`)) return;
     await db.from('food_users').delete().eq('id', s.id);
     setStaff((prev) => prev.filter((u) => u.id !== s.id));
     toast('Funcionário removido', 'info');
@@ -140,9 +140,9 @@ export default function FuncionariosPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full bg-fluxa-red-light flex items-center justify-center text-fluxa-red font-bold text-xs shrink-0">
-                            {s.nome_completo.charAt(0).toUpperCase()}
+                            {s.name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="font-medium text-[#333] truncate max-w-[120px]">{s.nome_completo}</span>
+                          <span className="font-medium text-[#333] truncate max-w-[120px]">{s.name}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-400 hidden sm:table-cell">{s.email}</td>

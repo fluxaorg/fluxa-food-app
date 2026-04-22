@@ -37,6 +37,7 @@ export const roleLabels: Record<string, string> = {
   garcom: 'Garçom',
   gestor: 'Gestor',
   admin: 'Admin',
+  founder: 'Founder',
 };
 
 export const statusFlow: Record<string, string> = {

@@ -7,9 +7,9 @@ export const db = createClient(url, key);
 
 export type FoodUser = {
   id: string;
-  nome_completo: string;
+  name: string;
   email: string;
-  role: 'cozinheiro' | 'caixa' | 'garcom' | 'gestor' | 'admin';
+  role: 'cozinheiro' | 'caixa' | 'garcom' | 'gestor' | 'admin' | 'founder';
   active: boolean;
   company_id: string;
   avatar_url?: string;

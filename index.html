@@ -372,7 +372,7 @@
     async function doLogin() {
       const e = document.getElementById('lg-email').value.trim();
       const p = document.getElementById('lg-pass').value;
-      const { data: user, error } = await db.from('food_users').select('*, company:company_id(*)').eq('email', e).single();
+      const { data: user, error } = await db.from('food_users').select('*, company:food_companies(*)').eq('email', e).single();
       if (!error && user && user.password === p) {
         localStorage.setItem('quiosque_session_v2', JSON.stringify({ user, company: user.company, role: user.role }));
         location.reload();

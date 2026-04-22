@@ -100,6 +100,10 @@
 
     #toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg3); border:1px solid var(--border); color:white; padding:12px 24px; border-radius:16px; font-weight:600; font-size:14px; transition:0.4s; z-index:9999; }
     #toast.on { transform:translateX(-50%) translateY(0); }
+    input[type=color] { width:52px !important; height:52px; padding:4px; cursor:pointer; flex-shrink:0; }
+    .color-swatch { width:36px; height:36px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; flex-shrink:0; display:inline-block; }
+    .color-swatch:hover { transform:scale(1.15); }
+    .color-swatch.active { border-color:#fff; transform:scale(1.1); }
   </style>
 </head>
 <body>
@@ -245,6 +249,29 @@
               <button class="btn-s" onclick="copyMenuLink()">Copiar</button>
             </div>
             <button class="btn-p" style="width:100%; margin-top:20px" onclick="salvarTudo()">SALVAR ALTERAÇÕES</button>
+          </div>
+
+          <div class="card" style="max-width:500px; margin-top:20px">
+            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Aparência do Cardápio</div>
+            <label>Frase de boas-vindas</label>
+            <input type="text" id="cfg-banner-title" placeholder="Com fome?&lt;br&gt;&lt;em&gt;Peça e, coma!&lt;/em&gt;">
+            <p style="font-size:11px; color:var(--text3); margin-top:-12px; margin-bottom:16px">Use &lt;br&gt; para quebra de linha e &lt;em&gt;...&lt;/em&gt; para cor de destaque. Deixe vazio para padrão.</p>
+            <label>Foto de fundo (URL)</label>
+            <input type="text" id="cfg-banner-url" placeholder="https://..." oninput="previewBanner(this.value)">
+            <div style="width:100%;height:80px;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+              <img id="cfg-banner-img" src="" style="display:none;width:100%;height:100%;object-fit:cover"/>
+              <span style="font-size:12px;color:var(--text3)" id="cfg-banner-empty">Nenhuma foto definida</span>
+            </div>
+            <label>Cor de Destaque</label>
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+              <input type="color" id="cfg-color" value="#C41C3B" oninput="syncColorSwatches(this.value)">
+              <div>
+                <div class="hl" style="font-size:15px;font-weight:700" id="cfg-color-lbl">#C41C3B</div>
+                <div style="font-size:11px;color:var(--text3)">Bordas, botões e preços no cardápio</div>
+              </div>
+            </div>
+            <div id="cfg-swatches" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px"></div>
+            <button class="btn-p" style="width:100%" onclick="saveConfig()">SALVAR APARÊNCIA</button>
           </div>
         </div>
       </div>
@@ -461,6 +488,7 @@
       if (tab==='mesas') loadTables();
       if (tab==='funcionarios') loadStaff();
       if (tab==='novo-pedido') renderNpMenu();
+      if (tab==='perfil') preencherPerfil(co);
     }
 
     function doLogout() {
@@ -799,11 +827,60 @@
       document.getElementById('perfil-wa').value = d.whatsapp_number || d.whatsapp || '';
       document.getElementById('perfil-end').value = d.address || '';
       document.getElementById('perfil-link').value = `https://fluxa-cardapio.vercel.app/${d.slug||''}`;
-      if (d.logo_url) { 
-        document.getElementById('co-logo-prev').src=d.logo_url; 
-        document.getElementById('co-logo-prev').style.display='block'; 
+      if (d.logo_url) {
+        document.getElementById('co-logo-prev').src=d.logo_url;
+        document.getElementById('co-logo-prev').style.display='block';
         document.getElementById('co-logo-file').dataset.url = d.logo_url;
       }
+      // Config / Aparência
+      document.getElementById('cfg-banner-title').value = d.banner_title || '';
+      document.getElementById('cfg-banner-url').value = d.banner_url || '';
+      previewBanner(d.banner_url || '');
+      const color = d.primary_color || '#C41C3B';
+      document.getElementById('cfg-color').value = color;
+      document.getElementById('cfg-color-lbl').textContent = color.toUpperCase();
+      renderSwatches(color);
+    }
+
+    // ── APARÊNCIA DO CARDÁPIO ──
+    const PRESET_COLORS = ['#C41C3B','#D32F2F','#1976D2','#388E3C','#F57C00','#7B1FA2','#00796B','#D4AF37'];
+
+    function previewBanner(url) {
+      const img = document.getElementById('cfg-banner-img');
+      const empty = document.getElementById('cfg-banner-empty');
+      if (url && url.startsWith('http')) {
+        img.src = url; img.style.display = 'block'; if (empty) empty.style.display = 'none';
+      } else { img.style.display = 'none'; if (empty) empty.style.display = ''; }
+    }
+
+    function renderSwatches(activeColor) {
+      const el = document.getElementById('cfg-swatches');
+      if (!el) return;
+      el.innerHTML = PRESET_COLORS.map(c =>
+        `<div class="color-swatch${c.toLowerCase()===activeColor.toLowerCase()?' active':''}" style="background:${c}" title="${c}" onclick="pickColor('${c}')"></div>`
+      ).join('');
+    }
+
+    function pickColor(color) {
+      document.getElementById('cfg-color').value = color;
+      document.getElementById('cfg-color-lbl').textContent = color.toUpperCase();
+      renderSwatches(color);
+    }
+
+    function syncColorSwatches(color) {
+      document.getElementById('cfg-color-lbl').textContent = color.toUpperCase();
+      renderSwatches(color);
+    }
+
+    async function saveConfig() {
+      const payload = {
+        banner_title: document.getElementById('cfg-banner-title').value.trim() || null,
+        banner_url: document.getElementById('cfg-banner-url').value.trim() || null,
+        primary_color: document.getElementById('cfg-color').value,
+      };
+      const { error } = await db.from('food_companies').update(payload).eq('id', co.id);
+      if (!error) { Object.assign(co, payload); toast('Aparência salva!'); }
+      else toast('Erro ao salvar');
     }
 
     async function salvarTudo() {

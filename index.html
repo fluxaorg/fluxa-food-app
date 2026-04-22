@@ -127,6 +127,7 @@
       <div class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')"><span class="ms">group</span></div>
       <div style="margin-top:auto">
         <div class="nav-item" id="nav-perfil" onclick="go('perfil')"><span class="ms">settings</span></div>
+        <div class="nav-item" onclick="doLogout()"><span class="ms">logout</span></div>
       </div>
     </div>
 
@@ -461,6 +462,15 @@
       if (tab==='novo-pedido') renderNpMenu();
     }
 
+    function doLogout() {
+      if(!confirm('Deseja realmente sair?')) return;
+      localStorage.removeItem('fluxa_login');
+      co = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login').style.display = 'flex';
+      toast('Você saiu da conta');
+    }
+
     async function uploadToBucket(file, folder) {
       const ext = file.name.split('.').pop().toLowerCase();
       const bucket = folder === 'logos' ? 'logos' : folder === 'avatars' ? 'avatars' : 'food-images';
@@ -474,26 +484,33 @@
     }
 
     async function handleItemPhoto(input) {
-      if (!input.files[0]) return;
-      const url = await uploadToBucket(input.files[0], 'menu');
-      document.getElementById('item-prev').src = url;
-      document.getElementById('item-prev').style.display = 'block';
-      input.dataset.url = url;
-    }
-
-    async function handleStaffPhoto(input) {
-      if (!input.files[0]) return;
-      const url = await uploadToBucket(input.files[0], 'staff');
-      document.getElementById('colab-prev').src = url;
-      document.getElementById('colab-prev').style.display = 'block';
-      input.dataset.url = url;
+      if (input.files && input.files[0]) {
+        const url = await uploadToBucket(input.files[0], 'menu');
+        input.dataset.url = url;
+        document.getElementById('item-prev').src = url;
+        document.getElementById('item-prev').style.display = 'block';
+      }
     }
 
     async function upCoLogo(input) {
-      if (!input.files[0]) return;
-      const url = await uploadToBucket(input.files[0], 'logos');
-      await db.from('food_companies').update({ logo_url: url }).eq('id', co.id);
-      location.reload();
+      if (input.files && input.files[0]) {
+        const url = await uploadToBucket(input.files[0], 'logos');
+        input.dataset.url = url;
+        document.getElementById('co-logo-prev').src = url;
+        document.getElementById('co-logo-prev').style.display = 'block';
+        // Atualiza o objeto da empresa localmente para que salvarTudo pegue
+        co.logo_url = url;
+        toast('Logo carregada! Clique em SALVAR para confirmar.');
+      }
+    }
+
+    async function handleStaffPhoto(input) {
+      if (input.files && input.files[0]) {
+        const url = await uploadToBucket(input.files[0], 'avatars');
+        input.dataset.url = url;
+        document.getElementById('colab-prev').src = url;
+        document.getElementById('colab-prev').style.display = 'block';
+      }
     }
 
     async function loadMenu() {
@@ -781,13 +798,29 @@
       document.getElementById('perfil-wa').value = d.whatsapp || '';
       document.getElementById('perfil-end').value = d.address || '';
       document.getElementById('perfil-link').value = `https://fluxa-cardapio.vercel.app/${d.slug||''}`;
-      if (d.logo_url) { document.getElementById('co-logo-prev').src=d.logo_url; document.getElementById('co-logo-prev').style.display='block'; }
+      if (d.logo_url) { 
+        document.getElementById('co-logo-prev').src=d.logo_url; 
+        document.getElementById('co-logo-prev').style.display='block'; 
+        document.getElementById('co-logo-file').dataset.url = d.logo_url;
+      }
     }
 
     async function salvarTudo() {
-      const payload = { name: document.getElementById('perfil-nome').value, whatsapp: document.getElementById('perfil-wa').value, address: document.getElementById('perfil-end').value };
+      const logoUrl = document.getElementById('co-logo-file').dataset.url || co.logo_url;
+      const payload = { 
+        name: document.getElementById('perfil-nome').value, 
+        whatsapp: document.getElementById('perfil-wa').value, 
+        address: document.getElementById('perfil-end').value,
+        logo_url: logoUrl
+      };
       const { error } = await db.from('food_companies').update(payload).eq('id', co.id);
-      if (!error) { Object.assign(co, payload); toast('Configurações salvas!'); } else toast('Erro ao salvar');
+      if (!error) { 
+        Object.assign(co, payload); 
+        toast('Configurações salvas!'); 
+        // Atualiza UI global
+        document.getElementById('sn-name').textContent = co.name;
+        if (co.logo_url) document.getElementById('logo-avatar').innerHTML = `<img src="${co.logo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:10px"/>`;
+      } else toast('Erro ao salvar');
     }
     function copyMenuLink() { document.getElementById('perfil-link').select(); document.execCommand('copy'); toast('Link copiado'); }
     function copyMesaLink() { document.getElementById('mesa-link').select(); document.execCommand('copy'); toast('Link copiado'); }

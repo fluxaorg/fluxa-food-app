@@ -393,6 +393,7 @@
     }
 
     async function loadOrders() {
+      if (!co) return;
       const { data } = await db.from('food_orders').select('*').eq('company_id', co.id).order('created_at', { ascending: false });
       if (data) {
         const hash = JSON.stringify(data.map(o => o.id + o.status));
@@ -467,7 +468,7 @@
       localStorage.removeItem('fluxa_login');
       co = null;
       document.getElementById('app').style.display = 'none';
-      document.getElementById('login').style.display = 'flex';
+      document.getElementById('s-login').style.display = 'flex';
       toast('Você saiu da conta');
     }
 
@@ -795,7 +796,7 @@
     function closeMod(id,e) { if(e && e.target !== e.currentTarget) return; document.getElementById(id).style.display='none'; }
     function preencherPerfil(d) {
       document.getElementById('perfil-nome').value = d.name || '';
-      document.getElementById('perfil-wa').value = d.whatsapp || '';
+      document.getElementById('perfil-wa').value = d.whatsapp_number || d.whatsapp || '';
       document.getElementById('perfil-end').value = d.address || '';
       document.getElementById('perfil-link').value = `https://fluxa-cardapio.vercel.app/${d.slug||''}`;
       if (d.logo_url) { 
@@ -809,7 +810,7 @@
       const logoUrl = document.getElementById('co-logo-file').dataset.url || co.logo_url;
       const payload = { 
         name: document.getElementById('perfil-nome').value, 
-        whatsapp: document.getElementById('perfil-wa').value, 
+        whatsapp_number: document.getElementById('perfil-wa').value, 
         address: document.getElementById('perfil-end').value,
         logo_url: logoUrl
       };

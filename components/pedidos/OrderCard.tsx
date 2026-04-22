@@ -79,7 +79,11 @@ export function OrderCard({ order, onAdvance, onCancel }: Props) {
   const isSwipingRight = dragX > 20;
   const isSwipingLeft = dragX < -20;
 
-  const TipoIcon = { delivery: Bike, retirada: PersonStanding, mesa: Armchair }[order.tipo_pedido ?? ''] ?? Armchair;
+  const TipoIcon = 
+    order.tipo_pedido === 'delivery' ? Bike : 
+    order.tipo_pedido === 'retirada' ? PersonStanding : 
+    order.tipo_pedido === 'mesa' ? Armchair : 
+    Armchair;
 
   return (
     <div className="relative rounded-2xl overflow-hidden animate-bounce-in">

@@ -32,11 +32,11 @@ export function clearSession(): void {
 export function canAccess(role: string, tab: string): boolean {
   const perms: Record<string, string[]> = {
     cozinheiro: ['pedidos', 'dashboard', 'perfil'],
-    caixa: ['pedidos', 'novo-pedido', 'perfil'],
-    garcom: ['pedidos', 'novo-pedido', 'perfil'],
-    gestor: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'funcionarios', 'perfil', 'configuracoes'],
-    admin: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'funcionarios', 'perfil', 'configuracoes'],
-    founder: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'funcionarios', 'perfil', 'configuracoes'],
+    caixa: ['pedidos', 'novo-pedido', 'mesas', 'perfil'],
+    garcom: ['pedidos', 'novo-pedido', 'mesas', 'perfil'],
+    gestor: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'mesas', 'funcionarios', 'perfil', 'configuracoes'],
+    admin: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'mesas', 'funcionarios', 'perfil', 'configuracoes'],
+    founder: ['dashboard', 'pedidos', 'menu', 'novo-pedido', 'mesas', 'funcionarios', 'perfil', 'configuracoes'],
   };
   return perms[role]?.includes(tab) ?? false;
 }

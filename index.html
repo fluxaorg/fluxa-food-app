@@ -526,7 +526,7 @@
       const { data, error } = await db.from('food_orders')
         .select('*')
         .eq('company_id', co.id)
-        .neq('id', 'cache-buster-' + Date.now())
+        .neq('status', 'cache-buster-' + Date.now()) // use status (text) to avoid UUID cast error
         .order('created_at', { ascending: false });
       if (error) { console.error('loadOrders error:', error); return; }
       if (data) {
@@ -602,6 +602,7 @@
       if (curr) { curr.classList.add('leaving'); await new Promise(r=>setTimeout(r,300)); curr.classList.remove('active','leaving'); }
       target.classList.add('active');
       if (tab==='dashboard') renderDashboardFull();
+      if (tab==='pedidos') loadOrders();
       if (tab==='cardapio') loadMenu();
       if (tab==='mesas') loadTables();
       if (tab==='funcionarios') loadStaff();

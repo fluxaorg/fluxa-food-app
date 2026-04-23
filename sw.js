@@ -1,5 +1,5 @@
-// Flüxa Kitchen SW — Etapa 8 (Resiliência)
-const CACHE = 'fluxa-kitchen-v8';
+// Flüxa Kitchen SW — Etapa 9 (Resiliência)
+const CACHE = 'fluxa-kitchen-v9';
 const ASSETS = [
   '/',
   '/index.html',

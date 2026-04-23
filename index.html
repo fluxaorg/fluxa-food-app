@@ -545,7 +545,7 @@
       }
       document.getElementById('orders-wrap').innerHTML = show.map(o => {
         const sl = SL[o.status] || SL['recebido'];
-        return `<div class="order-card" onclick="openOrderMod('${o.id}')">
+        return `<div class="order-card" data-id="${o.id}">
           <div class="order-header">
             <div class="order-id hl">#${o.order_number || o.id.slice(0,5)}</div>
             <div class="status-pill" style="background:${sl.bg}; color:${sl.c}">${SLB[o.status]||o.status}</div>
@@ -840,6 +840,111 @@
             </div>`).join('') || '<div style="color:var(--text3);font-size:13px">Nenhum pedido finalizado ainda.</div>'}
         </div>
       `;
+    }
+
+    // ── GESTOS MOBILE (SWIPE) ──
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let currentX = 0;
+    let swipeEl = null;
+    let swipeOrderId = null;
+    let holdTimer = null;
+    let isHolding = false;
+
+    document.getElementById('orders-wrap').addEventListener('touchstart', (e) => {
+      const card = e.target.closest('.order-card');
+      if(!card) return;
+      swipeEl = card;
+      swipeOrderId = card.dataset.id;
+      touchStartX = e.touches[0].screenX;
+      touchStartY = e.touches[0].screenY;
+      currentX = 0;
+      isHolding = false;
+      swipeEl.style.transition = 'none';
+      
+      holdTimer = setTimeout(() => {
+        isHolding = true;
+        if(navigator.vibrate) navigator.vibrate(50);
+        swipeEl.style.transition = 'all 0.3s ease';
+        swipeEl.style.transform = 'scale(0.95)';
+        swipeEl.style.opacity = '0.5';
+        if(confirm('Deseja CANCELAR este pedido?')) {
+          changeOrderStatus(swipeOrderId, 'cancelado');
+        } else {
+          resetSwipe(swipeEl);
+        }
+      }, 1000);
+    }, {passive: true});
+
+    document.getElementById('orders-wrap').addEventListener('touchmove', (e) => {
+      if(!swipeEl || isHolding) return;
+      const x = e.touches[0].screenX;
+      const y = e.touches[0].screenY;
+      const deltaX = x - touchStartX;
+      const deltaY = Math.abs(y - touchStartY);
+      
+      // Se for scroll vertical, cancela o swipe
+      if (deltaY > 20 && deltaY > Math.abs(deltaX)) {
+        clearTimeout(holdTimer);
+        resetSwipe(swipeEl);
+        swipeEl = null;
+        return;
+      }
+      
+      if(deltaX > 0) { 
+        currentX = deltaX;
+        swipeEl.style.transform = `translateX(${deltaX}px)`;
+      }
+    }, {passive: true});
+
+    document.getElementById('orders-wrap').addEventListener('touchend', (e) => {
+      if(!swipeEl) return;
+      clearTimeout(holdTimer);
+      if(isHolding) {
+        resetSwipe(swipeEl);
+        swipeEl = null;
+        return;
+      }
+      
+      if(currentX > 100) {
+        advanceOrderStatus(swipeOrderId);
+        swipeEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+        swipeEl.style.transform = `translateX(120%)`;
+        swipeEl.style.opacity = '0';
+      } else {
+        if(currentX < 10) {
+           openOrderMod(swipeOrderId);
+        }
+        resetSwipe(swipeEl);
+      }
+      swipeEl = null;
+    });
+
+    function resetSwipe(el) {
+      if(!el) return;
+      el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+      el.style.transform = 'translateX(0) scale(1)';
+      el.style.opacity = '1';
+    }
+
+    function advanceOrderStatus(id) {
+      const order = orders.find(o => o.id === id);
+      if(!order) return;
+      const flow = ['recebido', 'preparo', 'pronto', 'saiu', 'entregue'];
+      const idx = flow.indexOf(order.status);
+      if(idx >= 0 && idx < flow.length - 1) {
+        changeOrderStatus(id, flow[idx + 1]);
+      }
+    }
+
+    async function changeOrderStatus(id, status) {
+      const { error } = await db.from('food_orders').update({ status }).eq('id', id);
+      if (!error) { 
+        toast('Pedido → ' + (SLB[status] || status).toUpperCase()); 
+        loadOrders(); 
+      } else {
+        toast('Erro ao atualizar');
+      }
     }
 
     // ── NOVO PEDIDO MANUAL ──

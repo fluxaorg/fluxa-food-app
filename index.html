@@ -510,6 +510,7 @@
       preencherPerfil(co);
       await loadAll();
       renderDashboardFull();
+      startRT();
       setInterval(loadOrders, 5000);
     }
 
@@ -519,11 +520,23 @@
 
     async function loadOrders() {
       if (!co) return;
-      const { data } = await db.from('food_orders').select('*').eq('company_id', co.id).order('created_at', { ascending: false });
+      const { data, error } = await db.from('food_orders').select('*').eq('company_id', co.id).order('created_at', { ascending: false });
+      if (error) { console.error('loadOrders error:', error); return; }
       if (data) {
         const hash = JSON.stringify(data.map(o => o.id + o.status));
         if (hash !== lastHash) { lastHash = hash; orders = data; renderOrders(); }
       }
+    }
+
+    let rtSub = null;
+    function startRT() {
+      if (!co) return;
+      if (rtSub) { db.removeChannel(rtSub); rtSub = null; }
+      rtSub = db.channel('public:food_orders:company_'+co.id)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_orders', filter: 'company_id=eq.'+co.id }, () => {
+          loadOrders();
+        })
+        .subscribe();
     }
 
     let orderFil = 'todos';

@@ -469,7 +469,9 @@
   <script>
     const SB_URL='https://uzttjedryajsmngvpaqu.supabase.co';
     const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6dHRqZWRyeWFqc21uZ3ZwYXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5OTIwMDIsImV4cCI6MjA4ODU2ODAwMn0.Z965K_V6FRceBL1jP7zMls4QVYbpjPP9JcoRHUkAwUg';
-    const db=supabase.createClient(SB_URL,SB_KEY);
+    const db = supabase.createClient(SB_URL, SB_KEY, {
+      global: { fetch: (...args) => fetch(args[0], { ...args[1], cache: 'no-store' }) }
+    });
 
     let co=null, currentStaff=null, orders=[], menuItems=[], tables=[], staffList=[], editId=null;
     let lastHash='';
@@ -604,6 +606,7 @@
 
     function doLogout() {
       if(!confirm('Deseja realmente sair?')) return;
+      localStorage.removeItem('quiosque_session_v2');
       localStorage.removeItem('fluxa_login');
       co = null;
       document.getElementById('app').style.display = 'none';

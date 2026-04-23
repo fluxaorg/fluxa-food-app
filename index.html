@@ -479,17 +479,19 @@
     const SL={recebido:{bg:'rgba(239,68,68,0.1)',c:'#EF4444'},preparo:{bg:'rgba(245,158,11,0.1)',c:'#F59E0B'},pronto:{bg:'rgba(16,185,129,0.1)',c:'#10B981'},saiu:{bg:'rgba(37,99,235,0.1)',c:'#3B82F6'},entregue:{bg:'rgba(37,99,235,0.05)',c:'#3B82F6'},cancelado:{bg:'rgba(255,255,255,0.05)',c:'#52525B'}};
     const SLB={recebido:'Novo',preparo:'Em Preparo',pronto:'Pronto',saiu:'Em Entrega',entregue:'Finalizado',cancelado:'Cancelado'};
 
-    (async () => {
-      const saved = localStorage.getItem('quiosque_session_v2');
-      if (!saved) { show('s-login'); return; }
-      try {
-        const session = JSON.parse(saved);
-        currentStaff = session.user || session.staff;
-        co = session.company;
-        show('app');
-        bootApp();
-      } catch(e) { show('s-login'); }
-    })();
+    document.addEventListener('DOMContentLoaded', () => {
+      (async () => {
+        const saved = localStorage.getItem('quiosque_session_v2');
+        if (!saved) { show('s-login'); return; }
+        try {
+          const session = JSON.parse(saved);
+          currentStaff = session.user || session.staff;
+          co = session.company;
+          show('app');
+          bootApp();
+        } catch(e) { show('s-login'); }
+      })();
+    });
 
     function show(id) {
       document.getElementById('s-login').style.display = id==='s-login'?'flex':'none';

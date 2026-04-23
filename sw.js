@@ -48,7 +48,7 @@ self.addEventListener('fetch', e => {
           }
           return res;
         })
-        .catch(() => caches.match('/index.html'))
+        .catch(() => caches.match('/index.html').then(res => res || new Response('Offline', { status: 503 })))
     );
     return;
   }
@@ -82,9 +82,9 @@ self.addEventListener('fetch', e => {
             try { c.put(e.request, clone); } catch (err) { }
           });
         }
-        return res;
+        return res || new Response('Offline', { status: 503 });
       }).catch(() => null);
-      return cached || fresh;
+      return cached || fresh || new Response('Offline', { status: 503 });
     })
   );
 });

@@ -522,7 +522,12 @@
 
     async function loadOrders() {
       if (!co) return;
-      const { data, error } = await db.from('food_orders').select('*').eq('company_id', co.id).order('created_at', { ascending: false });
+      // Adicionamos um neq dinâmico como cache-buster para forçar o navegador a ignorar o cache HTTP
+      const { data, error } = await db.from('food_orders')
+        .select('*')
+        .eq('company_id', co.id)
+        .neq('id', 'cache-buster-' + Date.now())
+        .order('created_at', { ascending: false });
       if (error) { console.error('loadOrders error:', error); return; }
       if (data) {
         const hash = JSON.stringify(data.map(o => o.id + o.status));

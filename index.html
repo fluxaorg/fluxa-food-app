@@ -64,8 +64,11 @@
 
     /* LAYOUT & NAV */
     #app { display:none; height:100vh; flex-direction:row; }
-    .sidebar { width:80px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:20px 0; gap:20px; z-index:100; }
-    .nav-item { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--text3); cursor:pointer; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .sidebar { width:80px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; align-items:center; padding:20px 0; z-index:100; flex-shrink:0; }
+    .nav-scroll-area { display: flex; flex-direction: column; gap: 20px; width: 100%; align-items: center; flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+    .nav-scroll-area::-webkit-scrollbar { display: none; }
+    @media (min-width: 769px) { .nav-scroll-area > .nav-item:nth-last-child(2) { margin-top: auto; } }
+    .nav-item { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; color:var(--text3); cursor:pointer; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink:0; }
     .nav-item.active { background:var(--bg3); color:var(--accent); box-shadow:0 4px 12px rgba(0,0,0,0.5); }
     .nav-item:hover { color:var(--text2); }
 
@@ -127,6 +130,60 @@
     .color-swatch { width:36px; height:36px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; flex-shrink:0; display:inline-block; }
     .color-swatch:hover { transform:scale(1.15); }
     .color-swatch.active { border-color:#fff; transform:scale(1.1); }
+
+    /* RESPONSIVIDADE MOBILE */
+    @media (max-width: 768px) {
+      #app { flex-direction: column; }
+      
+      /* Docker Flutuante para a Sidebar */
+      .sidebar {
+        position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+        width: 220px; height: 70px; padding: 0 16px;
+        background: rgba(15, 15, 15, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 35px;
+        flex-direction: row; align-items: center; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        border-right: 1px solid rgba(255,255,255,0.1);
+      }
+      #sidebar-logo { display: none; }
+      .nav-scroll-area {
+        flex-direction: row; gap: 16px; overflow-x: auto; overflow-y: hidden;
+        scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 0; width: 100%;
+      }
+      .nav-item { flex: 0 0 48px; scroll-snap-align: center; }
+
+      /* Ajustes de Layout Principal */
+      .top-bar { padding: 0 20px; }
+      .content { padding: 20px; padding-bottom: 120px; } /* espaço para o docker */
+      
+      /* Evitar sobreposições e quebras nas abas */
+      .hl-title { font-size: 22px; margin-bottom: 16px !important; }
+      
+      /* Cabeçalhos das abas que tem botões ao lado */
+      #tab-pedidos > div:first-child, 
+      #tab-cardapio > div:first-child, 
+      #tab-mesas > div:first-child, 
+      #tab-funcionarios > div:first-child { 
+        flex-direction: column; align-items: flex-start !important; gap: 16px; 
+      }
+      #order-filters { width: 100%; justify-content: flex-start !important; overflow-x: auto; padding-bottom: 4px; }
+      
+      /* Grids e Listas */
+      #dash-full-content > div:first-child { grid-template-columns: 1fr 1fr !important; }
+      #tab-novo-pedido > div[style*="display:grid"] { display: flex !important; flex-direction: column !important; height: auto !important; }
+      #np-menu-grid { grid-template-columns: repeat(2, 1fr) !important; }
+      #menu-grid { grid-template-columns: 1fr !important; }
+      #mesas-grid { grid-template-columns: repeat(3, 1fr) !important; }
+      
+      /* Perfil config flex -> column */
+      #tab-perfil .card > div[style*="display:flex"] { flex-direction: column; align-items: center; gap: 20px; }
+      .photo-up { margin-bottom: 10px !important; }
+      
+      /* Modais ajustados */
+      .modal-sheet { width: 90%; max-width: 400px; padding: 24px; max-height: 85vh; overflow-y: auto; }
+      
+      /* Top bar elements */
+      #sn-name { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+    }
   </style>
 </head>
 <body>
@@ -153,14 +210,14 @@
   <!-- APP PRINCIPAL -->
   <div id="app">
     <div class="sidebar">
-      <div class="login-logo hl" style="font-size:20px; margin-bottom:20px">F</div>
-      <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')"><span class="ms">receipt_long</span></div>
-      <div class="nav-item" id="nav-novo-pedido" onclick="go('novo-pedido')"><span class="ms">add_circle</span></div>
-      <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')"><span class="ms">analytics</span></div>
-      <div class="nav-item" id="nav-cardapio" onclick="go('cardapio')"><span class="ms">restaurant_menu</span></div>
-      <div class="nav-item" id="nav-mesas" onclick="go('mesas')"><span class="ms">table_restaurant</span></div>
-      <div class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')"><span class="ms">group</span></div>
-      <div style="margin-top:auto">
+      <div class="login-logo hl" id="sidebar-logo" style="font-size:20px; margin-bottom:20px">F</div>
+      <div class="nav-scroll-area">
+        <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')"><span class="ms">receipt_long</span></div>
+        <div class="nav-item" id="nav-novo-pedido" onclick="go('novo-pedido')"><span class="ms">add_circle</span></div>
+        <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')"><span class="ms">analytics</span></div>
+        <div class="nav-item" id="nav-cardapio" onclick="go('cardapio')"><span class="ms">restaurant_menu</span></div>
+        <div class="nav-item" id="nav-mesas" onclick="go('mesas')"><span class="ms">table_restaurant</span></div>
+        <div class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')"><span class="ms">group</span></div>
         <div class="nav-item" id="nav-perfil" onclick="go('perfil')"><span class="ms">settings</span></div>
         <div class="nav-item" onclick="doLogout()"><span class="ms">logout</span></div>
       </div>

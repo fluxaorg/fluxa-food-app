@@ -311,11 +311,11 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
             <h1 class="hl-title">Meu Cardápio</h1>
             <div style="display:flex; gap:12px">
-              <button class="btn-s" style="border-color:var(--blue); color:var(--blue)" onclick="openModCategories()">Categorias</button>
+              <button class="btn-p" style="background:var(--bg3); color:white" onclick="openModCategories()">CATEGORIAS</button>
               <button class="btn-p" onclick="openNewItem()">+ NOVO ITEM</button>
             </div>
           </div>
-          <div id="menu-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px"></div>
+          <div id="menu-grid"></div>
         </div>
 
         <!-- MESAS -->
@@ -506,15 +506,19 @@
   <div class="modal-overlay" id="mod-categories" onclick="closeMod('mod-categories',event)">
     <div class="modal-sheet">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
-        <h3 class="hl">Categorias do Cardápio</h3>
+        <h3 class="hl">Categorias</h3>
         <button onclick="closeMod('mod-categories')" style="border:none; background:none; cursor:pointer"><span class="ms">close</span></button>
       </div>
-      <div style="display:flex; gap:8px; margin-bottom:16px">
-        <input type="text" id="new-cat-name" placeholder="Ex: Sobremesas" style="flex:1">
-        <input type="text" id="new-cat-icon" placeholder="Ícone (emoji ou Svg)" style="width:140px">
-        <button class="btn-p" onclick="saveCategory()">Add</button>
+      <div class="card" style="margin-bottom:24px; background:var(--bg2);">
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px">Nova Categoria</div>
+        <div style="display:grid; grid-template-columns:1fr 80px; gap:12px">
+          <div><label>Nome</label><input type="text" id="new-cat-name" placeholder="Ex: Porções"></div>
+          <div><label>Ícone</label><input type="text" id="new-cat-icon" placeholder="🍔"></div>
+        </div>
+        <button class="btn-p" style="width:100%" onclick="saveCategory()">CRIAR CATEGORIA</button>
       </div>
-      <div id="categories-list" style="max-height:300px; overflow-y:auto; background:var(--bg3); border-radius:12px; padding:12px;"></div>
+      <label>Categorias Atuais</label>
+      <div id="categories-list" style="max-height:250px; overflow-y:auto; padding-right:4px;"></div>
     </div>
   </div>
 
@@ -846,13 +850,37 @@
       const { data } = await db.from('food_menu_items').select('*').eq('company_id', co.id).order('display_order');
       if (data) {
         menuItems = data;
-        document.getElementById('menu-grid').innerHTML = data.map(i => `
-          <div class="card" style="display:flex; gap:12px; align-items:center" onclick="editarItem('${i.id}')">
-            <div style="width:50px; height:50px; border-radius:10px; background:var(--bg3); overflow:hidden">${i.image_url?`<img src="${i.image_url}" style="width:100%; height:100%; object-fit:cover"/>`:'<span class="ms" style="margin:15px">image</span>'}</div>
-            <div style="flex:1"><div class="hl" style="font-weight:700">${i.name}</div><div style="font-size:12px; color:var(--text3)">${fmtP(i.price)}</div></div>
-            <div style="font-size:11px; padding:2px 8px; background:rgba(255,255,255,0.1); border-radius:10px">${i.category || ''}</div>
-          </div>
-        `).join('');
+        let html = '';
+        
+        if (!categories.length) await loadCategories();
+        
+        const cats = [...new Set(menuItems.map(i => i.category))].filter(Boolean);
+        if(menuItems.some(i => !i.category)) cats.push('');
+
+        cats.forEach(c => {
+          const group = menuItems.filter(i => (i.category || '') === c);
+          if(!group.length) return;
+          const catObj = categories.find(x => x.name === c);
+          const iconStr = catObj && catObj.icon ? `<span style="font-size:24px; vertical-align:middle; margin-right:8px">${catObj.icon}</span>` : '';
+          const catName = c ? c : 'Sem Categoria';
+          
+          html += `<div class="hl" style="font-size:20px; font-weight:800; margin:30px 0 16px">${iconStr}${catName}</div>`;
+          html += `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px">`;
+          group.forEach(i => {
+            html += `
+              <div class="card" style="display:flex; gap:12px; align-items:center; cursor:pointer" onclick="editarItem('${i.id}')">
+                <div style="width:50px; height:50px; border-radius:10px; background:var(--bg3); overflow:hidden">${i.image_url?`<img src="${i.image_url}" style="width:100%; height:100%; object-fit:cover"/>`:'<span class="ms" style="margin:15px">image</span>'}</div>
+                <div style="flex:1"><div class="hl" style="font-weight:700">${i.name}</div><div style="font-size:12px; color:var(--text3)">${fmtP(i.price)}</div></div>
+              </div>
+            `;
+          });
+          html += `</div>`;
+        });
+
+        if(!menuItems.length) {
+          html = `<div style="text-align:center;padding:60px 20px;color:var(--text3)"><span class="ms" style="font-size:48px">restaurant_menu</span><p style="margin-top:12px;font-weight:600">Nenhum item cadastrado</p></div>`;
+        }
+        document.getElementById('menu-grid').innerHTML = html;
       }
     }
 
@@ -880,9 +908,9 @@
         return;
       }
       list.innerHTML = categories.map(c => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05)">
-          <div style="font-size:14px">${c.icon ? c.icon + ' ' : ''}<b>${c.name}</b></div>
-          <button class="btn-s" style="border:none; color:var(--red); padding:4px 8px; font-size:12px; background:transparent" onclick="deleteCategory('${c.id}')"><span class="ms">delete</span></button>
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:12px">
+          <div style="font-size:15px">${c.icon ? `<span style="font-size:20px; vertical-align:middle; margin-right:8px">${c.icon}</span>` : ''}<b class="hl">${c.name}</b></div>
+          <button class="btn-s" style="border:none; color:var(--red); padding:6px; background:var(--red-l); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="deleteCategory('${c.id}')"><span class="ms" style="font-size:16px">delete</span></button>
         </div>
       `).join('');
     }

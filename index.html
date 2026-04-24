@@ -214,7 +214,9 @@
   <!-- APP PRINCIPAL -->
   <div id="app">
     <div class="sidebar">
-      <div class="login-logo hl" id="sidebar-logo" style="font-size:20px; margin-bottom:20px">F</div>
+      <div class="login-logo" id="sidebar-logo" style="margin-bottom:20px; display:flex; justify-content:center">
+        <img src="favicon.fluxa.png" style="width:32px; height:32px; border-radius:8px">
+      </div>
       <div class="nav-scroll-area">
         <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')"><span class="ms">receipt_long</span></div>
         <div class="nav-item" id="nav-novo-pedido" onclick="go('novo-pedido')"><span class="ms">add_circle</span></div>
@@ -223,20 +225,20 @@
         <div class="nav-item" id="nav-mesas" onclick="go('mesas')"><span class="ms">table_restaurant</span></div>
         <div class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')"><span class="ms">group</span></div>
         <div class="nav-item" id="nav-perfil" onclick="go('perfil')"><span class="ms">settings</span></div>
-        <div class="nav-item" onclick="doLogout()"><span class="ms">logout</span></div>
+        <div class="nav-item" onclick="openMod('mod-logout')"><span class="ms">logout</span></div>
       </div>
     </div>
 
     <div class="main">
       <div class="top-bar">
         <div style="display:flex; align-items:center; gap:12px">
-          <div id="logo-avatar" style="width:36px; height:36px; border-radius:10px; background:var(--bg3); display:flex; align-items:center; justify-content:center">
-            <span class="ms" style="font-size:18px">store</span>
+          <div id="logo-avatar" style="width:36px; height:36px; border-radius:10px; background:var(--bg3); display:flex; align-items:center; justify-content:center; overflow:hidden">
+            <img src="favicon.fluxa.png" style="width:100%; height:100%; object-fit:cover">
           </div>
           <div class="hl" style="font-weight:700" id="sn-name">Restaurante</div>
         </div>
         <div style="display:flex; gap:8px">
-          <button class="btn-s" style="padding:8px 16px; font-size:12px" onclick="location.reload()">Sair</button>
+          <button class="btn-s" style="padding:8px 16px; font-size:12px; border-color:var(--red); color:var(--red)" onclick="openMod('mod-logout')">Sair</button>
         </div>
       </div>
 
@@ -328,75 +330,114 @@
         <div id="tab-perfil" class="tab">
           <h1 class="hl-title">Configurações</h1>
           
-          <div class="card" style="max-width:500px; margin-bottom:20px">
-            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Restaurante</div>
-            <div style="display:flex; gap:16px; justify-content:center; margin-bottom:30px">
-              <div style="text-align:center">
-                <div class="photo-up" onclick="document.getElementById('co-logo-file').click()">
-                  <img id="co-logo-prev" src="" style="display:none"/>
-                  <span class="ms" style="color:var(--text3); font-size:32px">store</span>
+          <div id="perfil-menu" style="max-width:500px">
+            <div class="card" style="display:flex; align-items:center; gap:16px; margin-bottom:12px; cursor:pointer" onclick="openPerfilSub('restaurante')">
+              <div style="width:40px; height:40px; border-radius:12px; background:var(--bg3); display:flex; align-items:center; justify-content:center"><span class="ms">restaurant</span></div>
+              <div style="font-weight:700">Restaurante</div>
+              <span class="ms" style="margin-left:auto; color:var(--text3)">chevron_right</span>
+            </div>
+
+            <div class="card" style="display:flex; align-items:center; gap:16px; margin-bottom:12px; cursor:pointer" onclick="openPerfilSub('aparencia')">
+              <div style="width:40px; height:40px; border-radius:12px; background:var(--bg3); display:flex; align-items:center; justify-content:center"><span class="ms">palette</span></div>
+              <div style="font-weight:700">Aparência do Cardápio</div>
+              <span class="ms" style="margin-left:auto; color:var(--text3)">chevron_right</span>
+            </div>
+
+            <div class="card" style="display:flex; align-items:center; gap:16px; margin-bottom:12px; cursor:pointer" onclick="openPerfilSub('meuperfil')">
+              <div style="width:40px; height:40px; border-radius:12px; background:var(--bg3); display:flex; align-items:center; justify-content:center"><span class="ms">person</span></div>
+              <div style="font-weight:700">Meu Perfil</div>
+              <span class="ms" style="margin-left:auto; color:var(--text3)">chevron_right</span>
+            </div>
+
+            <div class="card" style="display:flex; align-items:center; gap:16px; margin-bottom:12px; cursor:pointer" onclick="openPerfilSub('dispositivo')">
+              <div style="width:40px; height:40px; border-radius:12px; background:var(--bg3); display:flex; align-items:center; justify-content:center"><span class="ms">smartphone</span></div>
+              <div style="font-weight:700">Dispositivo Atual</div>
+              <span class="ms" style="margin-left:auto; color:var(--text3)">chevron_right</span>
+            </div>
+          </div>
+
+          <div id="perfil-sub-restaurante" class="perfil-sub" style="display:none; max-width:500px">
+            <button class="btn-s" style="margin-bottom:20px; display:flex; align-items:center; gap:8px; border:none; padding:8px 0; background:transparent" onclick="closePerfilSub()"><span class="ms">arrow_back</span> Voltar</button>
+            <div class="card" style="margin-bottom:20px">
+              <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Restaurante</div>
+              <div style="display:flex; gap:16px; justify-content:center; margin-bottom:30px">
+                <div style="text-align:center">
+                  <div class="photo-up" onclick="document.getElementById('co-logo-file').click()">
+                    <img id="co-logo-prev" src="" style="display:none"/>
+                    <span class="ms" style="color:var(--text3); font-size:32px">store</span>
+                  </div>
+                  <input type="file" id="co-logo-file" accept="image/*" style="display:none" onchange="upCoLogo(this)"/>
+                  <p style="font-size:12px; color:var(--text3)">Logo</p>
                 </div>
-                <input type="file" id="co-logo-file" accept="image/*" style="display:none" onchange="upCoLogo(this)"/>
-                <p style="font-size:12px; color:var(--text3)">Logo</p>
-              </div>
-              <div style="text-align:center; flex:1">
-                <div class="photo-up" style="width:100%; max-width:240px" onclick="document.getElementById('co-banner-file').click()">
-                  <img id="co-banner-prev" src="" style="display:none"/>
-                  <span class="ms" style="color:var(--text3); font-size:32px">image</span>
+                <div style="text-align:center; flex:1">
+                  <div class="photo-up" style="width:100%; max-width:240px" onclick="document.getElementById('co-banner-file').click()">
+                    <img id="co-banner-prev" src="" style="display:none"/>
+                    <span class="ms" style="color:var(--text3); font-size:32px">image</span>
+                  </div>
+                  <input type="file" id="co-banner-file" accept="image/*" style="display:none" onchange="upCoBanner(this)"/>
+                  <p style="font-size:12px; color:var(--text3)">Banner do Cardápio</p>
                 </div>
-                <input type="file" id="co-banner-file" accept="image/*" style="display:none" onchange="upCoBanner(this)"/>
-                <p style="font-size:12px; color:var(--text3)">Banner do Cardápio</p>
               </div>
+              <label>Nome do Estabelecimento</label><input type="text" id="perfil-nome">
+              <label>WhatsApp</label><input type="text" id="perfil-wa">
+              <label>Endereço</label><textarea id="perfil-end" rows="2"></textarea>
+              <label>Link do Cardápio</label>
+              <div style="display:flex; gap:8px">
+                <input type="text" id="perfil-link" readonly style="background:var(--bg3); color:var(--blue)">
+                <button class="btn-s" onclick="copyMenuLink()">Copiar</button>
+              </div>
+              <button class="btn-p" style="width:100%; margin-top:20px" onclick="salvarTudo()">SALVAR RESTAURANTE</button>
             </div>
-            <label>Nome do Estabelecimento</label><input type="text" id="perfil-nome">
-            <label>WhatsApp</label><input type="text" id="perfil-wa">
-            <label>Endereço</label><textarea id="perfil-end" rows="2"></textarea>
-            <label>Link do Cardápio</label>
-            <div style="display:flex; gap:8px">
-              <input type="text" id="perfil-link" readonly style="background:var(--bg3); color:var(--blue)">
-              <button class="btn-s" onclick="copyMenuLink()">Copiar</button>
-            </div>
-            <button class="btn-p" style="width:100%; margin-top:20px" onclick="salvarTudo()">SALVAR RESTAURANTE</button>
           </div>
 
-          <div class="card" style="max-width:500px; margin-bottom:20px">
-            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Aparência do Cardápio</div>
-            <label>Frase de boas-vindas</label>
-            <input type="text" id="cfg-banner-title" placeholder="Com fome?&lt;br&gt;&lt;em&gt;Peça e, coma!&lt;/em&gt;">
-            <p style="font-size:11px; color:var(--text3); margin-top:-12px; margin-bottom:16px">Use &lt;br&gt; para quebra de linha e &lt;em&gt;...&lt;/em&gt; para cor de destaque.</p>
-            <label>Foto de fundo (URL)</label>
-            <input type="text" id="cfg-banner-url" placeholder="https://..." oninput="previewBanner(this.value)">
-            <div style="width:100%;height:80px;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
-              <img id="cfg-banner-img" src="" style="display:none;width:100%;height:100%;object-fit:cover"/>
-              <span style="font-size:12px;color:var(--text3)" id="cfg-banner-empty">Nenhuma foto definida</span>
-            </div>
-            <label>Cor de Destaque</label>
-            <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
-              <input type="color" id="cfg-color" value="#C41C3B" oninput="syncColorSwatches(this.value)">
-              <div>
-                <div class="hl" style="font-size:15px;font-weight:700" id="cfg-color-lbl">#C41C3B</div>
-                <div style="font-size:11px;color:var(--text3)">Bordas, botões e preços no cardápio</div>
+          <div id="perfil-sub-aparencia" class="perfil-sub" style="display:none; max-width:500px">
+            <button class="btn-s" style="margin-bottom:20px; display:flex; align-items:center; gap:8px; border:none; padding:8px 0; background:transparent" onclick="closePerfilSub()"><span class="ms">arrow_back</span> Voltar</button>
+            <div class="card" style="margin-bottom:20px">
+              <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Aparência do Cardápio</div>
+              <label>Frase de boas-vindas</label>
+              <input type="text" id="cfg-banner-title" placeholder="Com fome?&lt;br&gt;&lt;em&gt;Peça e, coma!&lt;/em&gt;">
+              <p style="font-size:11px; color:var(--text3); margin-top:-12px; margin-bottom:16px">Use &lt;br&gt; para quebra de linha e &lt;em&gt;...&lt;/em&gt; para cor de destaque.</p>
+              <label>Foto de fundo (URL)</label>
+              <input type="text" id="cfg-banner-url" placeholder="https://..." oninput="previewBanner(this.value)">
+              <div style="width:100%;height:80px;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+                <img id="cfg-banner-img" src="" style="display:none;width:100%;height:100%;object-fit:cover"/>
+                <span style="font-size:12px;color:var(--text3)" id="cfg-banner-empty">Nenhuma foto definida</span>
               </div>
+              <label>Cor de Destaque</label>
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+                <input type="color" id="cfg-color" value="#C41C3B" oninput="syncColorSwatches(this.value)">
+                <div>
+                  <div class="hl" style="font-size:15px;font-weight:700" id="cfg-color-lbl">#C41C3B</div>
+                  <div style="font-size:11px;color:var(--text3)">Bordas, botões e preços no cardápio</div>
+                </div>
+              </div>
+              <div id="cfg-swatches" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; justify-items:center; margin-bottom:20px"></div>
+              <button class="btn-p" style="width:100%" onclick="saveConfig()">SALVAR APARÊNCIA</button>
             </div>
-            <div id="cfg-swatches" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; justify-items:center; margin-bottom:20px"></div>
-            <button class="btn-p" style="width:100%" onclick="saveConfig()">SALVAR APARÊNCIA</button>
           </div>
 
-          <div class="card" style="max-width:500px; margin-bottom:20px">
-            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Meu Perfil</div>
-            <label>Meu Nome</label><input type="text" id="meu-nome">
-            <button class="btn-s" style="width:100%" onclick="salvarMeuPerfil()">ATUALIZAR PERFIL</button>
-          </div>
-
-          <div class="card" style="max-width:500px; border-color:var(--border);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div>
-                <div style="font-weight:700">Dispositivo Atual</div>
-                <div style="font-size:11px; color:var(--text3)">Sessão ativa neste aparelho</div>
-              </div>
-              <button class="btn-s" style="border-color:var(--red); color:var(--red);" onclick="openMod('mod-logout')">Sair da Conta</button>
+          <div id="perfil-sub-meuperfil" class="perfil-sub" style="display:none; max-width:500px">
+            <button class="btn-s" style="margin-bottom:20px; display:flex; align-items:center; gap:8px; border:none; padding:8px 0; background:transparent" onclick="closePerfilSub()"><span class="ms">arrow_back</span> Voltar</button>
+            <div class="card" style="margin-bottom:20px">
+              <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Meu Perfil</div>
+              <label>Meu Nome</label><input type="text" id="meu-nome">
+              <button class="btn-s" style="width:100%" onclick="salvarMeuPerfil()">ATUALIZAR PERFIL</button>
             </div>
           </div>
+
+          <div id="perfil-sub-dispositivo" class="perfil-sub" style="display:none; max-width:500px">
+            <button class="btn-s" style="margin-bottom:20px; display:flex; align-items:center; gap:8px; border:none; padding:8px 0; background:transparent" onclick="closePerfilSub()"><span class="ms">arrow_back</span> Voltar</button>
+            <div class="card" style="border-color:var(--border);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-weight:700">Dispositivo Atual</div>
+                  <div style="font-size:11px; color:var(--text3)">Sessão ativa neste aparelho</div>
+                </div>
+                <button class="btn-s" style="border-color:var(--red); color:var(--red);" onclick="openMod('mod-logout')">Sair da Conta</button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -630,7 +671,7 @@
         return `<div class="order-card" data-id="${o.id}">
           <div class="swipe-bg swipe-bg-adv"><span class="ms">check_circle</span><span style="margin-left:8px">Avançar</span></div>
           <div class="swipe-bg swipe-bg-reg"><span style="margin-right:8px">Regredir</span><span class="ms">undo</span></div>
-          <div class="order-content">
+          <div class="order-content" onclick="openOrderMod('${o.id}')">
             <div class="order-header">
               <div class="order-id hl">#${o.order_number || o.id.slice(0,5)}</div>
               <div class="status-pill" style="background:${sl.bg}; color:${sl.c}">${SLB[o.status]||o.status}</div>
@@ -677,7 +718,6 @@
     }
 
     function doLogout() {
-      if(!confirm('Deseja realmente sair?')) return;
       localStorage.removeItem('quiosque_session_v2');
       localStorage.removeItem('fluxa_login');
       co = null;
@@ -1105,21 +1145,23 @@
       }
     }
 
-    function regressOrderStatus(id) {
-      const order = orders.find(o => o.id === id);
-      if(!order) return;
-      const flow = ['recebido', 'preparo', 'pronto', 'saiu', 'entregue'];
-      const idx = flow.indexOf(order.status);
-      if(idx > 0) changeOrderStatus(id, flow[idx - 1]);
-    }
-
     function advanceOrderStatus(id) {
       const order = orders.find(o => o.id === id);
       if(!order) return;
-      const flow = ['recebido', 'preparo', 'pronto', 'saiu', 'entregue'];
+      const flow = ['recebido', 'preparo', 'pronto', 'entregue'];
       const idx = flow.indexOf(order.status);
       if(idx >= 0 && idx < flow.length - 1) {
         changeOrderStatus(id, flow[idx + 1]);
+      }
+    }
+
+    function regressOrderStatus(id) {
+      const order = orders.find(o => o.id === id);
+      if(!order) return;
+      const flow = ['recebido', 'preparo', 'pronto', 'entregue'];
+      const idx = flow.indexOf(order.status);
+      if(idx > 0) {
+        changeOrderStatus(id, flow[idx - 1]);
       }
     }
 

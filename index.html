@@ -726,6 +726,17 @@
       toast('Você saiu da conta');
     }
 
+    function openPerfilSub(id) {
+      document.getElementById('perfil-menu').style.display = 'none';
+      document.querySelectorAll('.perfil-sub').forEach(el => el.style.display = 'none');
+      document.getElementById('perfil-sub-' + id).style.display = 'block';
+    }
+
+    function closePerfilSub() {
+      document.querySelectorAll('.perfil-sub').forEach(el => el.style.display = 'none');
+      document.getElementById('perfil-menu').style.display = 'block';
+    }
+
     async function upCoLogo(input) {
       if(!input.files || !input.files[0]) return;
       toast('Enviando logo...');

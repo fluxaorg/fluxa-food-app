@@ -492,7 +492,7 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
         <div style="display:none"><label>Tipo de Item</label>
           <select id="item-type">
-            <option value="comum" selected>Produto Comum</option>
+            <option value="normal" selected>Produto Comum</option>
           </select>
         </div>
         <div>
@@ -1080,8 +1080,11 @@
     async function loadMenu() {
       const { data } = await db.from('food_menu_items').select('*').eq('company_id', co.id).order('display_order');
       if (data) {
-        // Filter out the global pizza item from the main grid - it's managed separately
-        menuItems = data.filter(i => i.item_type !== 'pizza_global');
+        menuItems = data.map(i => ({
+          ...i,
+          sizes: Array.isArray(i.sizes) ? i.sizes : (i.sizes && typeof i.sizes === 'object' ? Object.values(i.sizes) : []),
+          pizza_flavors_per_size: Array.isArray(i.pizza_flavors_per_size) ? i.pizza_flavors_per_size : (i.pizza_flavors_per_size && typeof i.pizza_flavors_per_size === 'object' ? Object.values(i.pizza_flavors_per_size) : [])
+        }));
         let html = '';
         
         if (!categories.length) await loadCategories();
@@ -1229,6 +1232,7 @@
       if (!error) {
         toast('Categoria salva');
         await loadCategories();
+        await loadMenu(); // Ensure menu headers update with new icons
         renderCategoriesList();
         resetCatEditor();
       } else {
@@ -1242,6 +1246,7 @@
       if (!error) {
         toast('Categoria excluída');
         await loadCategories();
+        await loadMenu();
         renderCategoriesList();
       }
     }
@@ -1253,6 +1258,7 @@
         category: document.getElementById('item-cat').value, 
         description: document.getElementById('item-desc').value, 
         image_url: document.getElementById('item-photo').dataset.url || null, 
+        item_type: document.getElementById('item-type').value || 'normal',
         company_id: co.id 
       };
       const { error } = editId ? await db.from('food_menu_items').update(p).eq('id', editId) : await db.from('food_menu_items').insert(p);
@@ -1263,7 +1269,7 @@
       editId=null; 
       document.getElementById('item-title').textContent='Novo Item'; 
       ['item-name','item-price','item-desc'].forEach(i=>document.getElementById(i).value=''); 
-      document.getElementById('item-type').value = 'comum';
+      document.getElementById('item-type').value = 'normal';
       document.getElementById('item-prev').style.display='none'; 
       document.getElementById('item-photo').dataset.url=''; 
       openMod('mod-item'); 
@@ -1279,6 +1285,7 @@
       document.getElementById('item-cat').value = i.category || (categories.length ? categories[0].name : '');
       document.getElementById('item-desc').value = i.description || '';
       document.getElementById('item-photo').dataset.url = i.image_url || '';
+      document.getElementById('item-type').value = i.item_type || 'normal';
       if (i.image_url) { document.getElementById('item-prev').src = i.image_url; document.getElementById('item-prev').style.display = 'block'; }
       else { document.getElementById('item-prev').style.display = 'none'; }
       openMod('mod-item');

@@ -489,7 +489,12 @@
       <input type="file" id="item-photo" accept="image/*" style="display:none" onchange="handleItemPhoto(this)"/>
       <label>Nome do Item</label><input type="text" id="item-name">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-        <div><label>Preço</label><input type="number" step="0.01" id="item-price"></div>
+        <div><label>Tipo de Item</label>
+          <select id="item-type" onchange="togglePizzaBuilder()">
+            <option value="comum">Produto Comum</option>
+            <option value="pizza">Pizza Customizável</option>
+          </select>
+        </div>
         <div>
           <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px">
             <label style="margin-bottom:0">Categoria</label>
@@ -497,6 +502,10 @@
           </div>
           <select id="item-cat"></select>
         </div>
+      </div>
+      <div id="item-price-wrap"><label>Preço</label><input type="number" step="0.01" id="item-price"></div>
+      <div id="item-pizza-wrap" style="display:none; margin-bottom:16px">
+        <button class="btn-s" style="width:100%; border-color:var(--blue); color:var(--blue); font-weight:700" onclick="openPizzaBuilder()">⚙️ CONFIGURAR TAMANHOS E SABORES</button>
       </div>
       <label>Descrição</label><textarea id="item-desc" rows="2"></textarea>
       <button class="btn-p" style="width:100%" onclick="saveItem()">SALVAR ITEM</button>
@@ -510,15 +519,56 @@
         <button onclick="closeMod('mod-categories')" style="border:none; background:none; cursor:pointer"><span class="ms">close</span></button>
       </div>
       <div class="card" style="margin-bottom:24px; background:var(--bg2);">
-        <div style="font-weight:800; font-size:14px; margin-bottom:12px">Nova Categoria</div>
-        <div style="display:grid; grid-template-columns:1fr 80px; gap:12px">
-          <div><label>Nome</label><input type="text" id="new-cat-name" placeholder="Ex: Porções"></div>
-          <div><label>Ícone</label><input type="text" id="new-cat-icon" placeholder="🍔"></div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px" id="cat-editor-title">Nova Categoria</div>
+        <input type="hidden" id="edit-cat-id">
+        <div style="margin-bottom:12px"><label>Nome</label><input type="text" id="new-cat-name" placeholder="Ex: Porções"></div>
+        <label>Ícone Pré-definido</label>
+        <div id="icon-selector" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px"></div>
+        <input type="hidden" id="new-cat-icon">
+        <div style="display:flex; gap:8px">
+          <button class="btn-s" style="flex:1; display:none" id="btn-cancel-cat" onclick="resetCatEditor()">CANCELAR</button>
+          <button class="btn-p" style="flex:2" onclick="saveCategory()" id="btn-save-cat">CRIAR CATEGORIA</button>
         </div>
-        <button class="btn-p" style="width:100%" onclick="saveCategory()">CRIAR CATEGORIA</button>
       </div>
       <label>Categorias Atuais</label>
       <div id="categories-list" style="max-height:250px; overflow-y:auto; padding-right:4px;"></div>
+    </div>
+  </div>
+
+  <!-- PIZZA BUILDER MODAL -->
+  <div class="modal-overlay" id="mod-pizza-builder" onclick="closeMod('mod-pizza-builder',event)">
+    <div class="modal-sheet" style="max-width:500px; width:95%">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
+        <h3 class="hl">Opções da Pizza</h3>
+        <button onclick="closeMod('mod-pizza-builder')" style="border:none; background:none; cursor:pointer"><span class="ms">close</span></button>
+      </div>
+
+      <div class="card" style="margin-bottom:24px; background:var(--bg2)">
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px">1. Tamanhos Disponíveis</div>
+        <div id="pb-sizes-list" style="margin-bottom:12px"></div>
+        <div style="display:grid; grid-template-columns:1fr 60px 60px 50px; gap:8px">
+          <div><label style="font-size:10px">Nome</label><input type="text" id="pbs-name" placeholder="Grande" style="font-size:12px; padding:8px"></div>
+          <div><label style="font-size:10px">Fatias</label><input type="number" id="pbs-fatias" placeholder="8" style="font-size:12px; padding:8px"></div>
+          <div><label style="font-size:10px">Max Sab</label><input type="number" id="pbs-max" placeholder="3" style="font-size:12px; padding:8px"></div>
+          <div style="display:flex; align-items:flex-end"><button class="btn-p" style="padding:8px" onclick="addPbSize()">+</button></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--bg2)">
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px">2. Sabores</div>
+        <div id="pb-flavors-list" style="margin-bottom:12px; max-height:200px; overflow-y:auto"></div>
+        <div style="border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg3)">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
+            <div><label style="font-size:10px">Sabor</label><input type="text" id="pbf-name" placeholder="Calabresa" style="font-size:12px; padding:8px"></div>
+            <div><label style="font-size:10px">Subcategoria (Ex: Doces)</label><input type="text" id="pbf-sub" placeholder="Tradicionais" style="font-size:12px; padding:8px"></div>
+          </div>
+          <label style="font-size:10px">Preço deste sabor por tamanho:</label>
+          <div id="pbf-prices" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px"></div>
+          <button class="btn-s" style="width:100%; border-color:var(--blue); color:var(--blue); font-size:12px" onclick="addPbFlavor()">ADICIONAR SABOR</button>
+        </div>
+      </div>
+      
+      <button class="btn-p" style="width:100%; margin-top:24px" onclick="closeMod('mod-pizza-builder')">CONCLUIR</button>
     </div>
   </div>
 
@@ -846,6 +896,105 @@
       }
     }
 
+    let currentPizzaSizes = [];
+    let currentPizzaFlavors = [];
+
+    function togglePizzaBuilder() {
+      const type = document.getElementById('item-type').value;
+      document.getElementById('item-price-wrap').style.display = type === 'pizza' ? 'none' : 'block';
+      document.getElementById('item-pizza-wrap').style.display = type === 'pizza' ? 'block' : 'none';
+    }
+
+    function openPizzaBuilder() {
+      renderPbSizes();
+      renderPbFlavors();
+      openMod('mod-pizza-builder');
+    }
+
+    function renderPbSizes() {
+      const list = document.getElementById('pb-sizes-list');
+      list.innerHTML = currentPizzaSizes.map((s, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:8px; border-radius:8px; margin-bottom:4px">
+          <div style="font-size:12px"><b>${s.name}</b> · ${s.fatias} fat. · Max ${s.max_sabores} sab.</div>
+          <button onclick="removePbSize(${idx})" style="border:none; background:none; color:var(--red); cursor:pointer"><span class="ms" style="font-size:16px">delete</span></button>
+        </div>
+      `).join('');
+
+      // Update price inputs for flavor adding
+      const priceCont = document.getElementById('pbf-prices');
+      if (currentPizzaSizes.length > 0) {
+        priceCont.style.display = 'grid';
+        priceCont.innerHTML = currentPizzaSizes.map(s => `
+          <div>
+            <label style="font-size:9px">Preço ${s.name}</label>
+            <input type="number" step="0.01" class="pbf-price-input" data-size-id="${s.id}" placeholder="0.00" style="font-size:11px; padding:6px">
+          </div>
+        `).join('');
+      } else {
+        priceCont.style.display = 'none';
+      }
+    }
+
+    function addPbSize() {
+      const name = document.getElementById('pbs-name').value.trim();
+      const fatias = document.getElementById('pbs-fatias').value;
+      const max = document.getElementById('pbs-max').value;
+      if (!name || !fatias || !max) return toast('Preencha os campos do tamanho');
+      currentPizzaSizes.push({ id: 'sz_' + Date.now(), name, fatias: Number(fatias), max_sabores: Number(max) });
+      document.getElementById('pbs-name').value = '';
+      document.getElementById('pbs-fatias').value = '';
+      document.getElementById('pbs-max').value = '';
+      renderPbSizes();
+    }
+
+    function removePbSize(idx) {
+      currentPizzaSizes.splice(idx, 1);
+      renderPbSizes();
+    }
+
+    function renderPbFlavors() {
+      const list = document.getElementById('pb-flavors-list');
+      if (!currentPizzaFlavors.length) {
+        list.innerHTML = '<div style="font-size:11px; color:var(--text3); text-align:center">Nenhum sabor adicionado</div>';
+        return;
+      }
+      
+      const subs = [...new Set(currentPizzaFlavors.map(f => f.subcat))];
+      list.innerHTML = subs.map(sub => `
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px; font-weight:800; color:var(--blue); margin-bottom:4px; text-transform:uppercase">${sub || 'Geral'}</div>
+          ${currentPizzaFlavors.filter(f => f.subcat === sub).map((f, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg3); padding:8px; border-radius:8px; margin-bottom:4px">
+              <div style="font-size:12px"><b>${f.name}</b></div>
+              <button onclick="removePbFlavor('${f.id}')" style="border:none; background:none; color:var(--red); cursor:pointer"><span class="ms" style="font-size:16px">delete</span></button>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function addPbFlavor() {
+      const name = document.getElementById('pbf-name').value.trim();
+      const sub = document.getElementById('pbf-sub').value.trim();
+      if (!name) return toast('Digite o nome do sabor');
+      
+      const prices = {};
+      document.querySelectorAll('.pbf-price-input').forEach(inp => {
+        prices[inp.dataset.sizeId] = Number(inp.value) || 0;
+      });
+
+      currentPizzaFlavors.push({ id: 'fl_' + Date.now(), name, subcat: sub, prices });
+      document.getElementById('pbf-name').value = '';
+      // We keep the subcategory to facilitate mass adding
+      document.querySelectorAll('.pbf-price-input').forEach(inp => inp.value = '');
+      renderPbFlavors();
+    }
+
+    function removePbFlavor(id) {
+      currentPizzaFlavors = currentPizzaFlavors.filter(f => f.id !== id);
+      renderPbFlavors();
+    }
+
     async function loadMenu() {
       const { data } = await db.from('food_menu_items').select('*').eq('company_id', co.id).order('display_order');
       if (data) {
@@ -895,9 +1044,59 @@
       }
     }
 
+    const PRESET_ICONS = [
+      { id: 'burger', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8 2 4 5 4 9h16c0-4-4-7-8-7z"></path><path d="M4 14v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1H4z"></path><path d="M4 11h16v1H4z"></path></svg>` },
+      { id: 'pizza', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L2 22"></path><path d="M22 2c0 11.046-8.954 20-20 20"></path><path d="M15 9l-3 3"></path><path d="M10 14l-2 2"></path></svg>` },
+      { id: 'drink', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h-12a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2z"></path><path d="M6 8v-2a6 6 0 0 1 12 0v2"></path><path d="M12 10v6"></path></svg>` },
+      { id: 'fries', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14h16v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6z"></path><path d="M6 14l2-8"></path><path d="M10 14l1-10"></path><path d="M14 14l-1-10"></path><path d="M18 14l-2-8"></path></svg>` },
+      { id: 'dessert', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a4 4 0 0 1-4-4V10c0-2.209 1.791-4 4-4s4 1.791 4 4v8a4 4 0 0 1-4 4z"></path><path d="M12 6V2"></path></svg>` },
+      { id: 'utensils', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>` },
+      { id: 'coffee', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>` },
+      { id: 'leaf', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 4 13a7 7 0 0 1 7-7h8v8a7 7 0 0 1-7 7z"></path><path d="M11 13l-4 4"></path></svg>` },
+      { id: 'star', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>` }
+    ];
+
+    function renderIconSelector(selectedIcon = '') {
+      const cont = document.getElementById('icon-selector');
+      if(!cont) return;
+      cont.innerHTML = PRESET_ICONS.map(i => `
+        <button class="btn-s" style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:${selectedIcon === i.svg ? 'var(--blue)' : 'var(--border)'}; color:${selectedIcon === i.svg ? 'var(--blue)' : 'var(--text)'}" onclick="selectCatIcon(this, \`${i.svg}\`)">${i.svg}</button>
+      `).join('');
+    }
+
+    function selectCatIcon(btn, svg) {
+      document.getElementById('new-cat-icon').value = svg;
+      document.querySelectorAll('#icon-selector button').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text)'; });
+      btn.style.borderColor = 'var(--blue)';
+      btn.style.color = 'var(--blue)';
+    }
+
     function openModCategories() {
       renderCategoriesList();
+      resetCatEditor();
       openMod('mod-categories');
+    }
+
+    function resetCatEditor() {
+      document.getElementById('edit-cat-id').value = '';
+      document.getElementById('new-cat-name').value = '';
+      document.getElementById('new-cat-icon').value = '';
+      document.getElementById('cat-editor-title').textContent = 'Nova Categoria';
+      document.getElementById('btn-save-cat').textContent = 'CRIAR CATEGORIA';
+      document.getElementById('btn-cancel-cat').style.display = 'none';
+      renderIconSelector();
+    }
+
+    function editCategory(id) {
+      const c = categories.find(x => x.id === id);
+      if(!c) return;
+      document.getElementById('edit-cat-id').value = c.id;
+      document.getElementById('new-cat-name').value = c.name;
+      document.getElementById('new-cat-icon').value = c.icon || '';
+      document.getElementById('cat-editor-title').textContent = 'Editar Categoria';
+      document.getElementById('btn-save-cat').textContent = 'SALVAR';
+      document.getElementById('btn-cancel-cat').style.display = 'block';
+      renderIconSelector(c.icon);
     }
 
     function renderCategoriesList() {
@@ -909,24 +1108,31 @@
       }
       list.innerHTML = categories.map(c => `
         <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:12px">
-          <div style="font-size:15px">${c.icon ? `<span style="font-size:20px; vertical-align:middle; margin-right:8px">${c.icon}</span>` : ''}<b class="hl">${c.name}</b></div>
-          <button class="btn-s" style="border:none; color:var(--red); padding:6px; background:var(--red-l); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="deleteCategory('${c.id}')"><span class="ms" style="font-size:16px">delete</span></button>
+          <div style="font-size:15px; display:flex; align-items:center">${c.icon ? `<span style="width:24px; height:24px; margin-right:8px; display:flex; align-items:center; justify-content:center">${c.icon}</span>` : ''}<b class="hl">${c.name}</b></div>
+          <div style="display:flex; gap:8px">
+            <button class="btn-s" style="border:none; padding:6px; background:var(--bg3); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="editCategory('${c.id}')"><span class="ms" style="font-size:16px">edit</span></button>
+            <button class="btn-s" style="border:none; color:var(--red); padding:6px; background:var(--red-l); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="deleteCategory('${c.id}')"><span class="ms" style="font-size:16px">delete</span></button>
+          </div>
         </div>
       `).join('');
     }
 
     async function saveCategory() {
+      const id = document.getElementById('edit-cat-id').value;
       const name = document.getElementById('new-cat-name').value.trim();
       const icon = document.getElementById('new-cat-icon').value.trim();
       if (!name) { toast('Preencha o nome'); return; }
       const p = { name, icon: icon || null, company_id: co.id, display_order: categories.length + 1 };
-      const { error } = await db.from('food_categories').insert(p);
+      
+      const { error } = id 
+        ? await db.from('food_categories').update({ name, icon: icon || null }).eq('id', id)
+        : await db.from('food_categories').insert(p);
+        
       if (!error) {
-        document.getElementById('new-cat-name').value = '';
-        document.getElementById('new-cat-icon').value = '';
         toast('Categoria salva');
         await loadCategories();
         renderCategoriesList();
+        resetCatEditor();
       } else {
         toast('Erro ao salvar');
       }
@@ -943,12 +1149,34 @@
     }
 
     async function saveItem() {
-      const p = { name: document.getElementById('item-name').value, price: document.getElementById('item-price').value, category: document.getElementById('item-cat').value, description: document.getElementById('item-desc').value, image_url: document.getElementById('item-photo').dataset.url || null, company_id: co.id };
+      const type = document.getElementById('item-type').value;
+      const p = { 
+        name: document.getElementById('item-name').value, 
+        price: type === 'pizza' ? 0 : Number(document.getElementById('item-price').value), 
+        category: document.getElementById('item-cat').value, 
+        description: document.getElementById('item-desc').value, 
+        image_url: document.getElementById('item-photo').dataset.url || null, 
+        item_type: type,
+        sizes: type === 'pizza' ? currentPizzaSizes : null,
+        pizza_flavors_per_size: type === 'pizza' ? currentPizzaFlavors : null,
+        company_id: co.id 
+      };
       const { error } = editId ? await db.from('food_menu_items').update(p).eq('id', editId) : await db.from('food_menu_items').insert(p);
       if (!error) { toast('Item salvo'); closeMod('mod-item'); loadMenu(); }
     }
 
-    function openNewItem() { editId=null; document.getElementById('item-title').textContent='Novo Item'; ['item-name','item-price','item-desc'].forEach(i=>document.getElementById(i).value=''); document.getElementById('item-prev').style.display='none'; document.getElementById('item-photo').dataset.url=''; openMod('mod-item'); }
+    function openNewItem() { 
+      editId=null; 
+      document.getElementById('item-title').textContent='Novo Item'; 
+      ['item-name','item-price','item-desc'].forEach(i=>document.getElementById(i).value=''); 
+      document.getElementById('item-type').value = 'comum';
+      currentPizzaSizes = [];
+      currentPizzaFlavors = [];
+      togglePizzaBuilder();
+      document.getElementById('item-prev').style.display='none'; 
+      document.getElementById('item-photo').dataset.url=''; 
+      openMod('mod-item'); 
+    }
 
     function editarItem(id) {
       const i = menuItems.find(x => x.id === id);
@@ -957,6 +1185,10 @@
       document.getElementById('item-title').textContent = 'Editar Item';
       document.getElementById('item-name').value = i.name;
       document.getElementById('item-price').value = i.price;
+      document.getElementById('item-type').value = i.item_type || 'comum';
+      currentPizzaSizes = i.sizes || [];
+      currentPizzaFlavors = i.pizza_flavors_per_size || [];
+      togglePizzaBuilder();
       document.getElementById('item-cat').value = i.category || (categories.length ? categories[0].name : '');
       document.getElementById('item-desc').value = i.description || '';
       document.getElementById('item-photo').dataset.url = i.image_url || '';

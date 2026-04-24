@@ -310,7 +310,10 @@
         <div id="tab-cardapio" class="tab">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
             <h1 class="hl-title">Meu Cardápio</h1>
-            <button class="btn-p" onclick="openNewItem()">+ NOVO ITEM</button>
+            <div style="display:flex; gap:12px">
+              <button class="btn-s" style="border-color:var(--blue); color:var(--blue)" onclick="openModCategories()">Categorias</button>
+              <button class="btn-p" onclick="openNewItem()">+ NOVO ITEM</button>
+            </div>
           </div>
           <div id="menu-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px"></div>
         </div>
@@ -488,17 +491,30 @@
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
         <div><label>Preço</label><input type="number" step="0.01" id="item-price"></div>
         <div>
-          <label>Categoria</label>
-          <select id="item-cat">
-            <option value="lanches">Lanches</option>
-            <option value="bebidas">Bebidas</option>
-            <option value="pizzas">Pizzas</option>
-            <option value="sobremesas">Sobremesas</option>
-          </select>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:4px">
+            <label style="margin-bottom:0">Categoria</label>
+            <button class="btn-s" style="padding:2px 8px; font-size:10px; border:none; color:var(--blue); background:rgba(37,99,235,0.1)" onclick="openModCategories()">Editar Categorias</button>
+          </div>
+          <select id="item-cat"></select>
         </div>
       </div>
       <label>Descrição</label><textarea id="item-desc" rows="2"></textarea>
       <button class="btn-p" style="width:100%" onclick="saveItem()">SALVAR ITEM</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="mod-categories" onclick="closeMod('mod-categories',event)">
+    <div class="modal-sheet">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
+        <h3 class="hl">Categorias do Cardápio</h3>
+        <button onclick="closeMod('mod-categories')" style="border:none; background:none; cursor:pointer"><span class="ms">close</span></button>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:16px">
+        <input type="text" id="new-cat-name" placeholder="Ex: Sobremesas" style="flex:1">
+        <input type="text" id="new-cat-icon" placeholder="Ícone (emoji ou Svg)" style="width:140px">
+        <button class="btn-p" onclick="saveCategory()">Add</button>
+      </div>
+      <div id="categories-list" style="max-height:300px; overflow-y:auto; background:var(--bg3); border-radius:12px; padding:12px;"></div>
     </div>
   </div>
 
@@ -567,7 +583,7 @@
       global: { fetch: (...args) => fetch(args[0], { ...args[1], cache: 'no-store' }) }
     });
 
-    let co=null, currentStaff=null, orders=[], menuItems=[], tables=[], staffList=[], editId=null;
+    let co=null, currentStaff=null, orders=[], menuItems=[], tables=[], staffList=[], editId=null, categories=[];
     let lastHash='';
 
     const SL={recebido:{bg:'rgba(239,68,68,0.1)',c:'#EF4444'},preparo:{bg:'rgba(245,158,11,0.1)',c:'#F59E0B'},pronto:{bg:'rgba(16,185,129,0.1)',c:'#10B981'},saiu:{bg:'rgba(37,99,235,0.1)',c:'#3B82F6'},entregue:{bg:'rgba(37,99,235,0.05)',c:'#3B82F6'},cancelado:{bg:'rgba(255,255,255,0.05)',c:'#52525B'}};
@@ -637,7 +653,7 @@
     }
 
     async function loadAll() {
-      await Promise.all([loadOrders(), loadMenu(), loadTables(), loadStaff()]);
+      await Promise.all([loadOrders(), loadMenu(), loadTables(), loadStaff(), loadCategories()]);
     }
 
     async function loadOrders() {
@@ -670,7 +686,7 @@
       rtSub = db.channel('company_'+co.id+'_events')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'food_orders', filter: 'company_id=eq.'+co.id }, () => { loadOrders(); })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'food_menu_items', filter: 'company_id=eq.'+co.id }, () => { loadMenu(); })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_categories', filter: 'company_id=eq.'+co.id }, () => { loadMenu(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_categories', filter: 'company_id=eq.'+co.id }, () => { loadCategories(); loadMenu(); })
         .subscribe();
     }
 
@@ -834,8 +850,67 @@
           <div class="card" style="display:flex; gap:12px; align-items:center" onclick="editarItem('${i.id}')">
             <div style="width:50px; height:50px; border-radius:10px; background:var(--bg3); overflow:hidden">${i.image_url?`<img src="${i.image_url}" style="width:100%; height:100%; object-fit:cover"/>`:'<span class="ms" style="margin:15px">image</span>'}</div>
             <div style="flex:1"><div class="hl" style="font-weight:700">${i.name}</div><div style="font-size:12px; color:var(--text3)">${fmtP(i.price)}</div></div>
+            <div style="font-size:11px; padding:2px 8px; background:rgba(255,255,255,0.1); border-radius:10px">${i.category || ''}</div>
           </div>
         `).join('');
+      }
+    }
+
+    async function loadCategories() {
+      const { data } = await db.from('food_categories').select('*').eq('company_id', co.id).order('display_order');
+      if (data) {
+        categories = data;
+        const catSelect = document.getElementById('item-cat');
+        if (catSelect) {
+          catSelect.innerHTML = data.map(c => `<option value="${c.name}">${c.icon ? c.icon + ' ' : ''}${c.name}</option>`).join('');
+        }
+      }
+    }
+
+    function openModCategories() {
+      renderCategoriesList();
+      openMod('mod-categories');
+    }
+
+    function renderCategoriesList() {
+      const list = document.getElementById('categories-list');
+      if (!list) return;
+      if (!categories.length) {
+        list.innerHTML = '<div style="color:var(--text3); font-size:12px; text-align:center">Nenhuma categoria criada.</div>';
+        return;
+      }
+      list.innerHTML = categories.map(c => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05)">
+          <div style="font-size:14px">${c.icon ? c.icon + ' ' : ''}<b>${c.name}</b></div>
+          <button class="btn-s" style="border:none; color:var(--red); padding:4px 8px; font-size:12px; background:transparent" onclick="deleteCategory('${c.id}')"><span class="ms">delete</span></button>
+        </div>
+      `).join('');
+    }
+
+    async function saveCategory() {
+      const name = document.getElementById('new-cat-name').value.trim();
+      const icon = document.getElementById('new-cat-icon').value.trim();
+      if (!name) { toast('Preencha o nome'); return; }
+      const p = { name, icon: icon || null, company_id: co.id, display_order: categories.length + 1 };
+      const { error } = await db.from('food_categories').insert(p);
+      if (!error) {
+        document.getElementById('new-cat-name').value = '';
+        document.getElementById('new-cat-icon').value = '';
+        toast('Categoria salva');
+        await loadCategories();
+        renderCategoriesList();
+      } else {
+        toast('Erro ao salvar');
+      }
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm('Excluir esta categoria? Os itens dessa categoria ainda existirão, mas sem classificação.')) return;
+      const { error } = await db.from('food_categories').delete().eq('id', id);
+      if (!error) {
+        toast('Categoria excluída');
+        await loadCategories();
+        renderCategoriesList();
       }
     }
 
@@ -854,7 +929,7 @@
       document.getElementById('item-title').textContent = 'Editar Item';
       document.getElementById('item-name').value = i.name;
       document.getElementById('item-price').value = i.price;
-      document.getElementById('item-cat').value = i.category || 'lanches';
+      document.getElementById('item-cat').value = i.category || (categories.length ? categories[0].name : '');
       document.getElementById('item-desc').value = i.description || '';
       document.getElementById('item-photo').dataset.url = i.image_url || '';
       if (i.image_url) { document.getElementById('item-prev').src = i.image_url; document.getElementById('item-prev').style.display = 'block'; }

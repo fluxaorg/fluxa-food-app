@@ -667,14 +667,11 @@
     function startRT() {
       if (!co) return;
       if (rtSub) { db.removeChannel(rtSub); rtSub = null; }
-      rtSub = db.channel('public:food_orders:company_'+co.id)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_orders', filter: 'company_id=eq.'+co.id }, (payload) => {
-          console.log('Realtime event:', payload);
-          loadOrders();
-        })
-        .subscribe((status) => {
-          console.log('Realtime status:', status);
-        });
+      rtSub = db.channel('company_'+co.id+'_events')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_orders', filter: 'company_id=eq.'+co.id }, () => { loadOrders(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_menu_items', filter: 'company_id=eq.'+co.id }, () => { loadMenu(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'food_categories', filter: 'company_id=eq.'+co.id }, () => { loadMenu(); })
+        .subscribe();
     }
 
     let orderFil = 'todos';
@@ -816,12 +813,16 @@
       }
     }
 
-    async function handleStaffPhoto(input) {
+    async function handleItemPhoto(input) {
       if (input.files && input.files[0]) {
-        const url = await uploadToBucket(input.files[0], 'avatars');
-        input.dataset.url = url;
-        document.getElementById('colab-prev').src = url;
-        document.getElementById('colab-prev').style.display = 'block';
+        toast('Enviando foto do produto...');
+        const url = await uploadToBucket(input.files[0], 'food-images');
+        if (url) {
+          input.dataset.url = url;
+          document.getElementById('item-prev').src = url;
+          document.getElementById('item-prev').style.display = 'block';
+          toast('Foto carregada!');
+        }
       }
     }
 

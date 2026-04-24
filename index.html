@@ -2896,26 +2896,13 @@
 
       async function handlePzPhoto(input) {
         if (!input.files || !input.files[0]) return;
-        const file = input.files[0];
-        const toastId = "up-" + Date.now();
         toast("Fazendo upload da imagem da pizza...", 5000);
-        try {
-          const ext = file.name.split(".").pop();
-          const fName = `pizza_${Date.now()}.${ext}`;
-          const { error: upErr } = await db.storage
-            .from("item_images")
-            .upload(`${co.id}/${fName}`, file);
-          if (upErr) throw upErr;
-          const {
-            data: { publicUrl },
-          } = db.storage.from("item_images").getPublicUrl(`${co.id}/${fName}`);
-          document.getElementById("pz-photo").dataset.url = publicUrl;
-          document.getElementById("pz-prev").src = publicUrl;
+        const url = await uploadToBucket(input.files[0], "food-images");
+        if (url) {
+          document.getElementById("pz-photo").dataset.url = url;
+          document.getElementById("pz-prev").src = url;
           document.getElementById("pz-prev").style.display = "block";
           toast("Upload concluído!");
-        } catch (err) {
-          console.error(err);
-          toast("Erro ao enviar imagem", 3000);
         }
       }
 
@@ -3014,7 +3001,7 @@
           pizza_flavors_per_size: currentPizzaFlavors,
           company_id: co.id,
           price: 0,
-          available: active,
+          active: active,
         };
 
         // Upsert
@@ -3034,6 +3021,7 @@
           closeMod("mod-pizza-builder");
           loadMenu();
         } else {
+          console.error("Supabase Error saving global pizza:", error);
           toast("Erro ao salvar módulo");
         }
       }

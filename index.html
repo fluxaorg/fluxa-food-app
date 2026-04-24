@@ -886,34 +886,37 @@
           <img src="favicon.fluxa.png?v=2" />
         </div>
         <div class="nav-scroll-area">
-          <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')">
-            <span class="ms">receipt_long</span>
+          <!-- Kitchen nav (padrão) -->
+          <div id="k-navs" style="display:contents">
+            <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')">
+              <span class="ms">receipt_long</span>
+            </div>
+            <div class="nav-item" id="nav-novo-pedido" onclick="go('novo-pedido')">
+              <span class="ms">add_circle</span>
+            </div>
+            <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')">
+              <span class="ms">analytics</span>
+            </div>
+            <div class="nav-item" id="nav-cardapio" onclick="go('cardapio')">
+              <span class="ms">restaurant_menu</span>
+            </div>
+            <div class="nav-item" id="nav-mesas" onclick="go('mesas')">
+              <span class="ms">table_restaurant</span>
+            </div>
+            <div class="nav-item" id="nav-funcionarios" onclick="go('funcionarios')">
+              <span class="ms">group</span>
+            </div>
+            <div class="nav-item" id="nav-perfil" onclick="go('perfil')">
+              <span class="ms">settings</span>
+            </div>
           </div>
-          <div
-            class="nav-item"
-            id="nav-novo-pedido"
-            onclick="go('novo-pedido')"
-          >
-            <span class="ms">add_circle</span>
-          </div>
-          <div class="nav-item" id="nav-dashboard" onclick="go('dashboard')">
-            <span class="ms">analytics</span>
-          </div>
-          <div class="nav-item" id="nav-cardapio" onclick="go('cardapio')">
-            <span class="ms">restaurant_menu</span>
-          </div>
-          <div class="nav-item" id="nav-mesas" onclick="go('mesas')">
-            <span class="ms">table_restaurant</span>
-          </div>
-          <div
-            class="nav-item"
-            id="nav-funcionarios"
-            onclick="go('funcionarios')"
-          >
-            <span class="ms">group</span>
-          </div>
-          <div class="nav-item" id="nav-perfil" onclick="go('perfil')">
-            <span class="ms">settings</span>
+          <!-- Admin nav (só aparece com login admin@fluxa) -->
+          <div id="a-navs" style="display:none; flex-direction:column; gap:4px">
+            <div class="nav-item" id="nav-adm-clientes" title="Clientes" onclick="goAdm('clientes')"><span class="ms">storefront</span></div>
+            <div class="nav-item" id="nav-adm-cadastro" title="Cadastro" onclick="goAdm('cadastro')"><span class="ms">add_business</span></div>
+            <div class="nav-item" id="nav-adm-financeiro" title="Financeiro" onclick="goAdm('financeiro')"><span class="ms">payments</span></div>
+            <div class="nav-item" id="nav-adm-analiticas" title="Analíticas" onclick="goAdm('analiticas')"><span class="ms">bar_chart</span></div>
+            <div class="nav-item" id="nav-adm-suporte" title="Suporte" onclick="goAdm('suporte')"><span class="ms">support_agent</span></div>
           </div>
           <div class="nav-item" onclick="openMod('mod-logout')">
             <span class="ms">logout</span>
@@ -1199,6 +1202,90 @@
               </button>
             </div>
             <div id="colab-list"></div>
+          </div>
+
+          <!-- ══════════════════════════════════════════ -->
+          <!-- ADMIN FLÜXA KITCHENS                     -->
+          <!-- ══════════════════════════════════════════ -->
+          <div id="tab-adm-clientes" class="tab">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+              <h1 class="hl-title" style="margin:0">Clientes</h1>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="adm-search" placeholder="Buscar..." oninput="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 14px;color:white;font-family:Inter;width:180px">
+                <select id="adm-fil-status" onchange="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
+                  <option value="">Todos</option><option value="ativo">Ativos</option><option value="suspenso">Suspenso</option><option value="inadimplente">Inadimplente</option>
+                </select>
+                <button class="btn-s" style="padding:8px 14px" onclick="admLoadClientes()"><span class="ms" style="font-size:16px">refresh</span></button>
+              </div>
+            </div>
+            <div id="adm-clientes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
+          </div>
+
+          <div id="tab-adm-cadastro" class="tab">
+            <h1 class="hl-title">Cadastro de Restaurante</h1>
+            <div style="max-width:580px">
+              <div id="adm-steps" style="display:flex;align-items:center;margin-bottom:32px"></div>
+              <div id="adm-cad-form" class="card"></div>
+            </div>
+          </div>
+
+          <div id="tab-adm-financeiro" class="tab">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+              <h1 class="hl-title" style="margin:0">Financeiro</h1>
+              <div style="display:flex;gap:8px">
+                <select id="adm-fin-fil" onchange="admRenderFinTable()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
+                  <option value="">Todos</option><option value="ativo">Ativos</option><option value="suspenso">Suspenso</option><option value="inadimplente">Inadimp.</option>
+                </select>
+                <button class="btn-s" style="padding:8px 14px" onclick="admFinExportCSV()">↓ CSV</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+              <div class="kpi-card" style="border-color:rgba(196,28,59,.3)"><div class="kpi-label">Receita Total</div><div class="kpi-val" id="adm-fin-total" style="color:#C41C3B">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">Base Mensal</div><div class="kpi-val" id="adm-fin-base">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">Comissões</div><div class="kpi-val" id="adm-fin-comm">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">Ativos</div><div class="kpi-val" id="adm-fin-ativos">—</div></div>
+            </div>
+            <div class="card" style="padding:0;overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse">
+                <thead><tr>
+                  <th onclick="admFinSort('name')" style="text-align:left;padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer">Restaurante ↕</th>
+                  <th onclick="admFinSort('base')" style="text-align:right;padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer">Base ↕</th>
+                  <th onclick="admFinSort('commission')" style="text-align:right;padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer">Comissão ↕</th>
+                  <th onclick="admFinSort('total')" style="text-align:right;padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer">Total ↕</th>
+                  <th style="padding:12px 14px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;border-bottom:1px solid var(--border)">Status</th>
+                </tr></thead>
+                <tbody id="adm-fin-body"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text3)">Carregando...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tab-adm-analiticas" class="tab">
+            <h1 class="hl-title">Analíticas</h1>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+              <div class="kpi-card"><div class="kpi-label">Leads Gerados</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">Pedidos via Ads</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">Spend Total</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+              <div class="kpi-card"><div class="kpi-label">ROAS Médio</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+            </div>
+            <div class="card" style="text-align:center;padding:48px">
+              <span class="ms" style="font-size:48px;color:var(--text3)">bar_chart</span>
+              <h3 class="hl" style="font-size:18px;font-weight:800;margin:16px 0 8px">Integração em andamento</h3>
+              <p style="color:var(--text3);max-width:400px;margin:0 auto">Integrando com Meta Pixel e Google Analytics. Em breve os dados de campanhas aparecerão aqui.</p>
+            </div>
+          </div>
+
+          <div id="tab-adm-suporte" class="tab">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+              <h1 class="hl-title" style="margin:0">Suporte</h1>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="adm-tkt-search" placeholder="Buscar..." oninput="admRenderTickets()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 14px;color:white;font-family:Inter;width:180px">
+                <select id="adm-tkt-fil" onchange="admRenderTickets()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
+                  <option value="">Todos</option><option value="aberto">Abertos</option><option value="em_andamento">Em andamento</option><option value="resolvido">Resolvidos</option>
+                </select>
+                <button class="btn-s" style="padding:8px 14px" onclick="admLoadSuporte()"><span class="ms" style="font-size:16px">refresh</span></button>
+              </div>
+            </div>
+            <div id="adm-tickets-list"></div>
           </div>
 
           <!-- PERFIL/CONFIG -->
@@ -2390,7 +2477,7 @@
             currentStaff = session.user || session.staff;
             co = session.company;
             show("app");
-            bootApp();
+            if (session.isAdmin) { bootAdminMode(); } else { bootApp(); }
           } catch (e) {
             show("s-login");
           }
@@ -2448,6 +2535,14 @@
       async function doLogin() {
         const e = document.getElementById("lg-email").value.trim();
         const p = document.getElementById("lg-pass").value;
+        // Login admin Flüxa
+        const { data: adminUser } = await db.from("fluxa_kitchens_admin").select("*").eq("email", e).single();
+        if (adminUser && adminUser.password === p) {
+          localStorage.setItem("quiosque_session_v2", JSON.stringify({ user: adminUser, company: { name: "Flüxa Admin", is_admin: true }, role: "admin", isAdmin: true }));
+          location.reload();
+          return;
+        }
+        // Login Kitchen normal
         const { data: user, error } = await db
           .from("food_users")
           .select("*, company:food_companies(*)")
@@ -4259,6 +4354,327 @@
       }
       function simEli() {
         toast("Eli está analisando sua operação...");
+      }
+
+      // ═══════════════════════════════════════════════════
+      // ADMIN FLÜXA KITCHENS
+      // ═══════════════════════════════════════════════════
+      const ADM_BASE_FEE = 1500;
+      let admClientes = [], admFinRows = [], admTickets = [];
+      let admSortKey = 'total', admSortDir = -1;
+      let admTicketOpen = null;
+      let admCadStep = 1, admCadData = {};
+
+      function bootAdminMode() {
+        document.getElementById('k-navs').style.display = 'none';
+        document.getElementById('a-navs').style.display = 'flex';
+        document.getElementById('sn-name').textContent = 'Flüxa Admin';
+        goAdm('clientes');
+      }
+
+      function goAdm(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active','leaving'));
+        document.querySelectorAll('#a-navs .nav-item').forEach(n => n.classList.remove('active'));
+        const target = document.getElementById('tab-adm-' + tab);
+        if (target) target.classList.add('active');
+        const nav = document.getElementById('nav-adm-' + tab);
+        if (nav) nav.classList.add('active');
+        if (tab === 'clientes') admLoadClientes();
+        if (tab === 'financeiro') admLoadFinanceiro();
+        if (tab === 'suporte') admLoadSuporte();
+        if (tab === 'cadastro') { admCadStep = 1; admCadData = {}; admRenderCadStep(); }
+      }
+
+      // ── CLIENTES ──
+      async function admLoadClientes() {
+        document.getElementById('adm-clientes-grid').innerHTML = '<div style="color:var(--text3);padding:20px">Carregando...</div>';
+        const { data } = await db.from('food_companies').select('*').order('created_at', { ascending: false });
+        admClientes = (data || []).filter(c => !c.is_founder);
+        admRenderClientes();
+        admClientes.forEach(c => admLoadClientStats(c.id));
+      }
+
+      function admRenderClientes() {
+        const search = (document.getElementById('adm-search')?.value || '').toLowerCase();
+        const fil = document.getElementById('adm-fil-status')?.value || '';
+        const list = admClientes.filter(c => {
+          const st = c.blocked ? 'inadimplente' : (c.active ? 'ativo' : 'suspenso');
+          return (!search || c.name.toLowerCase().includes(search)) && (!fil || st === fil);
+        });
+        if (!list.length) { document.getElementById('adm-clientes-grid').innerHTML = '<div style="color:var(--text3);padding:40px;text-align:center;grid-column:1/-1">Nenhum restaurante encontrado</div>'; return; }
+        const badge = { ativo:'background:rgba(16,185,129,.1);color:#10B981', suspenso:'background:rgba(245,158,11,.1);color:#F59E0B', inadimplente:'background:rgba(239,68,68,.1);color:#EF4444' };
+        const label = { ativo:'Ativo', suspenso:'Suspenso', inadimplente:'Inadimplente' };
+        document.getElementById('adm-clientes-grid').innerHTML = list.map(c => {
+          const st = c.blocked ? 'inadimplente' : (c.active ? 'ativo' : 'suspenso');
+          return `<div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+              <div><div class="hl" style="font-weight:800;font-size:15px">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.slug||'—'}</div></div>
+              <span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${badge[st]}">${label[st]}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+              <div style="background:var(--bg3);border-radius:12px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">PEDIDOS MÊS</div><div class="hl" style="font-weight:800;font-size:16px" id="pc-o-${c.id}">—</div></div>
+              <div style="background:var(--bg3);border-radius:12px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">COMISSÃO</div><div class="hl" style="font-weight:800;font-size:16px" id="pc-c-${c.id}">—</div></div>
+            </div>
+            <div style="cursor:pointer;text-align:center;font-size:12px;color:var(--text3)" onclick="admToggleDetail('${c.id}')">
+              <span id="adm-arr-${c.id}">▼</span> Ver detalhes
+            </div>
+            <div id="adm-det-${c.id}" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Onboarding: ${c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+                <button onclick="admSetStatus('${c.id}','ativo')" style="padding:6px;border-radius:8px;border:1px solid ${st==='ativo'?'#10B981':'var(--border)'};background:${st==='ativo'?'rgba(16,185,129,.1)':'var(--bg3)'};color:${st==='ativo'?'#10B981':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Ativo</button>
+                <button onclick="admSetStatus('${c.id}','suspenso')" style="padding:6px;border-radius:8px;border:1px solid ${st==='suspenso'?'#F59E0B':'var(--border)'};background:${st==='suspenso'?'rgba(245,158,11,.1)':'var(--bg3)'};color:${st==='suspenso'?'#F59E0B':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Suspenso</button>
+                <button onclick="admSetStatus('${c.id}','inadimplente')" style="padding:6px;border-radius:8px;border:1px solid ${st==='inadimplente'?'#EF4444':'var(--border)'};background:${st==='inadimplente'?'rgba(239,68,68,.1)':'var(--bg3)'};color:${st==='inadimplente'?'#EF4444':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Inadimp.</button>
+              </div>
+              <button onclick="admToggleBlock('${c.id}',${!!c.blocked})" style="width:100%;padding:8px;border-radius:10px;border:1px solid ${c.blocked?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)'};background:${c.blocked?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};color:${c.blocked?'#10B981':'#EF4444'};cursor:pointer;font-size:12px;font-weight:700">
+                ${c.blocked ? '✓ Ativar Acesso' : '⊘ Bloquear Acesso'}
+              </button>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      async function admLoadClientStats(id) {
+        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        const { data } = await db.from('food_orders').select('total').eq('company_id', id).eq('status','entregue').gte('created_at', start);
+        if (!data) return;
+        const elO = document.getElementById('pc-o-' + id), elC = document.getElementById('pc-c-' + id);
+        if (elO) elO.textContent = data.length;
+        if (elC) elC.textContent = fmtP(data.reduce((a,b) => a + Number(b.total), 0) * 0.1);
+      }
+
+      function admToggleDetail(id) {
+        const el = document.getElementById('adm-det-' + id), arr = document.getElementById('adm-arr-' + id);
+        if (!el) return;
+        const open = el.style.display === 'block';
+        el.style.display = open ? 'none' : 'block';
+        if (arr) arr.textContent = open ? '▼' : '▲';
+      }
+
+      async function admSetStatus(id, status) {
+        const { error } = await db.from('food_companies').update({ active: status === 'ativo', blocked: status === 'inadimplente' }).eq('id', id);
+        if (!error) { toast('Status atualizado'); admLoadClientes(); } else toast('Erro: ' + error.message);
+      }
+
+      async function admToggleBlock(id, blocked) {
+        const { error } = await db.from('food_companies').update({ blocked: !blocked }).eq('id', id);
+        if (!error) { toast(!blocked ? 'Acesso bloqueado' : 'Acesso liberado'); admLoadClientes(); } else toast('Erro: ' + error.message);
+      }
+
+      // ── FINANCEIRO ──
+      async function admLoadFinanceiro() {
+        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        const [{ data: cos }, { data: ords }] = await Promise.all([
+          db.from('food_companies').select('*').neq('is_founder', true),
+          db.from('food_orders').select('company_id,total').eq('status','entregue').gte('created_at', start)
+        ]);
+        const byComm = {}, byCnt = {};
+        (ords||[]).forEach(o => { byComm[o.company_id] = (byComm[o.company_id]||0) + Number(o.total)*0.1; byCnt[o.company_id] = (byCnt[o.company_id]||0)+1; });
+        admFinRows = (cos||[]).map(c => ({ id:c.id, name:c.name, status: c.blocked?'inadimplente':(c.active?'ativo':'suspenso'), base:ADM_BASE_FEE, orders:byCnt[c.id]||0, commission:byComm[c.id]||0, total:ADM_BASE_FEE+(byComm[c.id]||0) }));
+        const totB = admFinRows.reduce((a,b)=>a+b.base,0), totC = admFinRows.reduce((a,b)=>a+b.commission,0), totT = admFinRows.reduce((a,b)=>a+b.total,0);
+        document.getElementById('adm-fin-total').textContent = fmtP(totT);
+        document.getElementById('adm-fin-base').textContent = fmtP(totB);
+        document.getElementById('adm-fin-comm').textContent = fmtP(totC);
+        document.getElementById('adm-fin-ativos').textContent = admFinRows.filter(r=>r.status==='ativo').length;
+        admRenderFinTable();
+      }
+
+      function admRenderFinTable() {
+        const fil = document.getElementById('adm-fin-fil')?.value||'';
+        const rows = [...admFinRows.filter(r=>!fil||r.status===fil)].sort((a,b)=>admSortDir*(a[admSortKey]>b[admSortKey]?1:-1));
+        const badge = { ativo:'background:rgba(16,185,129,.1);color:#10B981', suspenso:'background:rgba(245,158,11,.1);color:#F59E0B', inadimplente:'background:rgba(239,68,68,.1);color:#EF4444' };
+        const lbl = { ativo:'Ativo', suspenso:'Suspenso', inadimplente:'Inadimp.' };
+        document.getElementById('adm-fin-body').innerHTML = rows.length ? rows.map(r=>`
+          <tr>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700">${r.name}</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:right">${fmtP(r.base)}</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:right">${fmtP(r.commission)}<br><span style="font-size:11px;color:var(--text3)">${r.orders} pedidos</span></td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border);text-align:right;font-weight:900">${fmtP(r.total)}</td>
+            <td style="padding:12px 14px;border-bottom:1px solid var(--border)"><span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${badge[r.status]}">${lbl[r.status]}</span></td>
+          </tr>`).join('') + `<tr style="background:rgba(255,255,255,.03)">
+          <td style="padding:12px 14px;font-weight:700;color:var(--text3)">TOTAL</td>
+          <td style="padding:12px 14px;text-align:right;font-weight:700">${fmtP(rows.reduce((a,b)=>a+b.base,0))}</td>
+          <td style="padding:12px 14px;text-align:right;font-weight:700">${fmtP(rows.reduce((a,b)=>a+b.commission,0))}</td>
+          <td style="padding:12px 14px;text-align:right;font-weight:900;color:#C41C3B">${fmtP(rows.reduce((a,b)=>a+b.total,0))}</td>
+          <td></td></tr>`
+          : '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text3)">Nenhum dado</td></tr>';
+      }
+
+      function admFinSort(key) { if (admSortKey===key) admSortDir*=-1; else { admSortKey=key; admSortDir=-1; } admRenderFinTable(); }
+
+      function admFinExportCSV() {
+        const rows = [['Restaurante','Base','Comissão','Total','Status'], ...admFinRows.map(r=>[r.name,r.base,r.commission.toFixed(2),r.total.toFixed(2),r.status])];
+        const a = document.createElement('a'); a.href = 'data:text/csv,' + encodeURIComponent(rows.map(r=>r.join(',')).join('\n')); a.download = 'financeiro.csv'; a.click(); toast('CSV exportado');
+      }
+
+      // ── SUPORTE ──
+      async function admLoadSuporte() {
+        document.getElementById('adm-tickets-list').innerHTML = '<div style="color:var(--text3);padding:20px">Carregando...</div>';
+        const { data, error } = await db.from('support_tickets').select('*, restaurant:restaurants(name), messages:support_messages(*)').order('created_at', { ascending: false });
+        if (error) { document.getElementById('adm-tickets-list').innerHTML = '<div style="color:var(--text3);padding:20px">Tabela de suporte não encontrada. Execute a migration SQL primeiro.</div>'; return; }
+        admTickets = data || []; admRenderTickets();
+      }
+
+      function admRenderTickets() {
+        const fil = document.getElementById('adm-tkt-fil')?.value||'';
+        const search = (document.getElementById('adm-tkt-search')?.value||'').toLowerCase();
+        const list = admTickets.filter(t => (!fil||t.status===fil) && (!search||(t.title||'').toLowerCase().includes(search)||(t.restaurant?.name||'').toLowerCase().includes(search)));
+        if (!list.length) { document.getElementById('adm-tickets-list').innerHTML = '<div style="color:var(--text3);padding:40px;text-align:center">Nenhum ticket encontrado</div>'; return; }
+        const badge = { aberto:'background:rgba(239,68,68,.1);color:#EF4444', em_andamento:'background:rgba(245,158,11,.1);color:#F59E0B', resolvido:'background:rgba(16,185,129,.1);color:#10B981' };
+        const lbl = { aberto:'Aberto', em_andamento:'Em andamento', resolvido:'Resolvido' };
+        document.getElementById('adm-tickets-list').innerHTML = list.map(t => {
+          const open = admTicketOpen === t.id;
+          const msgs = t.messages || [];
+          return `<div style="background:var(--bg2);border:1px solid ${open?'rgba(196,28,59,.3)':'var(--border)'};border-radius:20px;padding:16px;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer" onclick="admToggleTicket('${t.id}')">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                  <span style="font-size:11px;color:var(--text3);font-family:monospace">#${t.id.slice(0,8)}</span>
+                  <span style="font-size:12px;color:var(--text2);font-weight:600">${t.restaurant?.name||'—'}</span>
+                </div>
+                <div style="font-weight:700">${t.title||'Sem assunto'}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px">${new Date(t.created_at).toLocaleDateString('pt-BR')}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${badge[t.status]}">${lbl[t.status]||t.status}</span>
+                <span class="ms" style="color:var(--text3)">${open?'expand_less':'expand_more'}</span>
+              </div>
+            </div>
+            ${open ? `<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+              ${t.description?`<div style="background:var(--bg3);border-radius:12px;padding:12px;margin-bottom:12px;font-size:13px;color:var(--text2)">${t.description}</div>`:''}
+              <div style="max-height:260px;overflow-y:auto;margin-bottom:12px">
+                ${msgs.map(m=>`<div style="display:flex;justify-content:${m.sender_type==='admin'?'flex-end':'flex-start'};margin-bottom:8px">
+                  <div style="border-radius:12px;padding:10px 14px;max-width:70%;font-size:13px;${m.sender_type==='admin'?'background:rgba(196,28,59,.1);border:1px solid rgba(196,28,59,.2)':'background:var(--bg3);border:1px solid var(--border)'}">
+                    <div style="font-size:10px;opacity:.6;margin-bottom:4px">${m.sender_type==='admin'?'Flüxa':'Cliente'} · ${new Date(m.created_at).toLocaleDateString('pt-BR')}</div>
+                    ${m.message}
+                  </div>
+                </div>`).join('')||'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Sem mensagens</div>'}
+              </div>
+              ${t.status!=='resolvido'?`
+                <textarea id="adm-reply-${t.id}" rows="3" placeholder="Responder..." style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;color:white;font-family:Inter;resize:none;margin-bottom:8px"></textarea>
+                <div style="display:flex;gap:8px">
+                  <button class="btn-s" style="flex:1" onclick="admResolveTicket('${t.id}')">✓ Marcar Resolvido</button>
+                  <button class="btn-p" style="background:#C41C3B" onclick="admSendReply('${t.id}')">Enviar</button>
+                </div>`
+              :`<div style="color:#10B981;font-size:13px;font-weight:600">✓ Resolvido${t.resolved_at?' em '+new Date(t.resolved_at).toLocaleDateString('pt-BR'):''}</div>`}
+            </div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      function admToggleTicket(id) { admTicketOpen = admTicketOpen===id ? null : id; admRenderTickets(); }
+
+      async function admSendReply(ticketId) {
+        const msg = document.getElementById('adm-reply-'+ticketId)?.value?.trim();
+        if (!msg) return;
+        await db.from('support_messages').insert({ ticket_id: ticketId, sender_type: 'admin', message: msg });
+        const t = admTickets.find(x=>x.id===ticketId);
+        if (t && t.status==='aberto') await db.from('support_tickets').update({ status:'em_andamento' }).eq('id', ticketId);
+        toast('Resposta enviada'); admLoadSuporte();
+      }
+
+      async function admResolveTicket(id) {
+        await db.from('support_tickets').update({ status:'resolvido', resolved_at: new Date().toISOString() }).eq('id', id);
+        toast('Ticket resolvido'); admLoadSuporte();
+      }
+
+      // ── CADASTRO (4 passos) ──
+      const ADM_STEPS = ['Dados Básicos','Dados Jurídicos','Documentos','Login do Gestor'];
+
+      function admRenderCadStep() {
+        const stepsEl = document.getElementById('adm-steps');
+        if (stepsEl && admCadStep <= 4) {
+          stepsEl.innerHTML = ADM_STEPS.map((s,i) => {
+            const n=i+1, cls=n<admCadStep?'done':n===admCadStep?'active':'todo';
+            const dot = { done:'background:#C41C3B;color:white', active:'background:rgba(196,28,59,.15);color:#C41C3B;border:2px solid #C41C3B', todo:'background:var(--bg3);color:var(--text3);border:2px solid var(--border)' }[cls];
+            return `${i>0?`<div style="flex:1;height:2px;background:${n-1<admCadStep?'#C41C3B':'var(--border)'};margin:0 4px"></div>`:''}
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;${dot}">${n<admCadStep?'✓':n}</div>
+                <div style="font-size:10px;font-weight:600;color:${n===admCadStep?'var(--accent)':n<admCadStep?'#C41C3B':'var(--text3)'};white-space:nowrap">${s}</div>
+              </div>`;
+          }).join('');
+        }
+        const f = document.getElementById('adm-cad-form');
+        const inp = (id,val,ph,type='text') => `<label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin:8px 0 4px">${id.replace(/cad-/,'').replace(/-/g,' ')}</label><input type="${type}" id="${id}" value="${val||''}" placeholder="${ph}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;color:white;font-family:Inter;margin-bottom:4px">`;
+        const nav = (prev=true) => `<div style="display:flex;justify-content:${prev?'space-between':'flex-end'};margin-top:20px">${prev?'<button class="btn-s" onclick="admCadPrev()">← Anterior</button>':''}<button class="btn-p" style="background:#C41C3B" onclick="admCadNext()">Próximo →</button></div>`;
+
+        if (admCadStep===1) f.innerHTML = `<h3 class="hl" style="font-size:15px;font-weight:800;margin-bottom:16px">Dados Básicos</h3>
+          ${inp('cad-name',admCadData.name,'Nome do Restaurante')}
+          ${inp('cad-cnpj',admCadData.cnpj,'00.000.000/0001-00')}
+          ${inp('cad-address',admCadData.address,'Rua, número, bairro')}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>${inp('cad-city',admCadData.address_city,'Cidade')}</div>
+            <div>${inp('cad-cep',admCadData.address_cep,'00000-000')}</div>
+          </div>
+          ${inp('cad-phone',admCadData.phone,'(11) 99999-0000')}${nav(false)}`;
+
+        else if (admCadStep===2) f.innerHTML = `<h3 class="hl" style="font-size:15px;font-weight:800;margin-bottom:16px">Dados Jurídicos</h3>
+          ${inp('cad-razao',admCadData.razao_social,'Razão Social LTDA')}
+          ${inp('cad-owner',admCadData.owner_name,'Nome do Responsável')}
+          ${inp('cad-owner-email',admCadData.owner_email,'email@responsavel.com','email')}
+          ${inp('cad-cpf',admCadData.owner_cpf,'000.000.000-00')}${nav()}`;
+
+        else if (admCadStep===3) f.innerHTML = `<h3 class="hl" style="font-size:15px;font-weight:800;margin-bottom:16px">Documentos</h3>
+          <p style="color:var(--text3);font-size:13px;margin-bottom:16px">Status de recebimento dos documentos.</p>
+          ${['Contrato assinado','RG / CNH','Comprovante de endereço'].map((l,i)=>`
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin:8px 0 4px">${l}</label>
+            <select id="cad-doc-${i}" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px;color:white;font-family:Inter;margin-bottom:4px">
+              <option value="">Pendente</option><option value="sim">Recebido ✓</option><option value="nao">Não enviado</option>
+            </select>`).join('')}${nav()}`;
+
+        else if (admCadStep===4) f.innerHTML = `<h3 class="hl" style="font-size:15px;font-weight:800;margin-bottom:16px">Login do Gestor</h3>
+          <p style="color:var(--text3);font-size:13px;margin-bottom:16px">Credenciais que o gestor usará no Kitchen.</p>
+          ${inp('cad-g-name',admCadData.gestor_name,'Nome do Gestor')}
+          ${inp('cad-g-email',admCadData.gestor_email,'gestor@restaurante.com','email')}
+          ${inp('cad-g-pass','','Senha (mín. 6 caracteres)','password')}
+          <div style="background:var(--bg3);border-radius:12px;padding:12px;margin-top:8px;font-size:12px;color:var(--text2)">
+            <div>Restaurante: <b>${admCadData.name||'—'}</b></div><div>CNPJ: <b>${admCadData.cnpj||'—'}</b></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px">
+            <button class="btn-s" onclick="admCadPrev()">← Anterior</button>
+            <button class="btn-p" style="background:#C41C3B" onclick="admCadSubmit()">Criar Restaurante e Login ✓</button>
+          </div>`;
+
+        else if (admCadStep===5) {
+          if (stepsEl) stepsEl.innerHTML = '';
+          f.innerHTML = `<div style="text-align:center;padding:40px 20px">
+            <div style="font-size:48px;margin-bottom:16px">✅</div>
+            <h3 class="hl" style="font-size:20px;font-weight:800;margin-bottom:8px">Restaurante criado!</h3>
+            <div style="background:var(--bg3);border-radius:12px;padding:12px;margin:16px 0;font-size:13px">Login do gestor: <b>${admCadData.gestor_email||'—'}</b></div>
+            <button class="btn-p" style="background:#C41C3B" onclick="admCadStep=1;admCadData={};admRenderCadStep()">Cadastrar outro</button>
+          </div>`;
+        }
+      }
+
+      function admCadNext() {
+        if (admCadStep===1) {
+          const name=document.getElementById('cad-name')?.value?.trim(), cnpj=document.getElementById('cad-cnpj')?.value?.trim(), address=document.getElementById('cad-address')?.value?.trim(), city=document.getElementById('cad-city')?.value?.trim();
+          if (!name||!cnpj||!address||!city) { toast('Preencha os campos obrigatórios'); return; }
+          Object.assign(admCadData, {name,cnpj,address,address_city:city,address_cep:document.getElementById('cad-cep')?.value?.trim(),phone:document.getElementById('cad-phone')?.value?.trim()});
+        } else if (admCadStep===2) {
+          const razao=document.getElementById('cad-razao')?.value?.trim(), owner=document.getElementById('cad-owner')?.value?.trim(), email=document.getElementById('cad-owner-email')?.value?.trim();
+          if (!razao||!owner||!email) { toast('Preencha os campos obrigatórios'); return; }
+          Object.assign(admCadData, {razao_social:razao,owner_name:owner,owner_email:email,owner_cpf:document.getElementById('cad-cpf')?.value?.trim()});
+        } else if (admCadStep===3) {
+          admCadData.docs = [0,1,2].map(i=>document.getElementById('cad-doc-'+i)?.value||'');
+        }
+        admCadStep++; admRenderCadStep();
+      }
+
+      function admCadPrev() { admCadStep--; admRenderCadStep(); }
+
+      async function admCadSubmit() {
+        const gName=document.getElementById('cad-g-name')?.value?.trim(), gEmail=document.getElementById('cad-g-email')?.value?.trim(), gPass=document.getElementById('cad-g-pass')?.value;
+        if (!gName||!gEmail||!gPass||gPass.length<6) { toast('Preencha todos os campos (senha mín. 6 caracteres)'); return; }
+        Object.assign(admCadData, {gestor_name:gName,gestor_email:gEmail});
+        toast('Criando restaurante...');
+        const { data: rest, error } = await db.from('restaurants').insert([{
+          name:admCadData.name,cnpj:admCadData.cnpj,address:admCadData.address,address_city:admCadData.address_city,
+          address_cep:admCadData.address_cep,phone:admCadData.phone,razao_social:admCadData.razao_social,
+          owner_name:admCadData.owner_name,owner_email:admCadData.owner_email,owner_cpf:admCadData.owner_cpf,status:'ativo'
+        }]).select().single();
+        if (error) { toast('Erro: ' + error.message); return; }
+        await db.from('restaurant_users').insert([{restaurant_id:rest.id,email:gEmail,full_name:gName,role:'gestor',is_active:true}]);
+        toast('Restaurante criado!'); admCadStep=5; admRenderCadStep();
       }
     </script>
   </body>

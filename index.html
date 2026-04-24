@@ -1754,14 +1754,17 @@
             <span class="ms">close</span>
           </button>
         </div>
-        <div
-          class="photo-up"
-          onclick="document.getElementById('item-photo').click()"
-        >
-          <img id="item-prev" src="" style="display: none" />
-          <span class="ms" style="color: var(--text3); font-size: 32px"
-            >add_a_photo</span
+        <div style="position:relative">
+          <div
+            class="photo-up"
+            onclick="document.getElementById('item-photo').click()"
           >
+            <img id="item-prev" src="" style="display: none" />
+            <span class="ms" style="color: var(--text3); font-size: 32px"
+              >add_a_photo</span
+            >
+          </div>
+          <button id="btn-remove-item-photo" onclick="removeItemPhoto()" style="display:none; position:absolute; top:4px; right:4px; background:rgba(220,38,38,.9); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:16px; line-height:1; z-index:2">✕</button>
         </div>
         <input
           type="file"
@@ -1812,6 +1815,9 @@
         <label>Descrição</label><textarea id="item-desc" rows="2"></textarea>
         <button class="btn-p" style="width: 100%" onclick="saveItem()">
           SALVAR ITEM
+        </button>
+        <button id="btn-delete-item" class="btn-p" style="width:100%; margin-top:12px; background:#dc2626; display:none" onclick="deleteItem()">
+          🗑️ EXCLUIR ITEM
         </button>
       </div>
     </div>
@@ -3306,6 +3312,29 @@
         }
       }
 
+      async function deleteItem() {
+        if (!editId) return;
+        if (!confirm("Tem certeza que deseja excluir este item do cardápio?")) return;
+        const { error } = await db.from("food_menu_items").delete().eq("id", editId);
+        if (!error) {
+          toast("Item excluído");
+          closeMod("mod-item");
+          editId = null;
+          loadMenu();
+        } else {
+          console.error("Erro ao excluir item:", error);
+          toast("Erro ao excluir");
+        }
+      }
+
+      function removeItemPhoto() {
+        document.getElementById("item-photo").dataset.url = "";
+        document.getElementById("item-prev").src = "";
+        document.getElementById("item-prev").style.display = "none";
+        document.getElementById("btn-remove-item-photo").style.display = "none";
+        toast("Foto removida. Clique em SALVAR para confirmar.");
+      }
+
       function openNewItem() {
         editId = null;
         document.getElementById("item-title").textContent = "Novo Item";
@@ -3315,6 +3344,8 @@
         document.getElementById("item-type").value = "normal";
         document.getElementById("item-prev").style.display = "none";
         document.getElementById("item-photo").dataset.url = "";
+        document.getElementById("btn-delete-item").style.display = "none";
+        document.getElementById("btn-remove-item-photo").style.display = "none";
         openMod("mod-item");
       }
 
@@ -3337,9 +3368,12 @@
         if (i.image_url) {
           document.getElementById("item-prev").src = i.image_url;
           document.getElementById("item-prev").style.display = "block";
+          document.getElementById("btn-remove-item-photo").style.display = "block";
         } else {
           document.getElementById("item-prev").style.display = "none";
+          document.getElementById("btn-remove-item-photo").style.display = "none";
         }
+        document.getElementById("btn-delete-item").style.display = "block";
         openMod("mod-item");
       }
 

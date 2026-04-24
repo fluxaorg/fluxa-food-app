@@ -31,33 +31,49 @@
     .hl { font-family:var(--hl); }
 
     /* LOGIN REFERENCE: Premium animated glassmorphism */
-    #s-login { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background: #050505; position: relative; overflow: hidden; }
-    /* Animated Gradient Background Orbs */
-    .login-orb-1, .login-orb-2 { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: floatOrb 10s infinite alternate ease-in-out; z-index: 0; }
-    .login-orb-1 { width: 400px; height: 400px; background: rgba(59, 130, 246, 0.3); top: -100px; left: -100px; }
-    .login-orb-2 { width: 300px; height: 300px; background: rgba(245, 158, 11, 0.2); bottom: -50px; right: -50px; animation-delay: -5s; }
-    @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.2); } }
+    #s-login { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; background: #030508; position: relative; overflow: hidden; color: rgba(255,255,255,0.7); font-family: 'Inter', monospace; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
     
-    .login-card { width:100%; max-width:380px; text-align:center; position: relative; z-index: 1; background: rgba(20, 20, 20, 0.6); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; padding: 48px 32px; box-shadow: 0 30px 60px rgba(0,0,0,0.6); animation: loginEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform: translateY(30px); opacity: 0; }
+    .login-beam { position:absolute; top:-50%; left:50%; width:180px; height:200%; background:linear-gradient(to right, transparent, rgba(200,220,255,0.3), transparent); transform:rotate(15deg); filter:blur(40px); z-index:0; animation: beamPulse 8s infinite alternate; pointer-events: none; }
+    @keyframes beamPulse { 0% { opacity:0.4; transform:rotate(15deg) translateX(-100px); } 100% { opacity:0.8; transform:rotate(15deg) translateX(100px); } }
+
+    /* WATERFALL EMOJIS */
+    #login-food-waterfall { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; opacity: 0.25; }
+    .food-emoji { position: absolute; animation: fall linear forwards; filter: grayscale(50%) brightness(1.2); }
+    @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+
+    /* TEXT DECORATIONS */
+    .login-bottom-left { position: absolute; bottom: 30px; left: 30px; text-transform: uppercase; z-index:0; }
+    .login-top-left { position: absolute; top: 30px; left: 30px; text-transform: uppercase; z-index:0; }
+    .login-top-right { position: absolute; top: 30px; right: 30px; display: flex; align-items: center; text-transform: uppercase; z-index:0; }
+    .login-right-nav { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 40px; text-transform: uppercase; writing-mode: vertical-rl; text-orientation: mixed; letter-spacing: 4px; z-index:0; }
+    .login-bottom-indicator { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); z-index:0; }
+
+    .login-card { width:100%; max-width:420px; text-align:left; position: relative; z-index: 1; background: rgba(15, 17, 20, 0.4); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.05); border-radius: 32px; padding: 48px; box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.1); animation: loginEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform: translateY(30px); opacity: 0; }
     
     @keyframes loginEntrance { to { transform: translateY(0); opacity: 1; } }
     @keyframes slideUpFade { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    .login-logo { font-size:48px; font-weight:900; letter-spacing:-2px; margin-bottom:8px; color:var(--accent); text-shadow: 0 0 20px rgba(255,255,255,0.1); opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.1s; }
-    .login-subtitle { color:var(--text3); margin-bottom:36px; font-weight:800; letter-spacing: 2px; font-size: 11px; text-transform: uppercase; opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.2s; }
+    .login-sub-code { color:rgba(255,255,255,0.4); margin-bottom:12px; font-weight:800; letter-spacing: 2px; font-size: 10px; text-transform: uppercase; opacity: 0; animation: slideUpFade 0.6s forwards 0.1s; }
+    .login-title { font-size:36px; font-weight:800; letter-spacing:-1px; margin-bottom:12px; color:var(--accent); opacity: 0; animation: slideUpFade 0.6s forwards 0.2s; font-family: 'Inter', sans-serif; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
+    .login-subtitle { color:rgba(255,255,255,0.5); margin-bottom:32px; font-weight:500; font-size: 13px; opacity: 0; letter-spacing: 0; font-family: 'Inter', sans-serif; animation: slideUpFade 0.6s forwards 0.3s; }
     
-    .login-field-wrap { position: relative; margin-bottom: 16px; opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .login-field-wrap:nth-child(3) { animation-delay: 0.3s; }
-    .login-field-wrap:nth-child(4) { animation-delay: 0.4s; }
+    .login-protocol-line { display: flex; align-items: center; text-align: center; color: rgba(255,255,255,0.3); font-size: 9px; letter-spacing: 2px; margin-bottom: 24px; opacity:0; animation: slideUpFade 0.6s forwards 0.4s; }
+    .login-protocol-line::before, .login-protocol-line::after { content: ''; flex: 1; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .login-protocol-line span { padding: 0 16px; }
+
+    .login-field-wrap { position: relative; margin-bottom: 24px; opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .login-field-wrap:nth-of-type(1) { animation-delay: 0.5s; }
+    .login-field-wrap:nth-of-type(2) { animation-delay: 0.6s; }
     
-    .login-field { width:100%; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:18px 18px 18px 48px; color:white; font-size:15px; font-family:'Inter'; transition:all 0.3s ease; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
-    .login-field::placeholder { color: var(--text3); font-weight: 500; }
-    .login-field:focus { border-color:rgba(255,255,255,0.3); outline:none; background:rgba(255,255,255,0.03); box-shadow: inset 0 2px 10px rgba(0,0,0,0.2), 0 0 0 4px rgba(255,255,255,0.03); }
-    .login-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 20px; transition: 0.3s; pointer-events: none; }
-    .login-field:focus + .login-icon { color: var(--accent); }
+    .login-label { display: block; font-size: 9px; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 8px; text-transform: uppercase; }
     
-    .btn-login { width:100%; background:linear-gradient(135deg, #ffffff, #e4e4e7); color:black; border:none; border-radius:16px; padding:18px; font-weight:800; font-family:var(--hl); cursor:pointer; font-size:15px; letter-spacing: 0.5px; margin-top:12px; transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow:0 10px 20px rgba(255,255,255,0.1); opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s; position: relative; overflow: hidden; }
-    .btn-login::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent); transform: skewX(-20deg); animation: btnShine 3s infinite 2s; }
+    .login-field { width:100%; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px 20px; color:white; font-size:14px; font-family:'Inter'; transition:all 0.3s ease; letter-spacing: 0; }
+    .login-field::placeholder { color: rgba(255,255,255,0.2); font-weight: 500; }
+    .login-field:focus { border-color:rgba(255,255,255,0.2); outline:none; background:rgba(255,255,255,0.05); box-shadow: 0 0 0 4px rgba(255,255,255,0.02); }
+    
+    .btn-login { width:100%; display: flex; justify-content: center; align-items: center; gap: 8px; background:#fff; color:#000; border:none; border-radius:16px; padding:18px; font-weight:800; font-family:var(--hl); cursor:pointer; font-size:13px; letter-spacing: 1px; margin-top:12px; transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1); opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.7s; }
+    .btn-login:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(255,255,255,0.2); }
+    .btn-login .ms { font-size: 18px; }
     @keyframes btnShine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
     .btn-login:hover { transform:translateY(-2px); box-shadow:0 15px 30px rgba(255,255,255,0.2); }
     .btn-login:active { transform: translateY(1px); box-shadow:0 5px 10px rgba(255,255,255,0.1); }
@@ -197,21 +213,38 @@
 
   <!-- TELA DE LOGIN -->
   <div id="s-login">
-    <div class="login-orb-1"></div>
-    <div class="login-orb-2"></div>
+    <div id="login-food-waterfall"></div>
+    <div class="login-beam"></div>
+    
     <div class="login-card">
-      <div class="login-logo hl">Flüxa</div>
-      <p class="login-subtitle">CENTRAL DE OPERAÇÕES</p>
+      <p class="login-sub-code">AREA.TDFGTY7V</p>
+      <div class="login-title hl">Flüxa Kitchens</div>
+      <p class="login-subtitle">Acesso seguro ou biométrico ao ecossistema.</p>
+      
+      <div class="login-protocol-line">
+         <span>PROTOCOLO PADRÃO</span>
+      </div>
+
       <div class="login-field-wrap">
-        <input type="email" id="lg-email" class="login-field" placeholder="Email de acesso">
-        <span class="ms login-icon">mail</span>
+        <label class="login-label">IDENTIFICADOR</label>
+        <input type="email" id="lg-email" class="login-field" placeholder="usuario@dominio.com">
       </div>
       <div class="login-field-wrap">
-        <input type="password" id="lg-pass" class="login-field" placeholder="Sua senha">
-        <span class="ms login-icon">lock</span>
+        <label class="login-label">CÓDIGO DE ACESSO</label>
+        <input type="password" id="lg-pass" class="login-field" placeholder="••••••••••••">
       </div>
-      <button class="btn-login" id="lg-btn" onclick="doLogin()">ENTRAR NO SISTEMA</button>
+      <button class="btn-login" id="lg-btn" onclick="doLogin()">INICIAR UPLINK <span class="ms">arrow_forward</span></button>
     </div>
+    
+    <div class="login-bottom-left">UPLINK_ESTABELECIDO_</div>
+    <div class="login-top-left">SVR.CORP // BM-1INF</div>
+    <div class="login-top-right">V05.01 <span class="ms" style="font-size:14px; margin-left:8px">dark_mode</span> DARK</div>
+    <div class="login-right-nav">
+      <span>T E L E</span>
+      <span>P R O M P T</span>
+      <span>3 B</span>
+    </div>
+    <div class="login-bottom-indicator"></div>
   </div>
 
   <!-- APP PRINCIPAL -->
@@ -586,6 +619,27 @@
     function show(id) {
       document.getElementById('s-login').style.display = id==='s-login'?'flex':'none';
       document.getElementById('app').style.display = id==='app'?'flex':'none';
+      if (id === 's-login') startFoodWaterfall();
+    }
+
+    function startFoodWaterfall() {
+      const container = document.getElementById('login-food-waterfall');
+      if (!container) return;
+      container.innerHTML = '';
+      const foods = ['🍔','🍕','🍟','🌭','🥐','🍣','🍩','🍗','🌮','🥞','🍳','🍝','🥩','🥪','🧀','🥘','🥗','🍿'];
+      setInterval(() => {
+        if(document.getElementById('s-login').style.display === 'none') return;
+        const el = document.createElement('div');
+        el.className = 'food-emoji';
+        el.textContent = foods[Math.floor(Math.random() * foods.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.fontSize = (Math.random() * 20 + 20) + 'px';
+        const duration = Math.random() * 5 + 5;
+        el.style.animationDuration = duration + 's';
+        el.style.opacity = (Math.random() * 0.5 + 0.1).toString();
+        container.appendChild(el);
+        setTimeout(() => el.remove(), duration * 1000);
+      }, 400);
     }
 
     async function doLogin() {

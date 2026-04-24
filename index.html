@@ -311,6 +311,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
             <h1 class="hl-title">Meu Cardápio</h1>
             <div style="display:flex; gap:12px">
+              <button class="btn-p" style="background:var(--blue); color:white" onclick="openGlobalPizzaBuilder()">🍕 CONFIGURAR PIZZAS</button>
               <button class="btn-p" style="background:var(--bg3); color:white" onclick="openModCategories()">CATEGORIAS</button>
               <button class="btn-p" onclick="openNewItem()">+ NOVO ITEM</button>
             </div>
@@ -490,9 +491,8 @@
       <label>Nome do Item</label><input type="text" id="item-name">
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
         <div><label>Tipo de Item</label>
-          <select id="item-type" onchange="togglePizzaBuilder()">
+          <select id="item-type">
             <option value="comum">Produto Comum</option>
-            <option value="pizza">Pizza Customizável</option>
           </select>
         </div>
         <div>
@@ -504,9 +504,6 @@
         </div>
       </div>
       <div id="item-price-wrap"><label>Preço</label><input type="number" step="0.01" id="item-price"></div>
-      <div id="item-pizza-wrap" style="display:none; margin-bottom:16px">
-        <button class="btn-s" style="width:100%; border-color:var(--blue); color:var(--blue); font-weight:700" onclick="openPizzaBuilder()">⚙️ CONFIGURAR TAMANHOS E SABORES</button>
-      </div>
       <label>Descrição</label><textarea id="item-desc" rows="2"></textarea>
       <button class="btn-p" style="width:100%" onclick="saveItem()">SALVAR ITEM</button>
     </div>
@@ -535,40 +532,66 @@
     </div>
   </div>
 
-  <!-- PIZZA BUILDER MODAL -->
+  <!-- PIZZA BUILDER MODAL (GLOBAL) -->
   <div class="modal-overlay" id="mod-pizza-builder" onclick="closeMod('mod-pizza-builder',event)">
-    <div class="modal-sheet" style="max-width:500px; width:95%">
+    <div class="modal-sheet" style="max-width:600px; width:95%">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px">
-        <h3 class="hl">Opções da Pizza</h3>
+        <h3 class="hl">Configuração do Módulo de Pizzas</h3>
         <button onclick="closeMod('mod-pizza-builder')" style="border:none; background:none; cursor:pointer"><span class="ms">close</span></button>
       </div>
 
+      <div style="margin-bottom:20px">
+        <label>Status do Módulo</label>
+        <div style="display:flex; gap:12px; margin-top:8px">
+          <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer">
+            <input type="checkbox" id="pz-global-active" checked> Módulo Ativo no Cardápio
+          </label>
+        </div>
+      </div>
+
       <div class="card" style="margin-bottom:24px; background:var(--bg2)">
-        <div style="font-weight:800; font-size:14px; margin-bottom:12px">1. Tamanhos Disponíveis</div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px; display:flex; align-items:center; gap:8px">
+          <span class="ms" style="color:var(--blue)">straighten</span> 1. Tamanhos, Fatias e Limites
+        </div>
         <div id="pb-sizes-list" style="margin-bottom:12px"></div>
-        <div style="display:grid; grid-template-columns:1fr 60px 60px 50px; gap:8px">
-          <div><label style="font-size:10px">Nome</label><input type="text" id="pbs-name" placeholder="Grande" style="font-size:12px; padding:8px"></div>
-          <div><label style="font-size:10px">Fatias</label><input type="number" id="pbs-fatias" placeholder="8" style="font-size:12px; padding:8px"></div>
-          <div><label style="font-size:10px">Max Sab</label><input type="number" id="pbs-max" placeholder="3" style="font-size:12px; padding:8px"></div>
-          <div style="display:flex; align-items:flex-end"><button class="btn-p" style="padding:8px" onclick="addPbSize()">+</button></div>
+        <div style="display:grid; grid-template-columns:1fr 60px 60px 50px; gap:8px; background:var(--bg3); padding:12px; border-radius:12px">
+          <div><label style="font-size:10px">Nome (Ex: Grande)</label><input type="text" id="pbs-name" style="font-size:12px; padding:8px"></div>
+          <div><label style="font-size:10px">Fatias</label><input type="number" id="pbs-fatias" style="font-size:12px; padding:8px"></div>
+          <div><label style="font-size:10px">Max Sab</label><input type="number" id="pbs-max" style="font-size:12px; padding:8px"></div>
+          <div style="display:flex; align-items:flex-end"><button class="btn-p" style="padding:8px; height:36px" onclick="addPbSize()">+</button></div>
         </div>
       </div>
 
       <div class="card" style="background:var(--bg2)">
-        <div style="font-weight:800; font-size:14px; margin-bottom:12px">2. Sabores</div>
-        <div id="pb-flavors-list" style="margin-bottom:12px; max-height:200px; overflow-y:auto"></div>
-        <div style="border:1px solid var(--border); padding:12px; border-radius:12px; background:var(--bg3)">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
-            <div><label style="font-size:10px">Sabor</label><input type="text" id="pbf-name" placeholder="Calabresa" style="font-size:12px; padding:8px"></div>
-            <div><label style="font-size:10px">Subcategoria (Ex: Doces)</label><input type="text" id="pbf-sub" placeholder="Tradicionais" style="font-size:12px; padding:8px"></div>
+        <div style="font-weight:800; font-size:14px; margin-bottom:12px; display:flex; align-items:center; gap:8px">
+          <span class="ms" style="color:var(--blue)">restaurant_menu</span> 2. Sabores e Subcategorias
+        </div>
+        <div id="pb-flavors-list" style="margin-bottom:12px; max-height:250px; overflow-y:auto; padding-right:4px"></div>
+        
+        <div style="border:1px solid var(--border); padding:16px; border-radius:16px; background:var(--bg3)">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px">
+            <div><label style="font-size:10px">Nome do Sabor</label><input type="text" id="pbf-name" placeholder="Ex: Calabresa" style="font-size:12px; padding:8px"></div>
+            <div>
+              <label style="font-size:10px">Subcategoria</label>
+              <input type="text" id="pbf-sub" list="pbf-subs-list" placeholder="Ex: Tradicionais" style="font-size:12px; padding:8px">
+              <datalist id="pbf-subs-list">
+                <option value="Tradicionais">
+                <option value="Especiais">
+                <option value="Premiums">
+                <option value="Doces">
+              </datalist>
+            </div>
           </div>
-          <label style="font-size:10px">Preço deste sabor por tamanho:</label>
-          <div id="pbf-prices" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px"></div>
-          <button class="btn-s" style="width:100%; border-color:var(--blue); color:var(--blue); font-size:12px" onclick="addPbFlavor()">ADICIONAR SABOR</button>
+          <label style="font-size:10px; font-weight:800; color:var(--text3); margin-bottom:8px; display:block">PREÇOS POR TAMANHO:</label>
+          <div id="pbf-prices" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; margin-bottom:16px"></div>
+          <button class="btn-s" style="width:100%; border-color:var(--blue); color:var(--blue); font-weight:700" onclick="addPbFlavor()">ADICIONAR SABOR AO MÓDULO</button>
         </div>
       </div>
       
-      <button class="btn-p" style="width:100%; margin-top:24px" onclick="closeMod('mod-pizza-builder')">CONCLUIR</button>
+      <div style="display:grid; grid-template-columns:1fr 2fr; gap:12px; margin-top:24px">
+        <button class="btn-s" onclick="closeMod('mod-pizza-builder')">CANCELAR</button>
+        <button class="btn-p" onclick="saveGlobalPizza()">SALVAR CONFIGURAÇÃO GLOBAL</button>
+      </div>
     </div>
   </div>
 
@@ -995,10 +1018,74 @@
       renderPbFlavors();
     }
 
+    async function openGlobalPizzaBuilder() {
+      // Find the special global pizza item
+      const { data, error } = await db.from('food_menu_items').select('*').eq('company_id', co.id).eq('item_type', 'pizza_global').maybeSingle();
+      
+      if (data) {
+        document.getElementById('pz-global-active').checked = true;
+        currentPizzaSizes = data.sizes || [];
+        currentPizzaFlavors = data.pizza_flavors_per_size || [];
+      } else {
+        // Default template
+        document.getElementById('pz-global-active').checked = true;
+        currentPizzaSizes = [];
+        currentPizzaFlavors = [];
+      }
+      
+      renderPbSizes();
+      renderPbFlavors();
+      openMod('mod-pizza-builder');
+    }
+
+    async function saveGlobalPizza() {
+      const active = document.getElementById('pz-global-active').checked;
+      
+      // We always ensure there is a "Pizzas" category
+      let pzCat = categories.find(c => c.name.toLowerCase() === 'pizzas');
+      if (!pzCat) {
+        const { data: newCat } = await db.from('food_categories').insert({ 
+          name: 'Pizzas', 
+          icon: 'pizza', 
+          company_id: co.id, 
+          display_order: 0 
+        }).select().single();
+        pzCat = newCat;
+        await loadCategories();
+      }
+
+      const p = {
+        name: 'Pizzas Customizáveis',
+        item_type: 'pizza_global',
+        category: 'Pizzas',
+        sizes: currentPizzaSizes,
+        pizza_flavors_per_size: currentPizzaFlavors,
+        company_id: co.id,
+        price: 0,
+        available: active
+      };
+
+      // Upsert
+      const { data: existing } = await db.from('food_menu_items').select('id').eq('company_id', co.id).eq('item_type', 'pizza_global').maybeSingle();
+      
+      const { error } = existing 
+        ? await db.from('food_menu_items').update(p).eq('id', existing.id)
+        : await db.from('food_menu_items').insert(p);
+
+      if (!error) {
+        toast('Módulo de Pizzas salvo com sucesso!');
+        closeMod('mod-pizza-builder');
+        loadMenu();
+      } else {
+        toast('Erro ao salvar módulo');
+      }
+    }
+
     async function loadMenu() {
       const { data } = await db.from('food_menu_items').select('*').eq('company_id', co.id).order('display_order');
       if (data) {
-        menuItems = data;
+        // Filter out the global pizza item from the main grid - it's managed separately
+        menuItems = data.filter(i => i.item_type !== 'pizza_global');
         let html = '';
         
         if (!categories.length) await loadCategories();
@@ -1010,10 +1097,10 @@
           const group = menuItems.filter(i => (i.category || '') === c);
           if(!group.length) return;
           const catObj = categories.find(x => x.name === c);
-          const iconStr = catObj && catObj.icon ? `<span style="font-size:24px; vertical-align:middle; margin-right:8px">${catObj.icon}</span>` : '';
+          const iconStr = catObj && catObj.icon ? `<span style="width:24px; height:24px; vertical-align:middle; margin-right:8px; display:inline-flex; align-items:center; justify-content:center">${getIconSvg(catObj.icon)}</span>` : '';
           const catName = c ? c : 'Sem Categoria';
           
-          html += `<div class="hl" style="font-size:20px; font-weight:800; margin:30px 0 16px">${iconStr}${catName}</div>`;
+          html += `<div class="hl" style="font-size:20px; font-weight:800; margin:30px 0 16px; display:flex; align-items:center">${iconStr}${catName}</div>`;
           html += `<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px">`;
           group.forEach(i => {
             html += `
@@ -1056,19 +1143,34 @@
       { id: 'star', svg: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>` }
     ];
 
-    function renderIconSelector(selectedIcon = '') {
+    function getIconSvg(iconId) {
+      const found = PRESET_ICONS.find(i => i.id === iconId);
+      return found ? found.svg : (iconId && iconId.startsWith('<svg') ? iconId : '');
+    }
+
+    function renderIconSelector(selectedIconId = '') {
       const cont = document.getElementById('icon-selector');
       if(!cont) return;
       cont.innerHTML = PRESET_ICONS.map(i => `
-        <button class="btn-s" style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; border-color:${selectedIcon === i.svg ? 'var(--blue)' : 'var(--border)'}; color:${selectedIcon === i.svg ? 'var(--blue)' : 'var(--text)'}" onclick="selectCatIcon(this, \`${i.svg}\`)">${i.svg}</button>
+        <button class="btn-s icon-preset-btn ${selectedIconId === i.id ? 'selected' : ''}" 
+                style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; position:relative" 
+                onclick="selectCatIcon(this, '${i.id}')">
+          ${i.svg}
+          <div class="check-overlay" style="display:${selectedIconId === i.id ? 'flex' : 'none'}; position:absolute; top:-4px; right:-4px; background:var(--blue); color:white; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; font-size:10px">✓</div>
+        </button>
       `).join('');
     }
 
-    function selectCatIcon(btn, svg) {
-      document.getElementById('new-cat-icon').value = svg;
-      document.querySelectorAll('#icon-selector button').forEach(b => { b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text)'; });
+    function selectCatIcon(btn, iconId) {
+      document.getElementById('new-cat-icon').value = iconId;
+      document.querySelectorAll('.icon-preset-btn').forEach(b => {
+        b.style.borderColor = 'var(--border)';
+        b.style.color = 'var(--text)';
+        b.querySelector('.check-overlay').style.display = 'none';
+      });
       btn.style.borderColor = 'var(--blue)';
       btn.style.color = 'var(--blue)';
+      btn.querySelector('.check-overlay').style.display = 'flex';
     }
 
     function openModCategories() {
@@ -1108,7 +1210,7 @@
       }
       list.innerHTML = categories.map(c => `
         <div class="card" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:12px">
-          <div style="font-size:15px; display:flex; align-items:center">${c.icon ? `<span style="width:24px; height:24px; margin-right:8px; display:flex; align-items:center; justify-content:center">${c.icon}</span>` : ''}<b class="hl">${c.name}</b></div>
+          <div style="font-size:15px; display:flex; align-items:center">${c.icon ? `<span style="width:24px; height:24px; margin-right:8px; display:flex; align-items:center; justify-content:center">${getIconSvg(c.icon)}</span>` : ''}<b class="hl">${c.name}</b></div>
           <div style="display:flex; gap:8px">
             <button class="btn-s" style="border:none; padding:6px; background:var(--bg3); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="editCategory('${c.id}')"><span class="ms" style="font-size:16px">edit</span></button>
             <button class="btn-s" style="border:none; color:var(--red); padding:6px; background:var(--red-l); width:32px; height:32px; display:flex; align-items:center; justify-content:center" onclick="deleteCategory('${c.id}')"><span class="ms" style="font-size:16px">delete</span></button>

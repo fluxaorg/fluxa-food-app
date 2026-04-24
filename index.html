@@ -1123,6 +1123,60 @@
       }
     }
 
+    // Modal buttons interactions
+    let btnModRegTimer = null;
+    let btnModRegHolding = false;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const regBtn = document.getElementById('btn-mod-regredir');
+      if (regBtn) {
+        regBtn.addEventListener('touchstart', (e) => {
+          btnModRegHolding = false;
+          regBtn.style.opacity = '0.5';
+          btnModRegTimer = setTimeout(() => {
+            btnModRegHolding = true;
+            if(confirm('Cancelar pedido?')) {
+              changeOrderStatus(selectedOrder.id, 'cancelado');
+              closeMod('mod-order');
+            }
+            regBtn.style.opacity = '1';
+          }, 1000);
+        }, {passive: true});
+
+        regBtn.addEventListener('touchend', (e) => {
+          clearTimeout(btnModRegTimer);
+          regBtn.style.opacity = '1';
+          if (!btnModRegHolding && selectedOrder) {
+            regressOrderStatus(selectedOrder.id);
+            closeMod('mod-order');
+          }
+        });
+
+        // For desktop/mouse usage
+        regBtn.addEventListener('mousedown', (e) => {
+          btnModRegHolding = false;
+          regBtn.style.opacity = '0.5';
+          btnModRegTimer = setTimeout(() => {
+            btnModRegHolding = true;
+            if(confirm('Cancelar pedido?')) {
+              changeOrderStatus(selectedOrder.id, 'cancelado');
+              closeMod('mod-order');
+            }
+            regBtn.style.opacity = '1';
+          }, 1000);
+        });
+
+        regBtn.addEventListener('mouseup', (e) => {
+          clearTimeout(btnModRegTimer);
+          regBtn.style.opacity = '1';
+          if (!btnModRegHolding && selectedOrder) {
+            regressOrderStatus(selectedOrder.id);
+            closeMod('mod-order');
+          }
+        });
+      }
+    });
+
     async function changeOrderStatus(id, status) {
       const { error } = await db.from('food_orders').update({ status }).eq('id', id);
       if (!error) { 

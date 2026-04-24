@@ -92,7 +92,6 @@
     .btn-d { background:var(--red-l); color:var(--red); border:none; border-radius:12px; padding:12px 20px; font-weight:700; cursor:pointer; }
     
     .status-pill { padding:4px 10px; border-radius:8px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; }
-    .order-card { background:var(--bg2); border:1px solid var(--border); border-radius:20px; padding:16px; margin-bottom:12px; cursor:pointer; animation: fadeIn 0.4s ease; }
     .order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
     .order-id { font-weight:900; font-family:var(--hl); font-size:14px; color:var(--text2); }
     .order-client { font-weight:700; margin-bottom:8px; }
@@ -127,9 +126,14 @@
     #toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg3); border:1px solid var(--border); color:white; padding:12px 24px; border-radius:16px; font-weight:600; font-size:14px; transition:0.4s; z-index:9999; }
     #toast.on { transform:translateX(-50%) translateY(0); }
     input[type=color] { width:52px !important; height:52px; padding:4px; cursor:pointer; flex-shrink:0; }
-    .color-swatch { width:36px; height:36px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; flex-shrink:0; display:inline-block; }
+    .color-swatch { width:44px; height:44px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .15s,border-color .15s; flex-shrink:0; display:inline-block; }
     .color-swatch:hover { transform:scale(1.15); }
     .color-swatch.active { border-color:#fff; transform:scale(1.1); }
+    .swipe-bg { position:absolute; top:0; bottom:0; display:flex; align-items:center; font-weight:800; padding:0 20px; z-index:0; transition:opacity 0.2s; opacity:0; }
+    .swipe-bg-adv { left:0; width:100%; background:var(--green); color:black; }
+    .swipe-bg-reg { right:0; width:100%; background:var(--amber); color:black; justify-content:flex-end; }
+    .order-content { background:var(--bg2); padding:16px; border-radius:20px; position:relative; z-index:1; transition:transform 0.1s linear; }
+    .order-card { border:1px solid var(--border); border-radius:20px; margin-bottom:12px; cursor:pointer; animation: fadeIn 0.4s ease; overflow:hidden; position:relative; }
 
     /* RESPONSIVIDADE MOBILE */
     @media (max-width: 768px) {
@@ -239,12 +243,16 @@
       <div class="content">
         <!-- PEDIDOS -->
         <div id="tab-pedidos" class="tab active">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
-            <h1 class="hl-title">Pedidos <span id="p-count" style="color:var(--text3); font-size:18px">0</span></h1>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+            <h1 class="hl-title" style="margin-bottom:0 !important">Pedidos <span id="p-count" style="color:var(--text3); font-size:18px">0</span></h1>
             <div style="display:flex; gap:8px" id="order-filters">
               <button class="btn-s active" onclick="setOrderFil('todos',this)">Ativos</button>
               <button class="btn-s" onclick="setOrderFil('pronto',this)">Prontos</button>
             </div>
+          </div>
+          <div style="text-align:center; margin-bottom:20px; color:var(--text3); font-size:12px; background:var(--bg3); padding:12px; border-radius:12px;">
+            <span class="ms" style="font-size:16px; vertical-align:middle; margin-right:4px;">swipe</span>
+            <span style="vertical-align:middle;">Arraste para cá p/ <b>avançar</b>. Arraste p/ esquerda p/ <b>regredir</b>. Segure p/ <b>cancelar</b>.</span>
           </div>
           <div id="orders-wrap"><div style="text-align:center;padding:60px 20px;color:var(--text3)"><span class="ms" style="font-size:48px">receipt_long</span><p style="margin-top:12px;font-weight:600">Nenhum pedido ativo</p></div></div>
         </div>
@@ -319,7 +327,9 @@
         <!-- PERFIL/CONFIG -->
         <div id="tab-perfil" class="tab">
           <h1 class="hl-title">Configurações</h1>
-          <div class="card" style="max-width:500px">
+          
+          <div class="card" style="max-width:500px; margin-bottom:20px">
+            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Restaurante</div>
             <div style="display:flex; gap:16px; justify-content:center; margin-bottom:30px">
               <div style="text-align:center">
                 <div class="photo-up" onclick="document.getElementById('co-logo-file').click()">
@@ -346,14 +356,14 @@
               <input type="text" id="perfil-link" readonly style="background:var(--bg3); color:var(--blue)">
               <button class="btn-s" onclick="copyMenuLink()">Copiar</button>
             </div>
-            <button class="btn-p" style="width:100%; margin-top:20px" onclick="salvarTudo()">SALVAR ALTERAÇÕES</button>
+            <button class="btn-p" style="width:100%; margin-top:20px" onclick="salvarTudo()">SALVAR RESTAURANTE</button>
           </div>
 
-          <div class="card" style="max-width:500px; margin-top:20px">
+          <div class="card" style="max-width:500px; margin-bottom:20px">
             <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Aparência do Cardápio</div>
             <label>Frase de boas-vindas</label>
             <input type="text" id="cfg-banner-title" placeholder="Com fome?&lt;br&gt;&lt;em&gt;Peça e, coma!&lt;/em&gt;">
-            <p style="font-size:11px; color:var(--text3); margin-top:-12px; margin-bottom:16px">Use &lt;br&gt; para quebra de linha e &lt;em&gt;...&lt;/em&gt; para cor de destaque. Deixe vazio para padrão.</p>
+            <p style="font-size:11px; color:var(--text3); margin-top:-12px; margin-bottom:16px">Use &lt;br&gt; para quebra de linha e &lt;em&gt;...&lt;/em&gt; para cor de destaque.</p>
             <label>Foto de fundo (URL)</label>
             <input type="text" id="cfg-banner-url" placeholder="https://..." oninput="previewBanner(this.value)">
             <div style="width:100%;height:80px;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
@@ -368,8 +378,24 @@
                 <div style="font-size:11px;color:var(--text3)">Bordas, botões e preços no cardápio</div>
               </div>
             </div>
-            <div id="cfg-swatches" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px"></div>
+            <div id="cfg-swatches" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; justify-items:center; margin-bottom:20px"></div>
             <button class="btn-p" style="width:100%" onclick="saveConfig()">SALVAR APARÊNCIA</button>
+          </div>
+
+          <div class="card" style="max-width:500px; margin-bottom:20px">
+            <div class="hl" style="font-size:16px; font-weight:800; margin-bottom:20px">Meu Perfil</div>
+            <label>Meu Nome</label><input type="text" id="meu-nome">
+            <button class="btn-s" style="width:100%" onclick="salvarMeuPerfil()">ATUALIZAR PERFIL</button>
+          </div>
+
+          <div class="card" style="max-width:500px; border-color:var(--border);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:700">Dispositivo Atual</div>
+                <div style="font-size:11px; color:var(--text3)">Sessão ativa neste aparelho</div>
+              </div>
+              <button class="btn-s" style="border-color:var(--red); color:var(--red);" onclick="openMod('mod-logout')">Sair da Conta</button>
+            </div>
           </div>
         </div>
       </div>
@@ -393,10 +419,8 @@
         <span id="mod-order-total" style="font-weight:900; font-size:18px; color:var(--blue)">R$ 0,00</span>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px">
-        <button class="btn-s" onclick="upStatus('preparo')">Preparo</button>
-        <button class="btn-s" onclick="upStatus('pronto')">Pronto</button>
-        <button class="btn-s" onclick="upStatus('saiu')">Saiu</button>
-        <button class="btn-p" onclick="upStatus('entregue')">Finalizar</button>
+        <button class="btn-s" id="btn-mod-regredir" style="border-color:var(--amber); color:var(--amber)">Regredir</button>
+        <button class="btn-p" onclick="advanceOrderStatus(selectedOrder.id); closeMod('mod-order')">Avançar</button>
       </div>
     </div>
   </div>
@@ -439,8 +463,9 @@
       </div>
       <input type="file" id="colab-photo" accept="image/*" style="display:none" onchange="handleStaffPhoto(this)"/>
       <input type="hidden" id="colab-id">
-      <label>Nome</label><input type="text" id="colab-name">
-      <label>Email</label><input type="email" id="colab-email">
+      <label>Nome</label><input type="text" id="colab-name" oninput="updateColabUsername()">
+      <label>Usuário de Acesso</label>
+      <input type="text" id="colab-email" readonly style="background:var(--bg2); color:var(--blue); font-weight:700; user-select:all">
       <label>Senha</label><input type="password" id="colab-pass">
       <label>Cargo</label><select id="colab-role"><option value="funcionario">Atendente</option><option value="gestor">Gerente</option></select>
       <button class="btn-p" style="width:100%" onclick="saveColaborador()">SALVAR</button>
@@ -449,8 +474,15 @@
 
   <div class="modal-overlay" id="mod-mesa" onclick="closeMod('mod-mesa',event)">
     <div class="modal-sheet" style="text-align:center">
-      <h3 class="hl" id="mesa-mod-num" style="font-size:40px; font-weight:900">0</h3>
+      <h3 class="hl" id="mesa-mod-num" style="font-size:40px; font-weight:900; cursor:pointer" onclick="renameMesa()">0</h3>
+      <div style="font-size:11px; color:var(--text3); margin-top:-5px; margin-bottom:15px">(Clique para renomear)</div>
       <p id="mesa-mod-status" style="margin-bottom:24px">LIVRE</p>
+      
+      <div id="mesa-orders" style="margin-bottom:20px; max-height:150px; overflow-y:auto; text-align:left; background:var(--bg3); border-radius:12px; padding:12px; display:none">
+        <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; margin-bottom:8px">Pedidos Ativos</div>
+        <div id="mesa-orders-list"></div>
+      </div>
+
       <label>Link da Mesa</label>
       <div style="display:flex; gap:8px; margin-bottom:20px">
         <input type="text" id="mesa-link" readonly style="font-size:12px">
@@ -461,6 +493,20 @@
         <button class="btn-s" onclick="setMesaStatus('livre')">Liberar</button>
       </div>
       <button class="btn-d" style="width:100%; margin-top:12px" onclick="delMesa()">Excluir Mesa</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="mod-logout" onclick="closeMod('mod-logout',event)">
+    <div class="modal-sheet" style="text-align:center">
+      <div style="width:60px; height:60px; border-radius:50%; background:var(--red-l); color:var(--red); display:flex; align-items:center; justify-content:center; margin:0 auto 20px">
+        <span class="ms" style="font-size:32px">logout</span>
+      </div>
+      <h3 class="hl" style="margin-bottom:12px; font-size:24px; font-weight:800">Sair da Conta</h3>
+      <p style="color:var(--text3); margin-bottom:24px; font-size:14px">Você deseja realmente sair da sua conta Flüxa?</p>
+      <div style="display:grid; grid-template-columns:1fr; gap:12px">
+        <button class="btn-p" style="background:var(--blue); color:white" onclick="closeMod('mod-logout')">Não, voltar ao sistema</button>
+        <button class="btn-s" style="border:none; color:var(--text3); background:transparent" onclick="doLogout()">Sim, sair agora</button>
+      </div>
     </div>
   </div>
 
@@ -582,12 +628,16 @@
       document.getElementById('orders-wrap').innerHTML = show.map(o => {
         const sl = SL[o.status] || SL['recebido'];
         return `<div class="order-card" data-id="${o.id}">
-          <div class="order-header">
-            <div class="order-id hl">#${o.order_number || o.id.slice(0,5)}</div>
-            <div class="status-pill" style="background:${sl.bg}; color:${sl.c}">${SLB[o.status]||o.status}</div>
+          <div class="swipe-bg swipe-bg-adv"><span class="ms">check_circle</span><span style="margin-left:8px">Avançar</span></div>
+          <div class="swipe-bg swipe-bg-reg"><span style="margin-right:8px">Regredir</span><span class="ms">undo</span></div>
+          <div class="order-content">
+            <div class="order-header">
+              <div class="order-id hl">#${o.order_number || o.id.slice(0,5)}</div>
+              <div class="status-pill" style="background:${sl.bg}; color:${sl.c}">${SLB[o.status]||o.status}</div>
+            </div>
+            <div class="order-client">${o.cliente_nome||'—'} ${o.mesa_numero ? '· Mesa '+o.mesa_numero : ''}</div>
+            <div class="order-footer"><span>${fmtTime(o.created_at)}</span><b class="hl">${fmtP(o.total)}</b></div>
           </div>
-          <div class="order-client">${o.cliente_nome||'—'} ${o.mesa_numero ? '· Mesa '+o.mesa_numero : ''}</div>
-          <div class="order-footer"><span>${fmtTime(o.created_at)}</span><b class="hl">${fmtP(o.total)}</b></div>
         </div>`;
       }).join('');
       renderDashboardFull();
@@ -752,11 +802,47 @@
     function openMesaMod(id) {
       selectedMesa = tables.find(t => t.id === id);
       if (!selectedMesa) return;
-      document.getElementById('mesa-mod-num').textContent = 'Mesa ' + selectedMesa.numero;
+      document.getElementById('mesa-mod-num').textContent = isNaN(selectedMesa.numero) ? selectedMesa.numero : 'Mesa ' + selectedMesa.numero;
       document.getElementById('mesa-mod-status').textContent = selectedMesa.status.toUpperCase();
       const link = `https://fluxa-cardapio.vercel.app/${co.slug}/mesa/${selectedMesa.numero}`;
       document.getElementById('mesa-link').value = link;
+      
+      const tableOrders = orders.filter(o => String(o.mesa_numero) === String(selectedMesa.numero) && !['entregue', 'cancelado'].includes(o.status));
+      const ordersContainer = document.getElementById('mesa-orders');
+      const ordersList = document.getElementById('mesa-orders-list');
+      if (tableOrders.length > 0) {
+        ordersContainer.style.display = 'block';
+        ordersList.innerHTML = tableOrders.map(o => {
+            const items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
+            const itemsText = items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+            return `<div style="padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:12px;">
+              <div><b>${o.cliente_nome || 'Cliente'}</b> · <span style="color:var(--text3)">${SLB[o.status] || o.status}</span></div>
+              <div style="color:var(--text2); margin-top:2px">${itemsText}</div>
+            </div>`;
+        }).join('');
+      } else {
+        ordersContainer.style.display = 'none';
+        ordersList.innerHTML = '';
+      }
+      
       openMod('mod-mesa');
+    }
+
+    async function renameMesa() {
+      if(!selectedMesa) return;
+      const novoNum = prompt('Digite o novo número ou nome para esta mesa:', selectedMesa.numero);
+      if(novoNum && String(novoNum).trim() !== '') {
+        const numTrimmed = String(novoNum).trim();
+        const { error } = await db.from('food_tables').update({ numero: numTrimmed }).eq('id', selectedMesa.id);
+        if(!error) {
+          selectedMesa.numero = numTrimmed;
+          toast('Mesa renomeada');
+          document.getElementById('mesa-mod-num').textContent = isNaN(numTrimmed) ? numTrimmed : 'Mesa ' + numTrimmed;
+          loadTables();
+        } else {
+          toast('Erro ao renomear');
+        }
+      }
     }
 
     async function setMesaStatus(status) {
@@ -797,6 +883,12 @@
     }
 
     function novoColaborador() { document.getElementById('colab-id').value=''; document.getElementById('colab-title').textContent='Novo Colaborador'; ['colab-name','colab-email','colab-pass'].forEach(i=>document.getElementById(i).value=''); document.getElementById('colab-prev').style.display='none'; document.getElementById('colab-photo').dataset.url=''; openMod('mod-colab'); }
+
+    function updateColabUsername() {
+      const name = document.getElementById('colab-name').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const slug = co && co.slug ? co.slug : (co ? co.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'loja');
+      document.getElementById('colab-email').value = name ? `${name}@${slug}` : '';
+    }
 
     function editarColaborador(id) {
       const s = staffList.find(x => x.id === id);
@@ -884,85 +976,141 @@
     let touchStartX = 0;
     let touchStartY = 0;
     let currentX = 0;
-    let swipeEl = null;
+    let swipeCard = null;
+    let swipeContent = null;
     let swipeOrderId = null;
     let holdTimer = null;
+    let holdInterval = null;
+    let holdProgress = 0;
     let isHolding = false;
 
     document.getElementById('orders-wrap').addEventListener('touchstart', (e) => {
       const card = e.target.closest('.order-card');
       if(!card) return;
-      swipeEl = card;
+      swipeCard = card;
+      swipeContent = card.querySelector('.order-content');
       swipeOrderId = card.dataset.id;
       touchStartX = e.touches[0].screenX;
       touchStartY = e.touches[0].screenY;
       currentX = 0;
       isHolding = false;
-      swipeEl.style.transition = 'none';
+      holdProgress = 0;
+      if (swipeContent) swipeContent.style.transition = 'none';
       
+      const bgAdv = card.querySelector('.swipe-bg-adv');
+      const bgReg = card.querySelector('.swipe-bg-reg');
+      if (bgAdv) bgAdv.style.opacity = '0';
+      if (bgReg) bgReg.style.opacity = '0';
+
       holdTimer = setTimeout(() => {
         isHolding = true;
         if(navigator.vibrate) navigator.vibrate(50);
-        swipeEl.style.transition = 'all 0.3s ease';
-        swipeEl.style.transform = 'scale(0.95)';
-        swipeEl.style.opacity = '0.5';
-        if(confirm('Deseja CANCELAR este pedido?')) {
-          changeOrderStatus(swipeOrderId, 'cancelado');
-        } else {
-          resetSwipe(swipeEl);
+        if (swipeContent) {
+          swipeContent.style.transition = 'transform 0.1s linear, background 0.5s ease';
+          swipeContent.style.transform = 'scale(0.95)';
         }
-      }, 1000);
+        
+        let cancelBar = swipeCard.querySelector('.cancel-bar');
+        if (!cancelBar) {
+          cancelBar = document.createElement('div');
+          cancelBar.className = 'cancel-bar';
+          cancelBar.style.position = 'absolute';
+          cancelBar.style.bottom = '0';
+          cancelBar.style.left = '0';
+          cancelBar.style.height = '4px';
+          cancelBar.style.background = 'var(--red)';
+          cancelBar.style.width = '0%';
+          cancelBar.style.transition = 'width 0.1s linear';
+          cancelBar.style.zIndex = '2';
+          swipeCard.appendChild(cancelBar);
+        }
+
+        holdInterval = setInterval(() => {
+          holdProgress += 5;
+          cancelBar.style.width = holdProgress + '%';
+          if (holdProgress >= 100) {
+            clearInterval(holdInterval);
+            changeOrderStatus(swipeOrderId, 'cancelado');
+            if (cancelBar) cancelBar.remove();
+          }
+        }, 50); // 1 sec total
+
+      }, 500);
     }, {passive: true});
 
     document.getElementById('orders-wrap').addEventListener('touchmove', (e) => {
-      if(!swipeEl || isHolding) return;
+      if(!swipeContent || isHolding) return;
       const x = e.touches[0].screenX;
       const y = e.touches[0].screenY;
       const deltaX = x - touchStartX;
       const deltaY = Math.abs(y - touchStartY);
       
-      // Se for scroll vertical, cancela o swipe
       if (deltaY > 20 && deltaY > Math.abs(deltaX)) {
-        clearTimeout(holdTimer);
-        resetSwipe(swipeEl);
-        swipeEl = null;
+        clearTimeout(holdTimer); clearInterval(holdInterval);
+        resetSwipe(swipeContent);
+        removeCancelBar(swipeCard);
+        swipeContent = null;
         return;
       }
       
-      if(deltaX > 0) { 
+      clearTimeout(holdTimer); clearInterval(holdInterval);
+      removeCancelBar(swipeCard);
+
+      if (Math.abs(deltaX) > 10) {
         currentX = deltaX;
-        swipeEl.style.transform = `translateX(${deltaX}px)`;
+        swipeContent.style.transform = `translateX(${deltaX}px)`;
+        const bgAdv = swipeCard.querySelector('.swipe-bg-adv');
+        const bgReg = swipeCard.querySelector('.swipe-bg-reg');
+        if (deltaX > 0 && bgAdv) bgAdv.style.opacity = Math.min(deltaX / 100, 1).toString();
+        if (deltaX < 0 && bgReg) bgReg.style.opacity = Math.min(Math.abs(deltaX) / 100, 1).toString();
       }
     }, {passive: true});
 
     document.getElementById('orders-wrap').addEventListener('touchend', (e) => {
-      if(!swipeEl) return;
-      clearTimeout(holdTimer);
+      if(!swipeContent) return;
+      clearTimeout(holdTimer); clearInterval(holdInterval);
+      removeCancelBar(swipeCard);
+
       if(isHolding) {
-        resetSwipe(swipeEl);
-        swipeEl = null;
+        resetSwipe(swipeContent);
+        swipeContent = null;
         return;
       }
       
       if(currentX > 100) {
         advanceOrderStatus(swipeOrderId);
-        swipeEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-        swipeEl.style.transform = `translateX(120%)`;
-        swipeEl.style.opacity = '0';
+        swipeContent.style.transition = 'transform 0.3s ease';
+        swipeContent.style.transform = `translateX(120%)`;
+      } else if (currentX < -100) {
+        regressOrderStatus(swipeOrderId);
+        swipeContent.style.transition = 'transform 0.3s ease';
+        swipeContent.style.transform = `translateX(-120%)`;
       } else {
-        if(currentX < 10) {
-           openOrderMod(swipeOrderId);
-        }
-        resetSwipe(swipeEl);
+        if(Math.abs(currentX) < 10) openOrderMod(swipeOrderId);
+        resetSwipe(swipeContent);
       }
-      swipeEl = null;
+      swipeContent = null;
     });
 
     function resetSwipe(el) {
       if(!el) return;
-      el.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+      el.style.transition = 'transform 0.3s ease';
       el.style.transform = 'translateX(0) scale(1)';
-      el.style.opacity = '1';
+    }
+
+    function removeCancelBar(card) {
+      if (card) {
+        const bar = card.querySelector('.cancel-bar');
+        if (bar) bar.remove();
+      }
+    }
+
+    function regressOrderStatus(id) {
+      const order = orders.find(o => o.id === id);
+      if(!order) return;
+      const flow = ['recebido', 'preparo', 'pronto', 'saiu', 'entregue'];
+      const idx = flow.indexOf(order.status);
+      if(idx > 0) changeOrderStatus(id, flow[idx - 1]);
     }
 
     function advanceOrderStatus(id) {
@@ -1107,6 +1255,21 @@
         document.getElementById('cfg-color-lbl').textContent = color.toUpperCase();
         renderSwatches(color);
       }
+      
+      // Meu Perfil
+      if (currentStaff) {
+         document.getElementById('meu-nome').value = currentStaff.name || '';
+      }
+    }
+
+    async function salvarMeuPerfil() {
+      if (!currentStaff) return;
+      const novoNome = document.getElementById('meu-nome').value;
+      const { error } = await db.from('food_users').update({ name: novoNome }).eq('id', currentStaff.id);
+      if (!error) {
+        currentStaff.name = novoNome;
+        toast('Perfil atualizado');
+      } else toast('Erro ao atualizar');
     }
 
     // ── APARÊNCIA DO CARDÁPIO ──

@@ -134,6 +134,9 @@
     .swipe-bg-reg { right:0; width:100%; background:var(--amber); color:black; justify-content:flex-end; }
     .order-content { background:var(--bg2); padding:16px; border-radius:20px; position:relative; z-index:1; transition:transform 0.1s linear; }
     .order-card { border:1px solid var(--border); border-radius:20px; margin-bottom:12px; cursor:pointer; animation: fadeIn 0.4s ease; overflow:hidden; position:relative; }
+    
+    #sidebar-logo { display:flex; justify-content:center; margin-bottom:20px; flex-shrink:0; align-items:center; }
+    #sidebar-logo img { width:32px; height:32px; border-radius:8px; }
 
     /* RESPONSIVIDADE MOBILE */
     @media (max-width: 768px) {
@@ -148,7 +151,7 @@
         flex-direction: row; align-items: center; box-shadow: 0 20px 40px rgba(0,0,0,0.8);
         border-right: 1px solid rgba(255,255,255,0.1);
       }
-      #sidebar-logo { display: none; }
+      #sidebar-logo { margin-bottom: 0; margin-right: 12px; }
       .nav-scroll-area {
         flex-direction: row; gap: 16px; overflow-x: auto; overflow-y: hidden;
         scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 0; width: 100%;
@@ -214,8 +217,8 @@
   <!-- APP PRINCIPAL -->
   <div id="app">
     <div class="sidebar">
-      <div class="login-logo" id="sidebar-logo" style="margin-bottom:20px; display:flex; justify-content:center">
-        <img src="favicon.fluxa.png?v=2" style="width:32px; height:32px; border-radius:8px">
+      <div class="login-logo" id="sidebar-logo">
+        <img src="favicon.fluxa.png?v=2">
       </div>
       <div class="nav-scroll-area">
         <div class="nav-item active" id="nav-pedidos" onclick="go('pedidos')"><span class="ms">receipt_long</span></div>

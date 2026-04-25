@@ -18,6 +18,7 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
       :root {
         --bg: #000000;
@@ -936,11 +937,11 @@
             </div>
           </div>
           <!-- Admin nav (só aparece com login admin@fluxa) -->
-          <div id="a-navs" style="display:none; flex-direction:column; gap:4px">
+          <div id="a-navs" style="display:none">
             <div class="nav-item" id="nav-adm-clientes" title="Clientes" onclick="goAdm('clientes')"><span class="ms">storefront</span></div>
             <div class="nav-item" id="nav-adm-cadastro" title="Cadastro" onclick="goAdm('cadastro')"><span class="ms">add_business</span></div>
             <div class="nav-item" id="nav-adm-financeiro" title="Financeiro" onclick="goAdm('financeiro')"><span class="ms">payments</span></div>
-            <div class="nav-item" id="nav-adm-analiticas" title="Analíticas" onclick="goAdm('analiticas')"><span class="ms">bar_chart</span></div>
+            <div class="nav-item" id="nav-adm-analiticas" title="Analytics" onclick="goAdm('analiticas')"><span class="ms">bar_chart</span></div>
             <div class="nav-item" id="nav-adm-suporte" title="Suporte" onclick="goAdm('suporte')"><span class="ms">support_agent</span></div>
           </div>
           <div class="nav-item" onclick="openMod('mod-logout')">
@@ -1183,17 +1184,27 @@
           <!-- ADMIN FLÜXA KITCHENS                     -->
           <!-- ══════════════════════════════════════════ -->
           <div id="tab-adm-clientes" class="tab">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-              <h1 class="hl-title" style="margin:0">Clientes</h1>
-              <div style="display:flex;gap:8px">
-                <input type="text" id="adm-search" placeholder="Buscar..." oninput="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 14px;color:white;font-family:Inter;width:180px">
-                <select id="adm-fil-status" onchange="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
-                  <option value="">Todos</option><option value="ativo">Ativos</option><option value="suspenso">Suspenso</option><option value="inadimplente">Inadimplente</option>
-                </select>
-                <button class="btn-s" style="padding:8px 14px" onclick="admLoadClientes()"><span class="ms" style="font-size:16px">refresh</span></button>
+            <!-- Vista lista (padrão) -->
+            <div id="adm-clientes-lista">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+                <h1 class="hl-title" style="margin:0">Clientes</h1>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="adm-search" placeholder="Buscar..." oninput="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 14px;color:white;font-family:Inter;width:180px">
+                  <select id="adm-fil-status" onchange="admRenderClientes()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
+                    <option value="">Todos</option><option value="ativo">Ativos</option><option value="suspenso">Suspenso</option><option value="inadimplente">Inadimplente</option>
+                  </select>
+                  <button class="btn-s" style="padding:8px 14px" onclick="admLoadClientes()"><span class="ms" style="font-size:16px">refresh</span></button>
+                </div>
               </div>
+              <div id="adm-clientes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
             </div>
-            <div id="adm-clientes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
+            <!-- Vista detalhe de um cliente -->
+            <div id="adm-cliente-detalhe" style="display:none">
+              <button onclick="admFecharDetalhe()" style="display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 16px;color:var(--text);cursor:pointer;font-family:Inter;font-weight:600;margin-bottom:24px">
+                <span class="ms" style="font-size:18px">arrow_back</span> Voltar
+              </button>
+              <div id="adm-cliente-detalhe-content"></div>
+            </div>
           </div>
 
           <div id="tab-adm-cadastro" class="tab">
@@ -1211,7 +1222,7 @@
                 <select id="adm-fin-fil" onchange="admRenderFinTable()" style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:8px 12px;color:white;font-family:Inter">
                   <option value="">Todos</option><option value="ativo">Ativos</option><option value="suspenso">Suspenso</option><option value="inadimplente">Inadimp.</option>
                 </select>
-                <button class="btn-s" style="padding:8px 14px" onclick="admFinExportCSV()">↓ CSV</button>
+                <button class="btn-s" style="padding:8px 16px;font-weight:800;letter-spacing:.5px" onclick="admFinExportPDF()">PDF</button>
               </div>
             </div>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
@@ -1235,17 +1246,53 @@
           </div>
 
           <div id="tab-adm-analiticas" class="tab">
-            <h1 class="hl-title">Analíticas</h1>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
-              <div class="kpi-card"><div class="kpi-label">Leads Gerados</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
-              <div class="kpi-card"><div class="kpi-label">Pedidos via Ads</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
-              <div class="kpi-card"><div class="kpi-label">Spend Total</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
-              <div class="kpi-card"><div class="kpi-label">ROAS Médio</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+            <!-- Seletor -->
+            <div id="analytics-selector" style="">
+              <h1 class="hl-title">Analytics</h1>
+              <p style="color:var(--text3);font-size:15px;margin-bottom:32px">Vai analisar o quê?</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px">
+                <button onclick="admShowAnalytics('fluxa')" style="background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:32px 24px;text-align:left;cursor:pointer;transition:.2s;color:var(--text)" onmouseenter="this.style.borderColor='#C41C3B'" onmouseleave="this.style.borderColor='var(--border)'">
+                  <span class="ms" style="font-size:36px;color:#C41C3B;margin-bottom:12px;display:block">trending_up</span>
+                  <div class="hl" style="font-size:18px;font-weight:800;margin-bottom:6px">Flüxa</div>
+                  <div style="font-size:12px;color:var(--text3)">Tráfego, campanhas e performance da Flüxa</div>
+                </button>
+                <button onclick="admShowAnalytics('clientes')" style="background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:32px 24px;text-align:left;cursor:pointer;transition:.2s;color:var(--text)" onmouseenter="this.style.borderColor='#C41C3B'" onmouseleave="this.style.borderColor='var(--border)'">
+                  <span class="ms" style="font-size:36px;color:var(--blue);margin-bottom:12px;display:block">storefront</span>
+                  <div class="hl" style="font-size:18px;font-weight:800;margin-bottom:6px">Clientes</div>
+                  <div style="font-size:12px;color:var(--text3)">Performance de tráfego de cada restaurante</div>
+                </button>
+              </div>
             </div>
-            <div class="card" style="text-align:center;padding:48px">
-              <span class="ms" style="font-size:48px;color:var(--text3)">bar_chart</span>
-              <h3 class="hl" style="font-size:18px;font-weight:800;margin:16px 0 8px">Integração em andamento</h3>
-              <p style="color:var(--text3);max-width:400px;margin:0 auto">Integrando com Meta Pixel e Google Analytics. Em breve os dados de campanhas aparecerão aqui.</p>
+            <!-- Dashboard Flüxa -->
+            <div id="analytics-fluxa" style="display:none">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+                <button onclick="admShowAnalytics('sel')" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:6px 14px;color:var(--text3);cursor:pointer;font-family:Inter;font-size:13px">
+                  <span class="ms" style="font-size:16px">arrow_back</span> Voltar
+                </button>
+                <h1 class="hl-title" style="margin:0">Analytics — Flüxa</h1>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+                <div class="kpi-card"><div class="kpi-label">Leads Gerados</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+                <div class="kpi-card"><div class="kpi-label">Pedidos via Ads</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+                <div class="kpi-card"><div class="kpi-label">Spend Total</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+                <div class="kpi-card"><div class="kpi-label">ROAS Médio</div><div class="kpi-val" style="color:var(--text3)">—</div></div>
+              </div>
+              <div class="card" style="text-align:center;padding:40px">
+                <span class="ms" style="font-size:40px;color:var(--text3)">bar_chart</span>
+                <p style="color:var(--text3);margin-top:12px">Integração com Meta Pixel e Google Analytics em breve.</p>
+              </div>
+            </div>
+            <!-- Dashboard Clientes -->
+            <div id="analytics-clientes" style="display:none">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+                <button onclick="admShowAnalytics('sel')" style="display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:6px 14px;color:var(--text3);cursor:pointer;font-family:Inter;font-size:13px">
+                  <span class="ms" style="font-size:16px">arrow_back</span> Voltar
+                </button>
+                <h1 class="hl-title" style="margin:0">Analytics — Clientes</h1>
+              </div>
+              <div id="analytics-clientes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+                <div style="color:var(--text3);padding:20px">Carregando clientes...</div>
+              </div>
             </div>
           </div>
 
@@ -2395,20 +2442,24 @@
       let lastHash = "";
 
       const SL = {
-        recebido: { bg: "rgba(239,68,68,0.1)", c: "#EF4444" },
-        preparo: { bg: "rgba(245,158,11,0.1)", c: "#F59E0B" },
-        pronto: { bg: "rgba(16,185,129,0.1)", c: "#10B981" },
-        saiu: { bg: "rgba(37,99,235,0.1)", c: "#3B82F6" },
-        entregue: { bg: "rgba(37,99,235,0.05)", c: "#3B82F6" },
-        cancelado: { bg: "rgba(255,255,255,0.05)", c: "#52525B" },
+        recebido:   { bg: "rgba(239,68,68,0.1)", c: "#EF4444" },
+        em_preparo: { bg: "rgba(245,158,11,0.1)", c: "#F59E0B" },
+        preparo:    { bg: "rgba(245,158,11,0.1)", c: "#F59E0B" },
+        pronto:     { bg: "rgba(16,185,129,0.1)", c: "#10B981" },
+        a_caminho:  { bg: "rgba(37,99,235,0.1)", c: "#3B82F6" },
+        saiu:       { bg: "rgba(37,99,235,0.1)", c: "#3B82F6" },
+        entregue:   { bg: "rgba(37,99,235,0.05)", c: "#3B82F6" },
+        cancelado:  { bg: "rgba(255,255,255,0.05)", c: "#52525B" },
       };
       const SLB = {
-        recebido: "Novo",
-        preparo: "Em Preparo",
-        pronto: "Pronto",
-        saiu: "Em Entrega",
-        entregue: "Finalizado",
-        cancelado: "Cancelado",
+        recebido:   "Recebido",
+        em_preparo: "Em Preparo",
+        preparo:    "Em Preparo",
+        pronto:     "Pronto",
+        a_caminho:  "A Caminho",
+        saiu:       "A Caminho",
+        entregue:   "Entregue",
+        cancelado:  "Cancelado",
       };
 
       document.addEventListener("DOMContentLoaded", () => {
@@ -3200,20 +3251,26 @@
       function renderIconSelector(selectedIconId = "") {
         const cont = document.getElementById("icon-selector");
         if (!cont) return;
+        // selectedIconId pode ser um SVG completo (novo) ou um ID (legado)
         cont.innerHTML = PRESET_ICONS.map(
-          (i) => `
-        <button class="btn-s icon-preset-btn ${selectedIconId === i.id ? "selected" : ""}" 
-                style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; position:relative" 
+          (i) => {
+            const isSelected = selectedIconId &&
+              (selectedIconId === i.id || selectedIconId === i.svg || selectedIconId.includes(i.svg.slice(0, 30)));
+            return `
+        <button class="btn-s icon-preset-btn ${isSelected ? "selected" : ""}"
+                style="width:40px; height:40px; padding:0; display:flex; align-items:center; justify-content:center; position:relative"
                 onclick="selectCatIcon(this, '${i.id}')">
           ${i.svg}
-          <div class="check-overlay" style="display:${selectedIconId === i.id ? "flex" : "none"}; position:absolute; top:-4px; right:-4px; background:var(--blue); color:white; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; font-size:10px">✓</div>
-        </button>
-      `,
+          <div class="check-overlay" style="display:${isSelected ? "flex" : "none"}; position:absolute; top:-4px; right:-4px; background:var(--blue); color:white; border-radius:50%; width:16px; height:16px; align-items:center; justify-content:center; font-size:10px">✓</div>
+        </button>`;
+          }
         ).join("");
       }
 
       function selectCatIcon(btn, iconId) {
-        document.getElementById("new-cat-icon").value = iconId;
+        // Salva o SVG completo (não só o ID) para garantir compatibilidade com o cardápio
+        const found = PRESET_ICONS.find(i => i.id === iconId);
+        document.getElementById("new-cat-icon").value = found ? found.svg : iconId;
         document.querySelectorAll(".icon-preset-btn").forEach((b) => {
           b.style.borderColor = "var(--border)";
           b.style.color = "var(--text)";
@@ -3687,8 +3744,8 @@
             count: orders.filter((o) => o.status === "pronto").length,
           },
           {
-            label: "Saiu",
-            count: orders.filter((o) => o.status === "saiu").length,
+            label: "A Caminho",
+            count: orders.filter((o) => o.status === "saiu" || o.status === "a_caminho").length,
           },
           { label: "Entregues", count: entregues.length },
           { label: "Cancelados", count: cancelados.length },
@@ -3891,8 +3948,13 @@
       function advanceOrderStatus(id) {
         const order = orders.find((o) => o.id === id);
         if (!order) return;
-        const flow = ["recebido", "preparo", "pronto", "entregue"];
-        const idx = flow.indexOf(order.status);
+        const isDelivery = order.tipo_pedido === "delivery";
+        const flow = isDelivery
+          ? ["recebido", "preparo", "pronto", "a_caminho", "entregue"]
+          : ["recebido", "preparo", "pronto", "entregue"];
+        // Compatibilidade: mapear status antigos para os novos no fluxo
+        const normalStatus = order.status === "saiu" ? "a_caminho" : order.status;
+        const idx = flow.indexOf(normalStatus);
         if (idx >= 0 && idx < flow.length - 1) {
           changeOrderStatus(id, flow[idx + 1]);
         }
@@ -3901,8 +3963,12 @@
       function regressOrderStatus(id) {
         const order = orders.find((o) => o.id === id);
         if (!order) return;
-        const flow = ["recebido", "preparo", "pronto", "entregue"];
-        const idx = flow.indexOf(order.status);
+        const isDelivery = order.tipo_pedido === "delivery";
+        const flow = isDelivery
+          ? ["recebido", "preparo", "pronto", "a_caminho", "entregue"]
+          : ["recebido", "preparo", "pronto", "entregue"];
+        const normalStatus = order.status === "saiu" ? "a_caminho" : order.status;
+        const idx = flow.indexOf(normalStatus);
         if (idx > 0) {
           changeOrderStatus(id, flow[idx - 1]);
         }
@@ -4328,7 +4394,9 @@
 
       function bootAdminMode() {
         document.getElementById('k-navs').style.display = 'none';
-        document.getElementById('a-navs').style.display = 'flex';
+        // display:contents torna o wrapper transparente — os nav-items se adaptam ao layout pai
+        // (vertical no desktop, horizontal no mobile dock)
+        document.getElementById('a-navs').style.display = 'contents';
         document.getElementById('sn-name').textContent = 'Flüxa Admin';
         goAdm('clientes');
       }
@@ -4367,7 +4435,7 @@
         const label = { ativo:'Ativo', suspenso:'Suspenso', inadimplente:'Inadimplente' };
         document.getElementById('adm-clientes-grid').innerHTML = list.map(c => {
           const st = c.blocked ? 'inadimplente' : (c.active ? 'ativo' : 'suspenso');
-          return `<div class="card">
+          return `<div class="card" style="cursor:pointer;transition:.2s" onclick="admOpenClientDetail('${c.id}')" onmouseenter="this.style.borderColor='rgba(196,28,59,.4)'" onmouseleave="this.style.borderColor='var(--border)'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
               <div><div class="hl" style="font-weight:800;font-size:15px">${c.name}</div><div style="font-size:11px;color:var(--text3)">${c.slug||'—'}</div></div>
               <span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${badge[st]}">${label[st]}</span>
@@ -4376,22 +4444,118 @@
               <div style="background:var(--bg3);border-radius:12px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">PEDIDOS MÊS</div><div class="hl" style="font-weight:800;font-size:16px" id="pc-o-${c.id}">—</div></div>
               <div style="background:var(--bg3);border-radius:12px;padding:10px"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">COMISSÃO</div><div class="hl" style="font-weight:800;font-size:16px" id="pc-c-${c.id}">—</div></div>
             </div>
-            <div style="cursor:pointer;text-align:center;font-size:12px;color:var(--text3)" onclick="admToggleDetail('${c.id}')">
-              <span id="adm-arr-${c.id}">▼</span> Ver detalhes
-            </div>
-            <div id="adm-det-${c.id}" style="display:none;border-top:1px solid var(--border);padding-top:12px;margin-top:10px">
-              <div style="font-size:12px;color:var(--text2);margin-bottom:12px">Onboarding: ${c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'}</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-                <button onclick="admSetStatus('${c.id}','ativo')" style="padding:6px;border-radius:8px;border:1px solid ${st==='ativo'?'#10B981':'var(--border)'};background:${st==='ativo'?'rgba(16,185,129,.1)':'var(--bg3)'};color:${st==='ativo'?'#10B981':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Ativo</button>
-                <button onclick="admSetStatus('${c.id}','suspenso')" style="padding:6px;border-radius:8px;border:1px solid ${st==='suspenso'?'#F59E0B':'var(--border)'};background:${st==='suspenso'?'rgba(245,158,11,.1)':'var(--bg3)'};color:${st==='suspenso'?'#F59E0B':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Suspenso</button>
-                <button onclick="admSetStatus('${c.id}','inadimplente')" style="padding:6px;border-radius:8px;border:1px solid ${st==='inadimplente'?'#EF4444':'var(--border)'};background:${st==='inadimplente'?'rgba(239,68,68,.1)':'var(--bg3)'};color:${st==='inadimplente'?'#EF4444':'var(--text3)'};cursor:pointer;font-size:11px;font-weight:700">Inadimp.</button>
-              </div>
-              <button onclick="admToggleBlock('${c.id}',${!!c.blocked})" style="width:100%;padding:8px;border-radius:10px;border:1px solid ${c.blocked?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)'};background:${c.blocked?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};color:${c.blocked?'#10B981':'#EF4444'};cursor:pointer;font-size:12px;font-weight:700">
-                ${c.blocked ? '✓ Ativar Acesso' : '⊘ Bloquear Acesso'}
-              </button>
-            </div>
+            <div style="text-align:center;font-size:12px;color:var(--text3)">Ver detalhes →</div>
           </div>`;
         }).join('');
+      }
+
+      function admFecharDetalhe() {
+        document.getElementById('adm-cliente-detalhe').style.display = 'none';
+        document.getElementById('adm-clientes-lista').style.display = 'block';
+      }
+
+      async function admOpenClientDetail(companyId) {
+        document.getElementById('adm-clientes-lista').style.display = 'none';
+        document.getElementById('adm-cliente-detalhe').style.display = 'block';
+        document.getElementById('adm-cliente-detalhe-content').innerHTML = '<div style="color:var(--text3);padding:20px">Carregando...</div>';
+
+        const c = admClientes.find(x => x.id === companyId);
+        if (!c) return;
+
+        // Carregar dados do mês
+        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        const [{ data: orders }, { data: users }] = await Promise.all([
+          db.from('food_orders').select('id,total,status,created_at,tipo_pedido').eq('company_id', companyId).gte('created_at', start),
+          db.from('food_users').select('name,email,role').eq('company_id', companyId)
+        ]);
+
+        const entregues = (orders||[]).filter(o => o.status === 'entregue');
+        const totalPedidos = (orders||[]).length;
+        const faturamento = entregues.reduce((a,b) => a + Number(b.total), 0);
+        const commission = faturamento * 0.1;
+        const st = c.blocked ? 'inadimplente' : (c.active ? 'ativo' : 'suspenso');
+        const badge = { ativo:'background:rgba(16,185,129,.1);color:#10B981', suspenso:'background:rgba(245,158,11,.1);color:#F59E0B', inadimplente:'background:rgba(239,68,68,.1);color:#EF4444' };
+        const stLabel = { ativo:'Ativo', suspenso:'Suspenso', inadimplente:'Inadimplente' };
+
+        // Últimos 5 pedidos
+        const recent = (orders||[]).slice(0,5);
+
+        document.getElementById('adm-cliente-detalhe-content').innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+            <div>
+              <h2 class="hl" style="font-size:22px;font-weight:900">${c.name}</h2>
+              <p style="color:var(--text3);font-size:13px">${c.slug||'—'}</p>
+            </div>
+            <span style="padding:6px 16px;border-radius:12px;font-size:13px;font-weight:700;${badge[st]}">${stLabel[st]}</span>
+          </div>
+
+          <!-- KPIs -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+            <div class="kpi-card"><div class="kpi-label">Pedidos mês</div><div class="kpi-val">${totalPedidos}</div></div>
+            <div class="kpi-card"><div class="kpi-label">Entregues</div><div class="kpi-val">${entregues.length}</div></div>
+            <div class="kpi-card"><div class="kpi-label">Faturamento</div><div class="kpi-val" style="font-size:18px">${fmtP(faturamento)}</div></div>
+            <div class="kpi-card" style="border-color:rgba(196,28,59,.2)"><div class="kpi-label">Comissão Flüxa</div><div class="kpi-val" style="color:#C41C3B;font-size:18px">${fmtP(ADM_BASE_FEE + commission)}</div></div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+            <!-- Dados do restaurante -->
+            <div class="card">
+              <div class="hl" style="font-size:14px;font-weight:800;margin-bottom:16px">Dados do Restaurante</div>
+              ${[
+                ['Plano', c.plan || '—'],
+                ['Onboarding', c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '—'],
+                ['WhatsApp', c.whatsapp_number || '—'],
+                ['Endereço', c.address || '—'],
+              ].map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text3)">${k}</span><span style="font-weight:600;max-width:55%;text-align:right">${v}</span></div>`).join('')}
+            </div>
+
+            <!-- Equipe -->
+            <div class="card">
+              <div class="hl" style="font-size:14px;font-weight:800;margin-bottom:16px">Equipe (${(users||[]).length})</div>
+              ${(users||[]).length ? (users||[]).map(u => `
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#C41C3B;flex-shrink:0">${u.name?u.name[0].toUpperCase():'?'}</div>
+                  <div><div style="font-size:13px;font-weight:600">${u.name}</div><div style="font-size:11px;color:var(--text3)">${u.email||'—'} · ${u.role}</div></div>
+                </div>`).join('')
+              : '<div style="color:var(--text3);font-size:13px">Nenhum colaborador cadastrado</div>'}
+            </div>
+          </div>
+
+          <!-- Tráfego (placeholder) -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="hl" style="font-size:14px;font-weight:800;margin-bottom:12px">Tráfego e Campanhas</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              ${[['Leads','—','Meta Pixel'],['Pedidos via Ads','—','Google Ads'],['Spend','—','Meta+Google'],['ROAS','—','Retorno']].map(([l,v,sub]) =>
+                `<div style="background:var(--bg3);border-radius:12px;padding:12px"><div style="font-size:10px;color:var(--text3)">${l}</div><div class="hl" style="font-size:18px;font-weight:800;color:var(--text3)">${v}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">${sub}</div></div>`
+              ).join('')}
+            </div>
+            <p style="color:var(--text3);font-size:11px;margin-top:12px;text-align:center">Integração com Meta Pixel e Google Ads em breve</p>
+          </div>
+
+          <!-- Últimos pedidos -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="hl" style="font-size:14px;font-weight:800;margin-bottom:12px">Últimos Pedidos (mês)</div>
+            ${recent.length ? recent.map(o => `
+              <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+                <div><span style="font-weight:700">${o.tipo_pedido||'—'}</span> · ${new Date(o.created_at).toLocaleDateString('pt-BR')}</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-weight:800">${fmtP(o.total)}</span>
+                  <span style="font-size:11px;padding:2px 8px;border-radius:6px;background:${o.status==='entregue'?'rgba(16,185,129,.1)':'rgba(245,158,11,.1)'};color:${o.status==='entregue'?'#10B981':'#F59E0B'}">${o.status}</span>
+                </div>
+              </div>`).join('')
+            : '<div style="color:var(--text3);font-size:13px">Nenhum pedido este mês</div>'}
+          </div>
+
+          <!-- Ações -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <button onclick="admSetStatus('${c.id}','ativo');admFecharDetalhe();admLoadClientes()" style="padding:10px;border-radius:12px;border:1px solid ${st==='ativo'?'#10B981':'var(--border)'};background:${st==='ativo'?'rgba(16,185,129,.1)':'var(--bg3)'};color:${st==='ativo'?'#10B981':'var(--text3)'};cursor:pointer;font-weight:700;font-family:Inter">Ativo</button>
+            <button onclick="admSetStatus('${c.id}','suspenso');admFecharDetalhe();admLoadClientes()" style="padding:10px;border-radius:12px;border:1px solid ${st==='suspenso'?'#F59E0B':'var(--border)'};background:${st==='suspenso'?'rgba(245,158,11,.1)':'var(--bg3)'};color:${st==='suspenso'?'#F59E0B':'var(--text3)'};cursor:pointer;font-weight:700;font-family:Inter">Suspenso</button>
+            <button onclick="admSetStatus('${c.id}','inadimplente');admFecharDetalhe();admLoadClientes()" style="padding:10px;border-radius:12px;border:1px solid ${st==='inadimplente'?'#EF4444':'var(--border)'};background:${st==='inadimplente'?'rgba(239,68,68,.1)':'var(--bg3)'};color:${st==='inadimplente'?'#EF4444':'var(--text3)'};cursor:pointer;font-weight:700;font-family:Inter">Inadimp.</button>
+          </div>
+          <button onclick="admToggleBlock('${c.id}',${!!c.blocked});admFecharDetalhe();admLoadClientes()" style="width:100%;margin-top:8px;padding:10px;border-radius:12px;border:1px solid ${c.blocked?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)'};background:${c.blocked?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};color:${c.blocked?'#10B981':'#EF4444'};cursor:pointer;font-size:13px;font-weight:700;font-family:Inter">
+            ${c.blocked ? 'Ativar Acesso' : 'Bloquear Acesso'}
+          </button>
+        `;
       }
 
       async function admLoadClientStats(id) {
@@ -4462,9 +4626,107 @@
 
       function admFinSort(key) { if (admSortKey===key) admSortDir*=-1; else { admSortKey=key; admSortDir=-1; } admRenderFinTable(); }
 
-      function admFinExportCSV() {
-        const rows = [['Restaurante','Base','Comissão','Total','Status'], ...admFinRows.map(r=>[r.name,r.base,r.commission.toFixed(2),r.total.toFixed(2),r.status])];
-        const a = document.createElement('a'); a.href = 'data:text/csv,' + encodeURIComponent(rows.map(r=>r.join(',')).join('\n')); a.download = 'financeiro.csv'; a.click(); toast('CSV exportado');
+      function admFinExportPDF() {
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          const now = new Date().toLocaleString('pt-BR');
+          const mes = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+          const fil = document.getElementById('adm-fin-fil')?.value || '';
+          const rows = admFinRows.filter(r => !fil || r.status === fil);
+
+          // Cabeçalho
+          doc.setFillColor(4, 4, 16); doc.rect(0, 0, 210, 297, 'F');
+          doc.setFillColor(196, 28, 59); doc.rect(0, 0, 210, 28, 'F');
+          doc.setTextColor(255, 255, 255); doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+          doc.text('FLÜXA FOOD\'S', 14, 12);
+          doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+          doc.text('Relatório Financeiro — ' + mes, 14, 20);
+          doc.setFontSize(9); doc.text('Gerado em ' + now, 210 - 14, 20, { align: 'right' });
+
+          // KPIs
+          const totB = rows.reduce((a,b)=>a+b.base,0), totC = rows.reduce((a,b)=>a+b.commission,0), totT = rows.reduce((a,b)=>a+b.total,0);
+          let y = 38;
+          doc.setTextColor(136, 136, 136); doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+          doc.text('RECEITA TOTAL', 14, y); doc.text('BASE MENSAL', 74, y); doc.text('COMISSÕES', 134, y);
+          y += 6;
+          doc.setTextColor(196, 28, 59); doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+          doc.text('R$ ' + totT.toFixed(2).replace('.', ','), 14, y);
+          doc.setTextColor(255, 255, 255); doc.setFontSize(14);
+          doc.text('R$ ' + totB.toFixed(2).replace('.', ','), 74, y);
+          doc.text('R$ ' + totC.toFixed(2).replace('.', ','), 134, y);
+
+          // Tabela
+          y += 16;
+          doc.setFillColor(20, 20, 30); doc.rect(14, y - 5, 182, 8, 'F');
+          doc.setTextColor(136, 136, 136); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+          ['RESTAURANTE', 'BASE', 'COMISSÃO', 'TOTAL', 'STATUS'].forEach((h, i) => {
+            const xs = [14, 82, 116, 150, 178];
+            doc.text(h, xs[i], y);
+          });
+          y += 4;
+          doc.setFillColor(30, 30, 46); doc.rect(14, y, 182, 0.5, 'F');
+          y += 5;
+
+          rows.forEach((r, idx) => {
+            if (y > 270) { doc.addPage(); doc.setFillColor(4,4,16); doc.rect(0,0,210,297,'F'); y = 20; }
+            if (idx % 2 === 0) { doc.setFillColor(12, 12, 22); doc.rect(14, y - 4, 182, 8, 'F'); }
+            doc.setTextColor(255, 242, 234); doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+            const stColor = r.status === 'ativo' ? [16, 185, 129] : r.status === 'inadimplente' ? [239, 68, 68] : [245, 158, 11];
+            doc.text(r.name.slice(0, 28), 14, y);
+            doc.text('R$ ' + r.base.toFixed(2).replace('.', ','), 82, y);
+            doc.text('R$ ' + r.commission.toFixed(2).replace('.', ','), 116, y);
+            doc.setFont('helvetica', 'bold'); doc.text('R$ ' + r.total.toFixed(2).replace('.', ','), 150, y); doc.setFont('helvetica', 'normal');
+            doc.setTextColor(...stColor);
+            doc.text(r.status.charAt(0).toUpperCase() + r.status.slice(1), 178, y);
+            doc.setTextColor(255, 242, 234);
+            y += 9;
+          });
+
+          // Total row
+          y += 2;
+          doc.setFillColor(196, 28, 59, 0.15); doc.rect(14, y - 5, 182, 9, 'F');
+          doc.setTextColor(136, 136, 136); doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+          doc.text('TOTAL', 14, y);
+          doc.text('R$ ' + totB.toFixed(2).replace('.', ','), 82, y);
+          doc.text('R$ ' + totC.toFixed(2).replace('.', ','), 116, y);
+          doc.setTextColor(196, 28, 59); doc.text('R$ ' + totT.toFixed(2).replace('.', ','), 150, y);
+
+          doc.save('fluxa-financeiro-' + new Date().toISOString().slice(0,7) + '.pdf');
+          toast('PDF gerado!');
+        } catch(e) { console.error(e); toast('Erro ao gerar PDF: ' + e.message); }
+      }
+
+      function admShowAnalytics(view) {
+        document.getElementById('analytics-selector').style.display = view === 'sel' ? 'block' : 'none';
+        document.getElementById('analytics-fluxa').style.display = view === 'fluxa' ? 'block' : 'none';
+        document.getElementById('analytics-clientes').style.display = view === 'clientes' ? 'block' : 'none';
+        if (view === 'clientes') admLoadAnalyticsClientes();
+      }
+
+      async function admLoadAnalyticsClientes() {
+        const grid = document.getElementById('analytics-clientes-grid');
+        if (!admClientes.length) await admLoadClientes();
+        const start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+        const { data: ords } = await db.from('food_orders').select('company_id,total').eq('status','entregue').gte('created_at', start);
+        const byComm = {};
+        (ords||[]).forEach(o => { byComm[o.company_id] = (byComm[o.company_id]||0) + Number(o.total)*0.1; });
+        const badge = { ativo:'color:#10B981', suspenso:'color:#F59E0B', inadimplente:'color:#EF4444' };
+        grid.innerHTML = admClientes.map(c => {
+          const st = c.blocked ? 'inadimplente' : (c.active ? 'ativo' : 'suspenso');
+          const comm = byComm[c.id] || 0;
+          return `<div class="card" style="cursor:pointer" onclick="admOpenClientDetail('${c.id}');goAdm('clientes')" onmouseenter="this.style.borderColor='rgba(196,28,59,.4)'" onmouseleave="this.style.borderColor='var(--border)'">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <div class="hl" style="font-weight:800">${c.name}</div>
+              <span style="font-size:11px;font-weight:700;${badge[st]}">${st}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3)">COMISSÃO</div><div class="hl" style="font-weight:800">${fmtP(comm)}</div></div>
+              <div style="background:var(--bg3);border-radius:10px;padding:10px"><div style="font-size:10px;color:var(--text3)">TRÁFEGO</div><div class="hl" style="font-weight:800;color:var(--text3)">—</div></div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center">Clique para detalhes completos →</div>
+          </div>`;
+        }).join('');
       }
 
       // ── SUPORTE ──

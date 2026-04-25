@@ -796,10 +796,22 @@
         #dash-full-content > div:first-child {
           grid-template-columns: 1fr 1fr !important;
         }
-        #tab-novo-pedido > div[style*="display:grid"] {
+        /* Novo Pedido mobile: tab switcher */
+        #np-mobile-tabs { display: block !important; }
+        #np-layout {
           display: flex !important;
           flex-direction: column !important;
           height: auto !important;
+          gap: 0 !important;
+        }
+        #np-section-menu {
+          overflow-y: visible !important;
+        }
+        #np-section-menu.np-hidden,
+        #np-section-comanda.np-hidden { display: none !important; }
+        #np-section-comanda {
+          height: auto !important;
+          min-height: 400px;
         }
         #np-menu-grid {
           grid-template-columns: repeat(2, 1fr) !important;
@@ -828,6 +840,19 @@
           padding: 24px;
           max-height: 85vh;
           overflow-y: auto;
+        }
+
+        /* Pizza builder grid no mobile */
+        #mod-pizza-builder .modal-sheet {
+          max-width: 95% !important;
+          padding: 16px !important;
+        }
+        #mod-pizza-builder div[style*="grid-template-columns:1fr 80px"] {
+          grid-template-columns: 1fr 1fr !important;
+          gap: 6px !important;
+        }
+        #mod-pizza-builder div[style*="grid-template-columns:1fr 80px"] > div:last-child {
+          grid-column: 1 / -1;
         }
 
         /* Top bar elements */
@@ -1029,55 +1054,27 @@
           <!-- NOVO PEDIDO -->
           <div id="tab-novo-pedido" class="tab">
             <h1 class="hl-title">Novo Pedido</h1>
-            <div
-              style="
-                display: grid;
-                grid-template-columns: 1fr 360px;
-                gap: 24px;
-                height: calc(100vh - 160px);
-              "
-            >
+
+            <!-- Tab switcher — só aparece no mobile -->
+            <div id="np-mobile-tabs" style="display:none; margin-bottom:16px; background:var(--bg3); border-radius:14px; padding:4px">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px">
+                <button id="np-btn-menu" onclick="npSwitchTab('menu')" style="padding:10px; border-radius:10px; border:none; background:var(--accent); color:black; font-weight:700; font-family:Inter; cursor:pointer; font-size:13px">Cardapio</button>
+                <button id="np-btn-comanda" onclick="npSwitchTab('comanda')" style="padding:10px; border-radius:10px; border:none; background:transparent; color:var(--text3); font-weight:600; font-family:Inter; cursor:pointer; font-size:13px">Comanda</button>
+              </div>
+            </div>
+
+            <div id="np-layout" style="display:grid; grid-template-columns:1fr 360px; gap:24px; height:calc(100vh - 160px)">
               <!-- Cardápio p/ seleção -->
-              <div style="overflow-y: auto">
-                <div
-                  style="
-                    display: flex;
-                    gap: 8px;
-                    flex-wrap: wrap;
-                    margin-bottom: 16px;
-                  "
-                  id="np-cats"
-                ></div>
-                <div
-                  id="np-menu-grid"
-                  style="
-                    display: grid;
-                    grid-template-columns: repeat(
-                      auto-fill,
-                      minmax(200px, 1fr)
-                    );
-                    gap: 12px;
-                  "
-                ></div>
+              <div id="np-section-menu" style="overflow-y:auto">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px" id="np-cats"></div>
+                <div id="np-menu-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px"></div>
               </div>
               <!-- Carrinho / Comanda -->
-              <div
-                class="card"
-                style="display: flex; flex-direction: column; height: 100%"
-              >
-                <div
-                  class="hl"
-                  style="font-weight: 800; font-size: 16px; margin-bottom: 12px"
-                >
-                  Comanda
-                </div>
-                <div style="margin-bottom: 12px">
-                  <label>Nome do cliente</label
-                  ><input
-                    type="text"
-                    id="np-nome"
-                    placeholder="Cliente / Mesa"
-                  />
+              <div id="np-section-comanda" class="card" style="display:flex; flex-direction:column; height:100%">
+                <div class="hl" style="font-weight:800; font-size:16px; margin-bottom:12px">Comanda</div>
+                <div style="margin-bottom:12px">
+                  <label>Nome do cliente</label>
+                  <input type="text" id="np-nome" placeholder="Cliente / Mesa"/>
                   <label>Tipo</label>
                   <select id="np-tipo">
                     <option value="mesa">Mesa</option>
@@ -1085,39 +1082,17 @@
                     <option value="delivery">Delivery</option>
                   </select>
                   <div id="np-mesa-wrap">
-                    <label>Número da Mesa</label
-                    ><input type="number" id="np-mesa-num" min="1" />
+                    <label>Número da Mesa</label>
+                    <input type="number" id="np-mesa-num" min="1"/>
                   </div>
                 </div>
-                <div
-                  id="np-cart"
-                  style="flex: 1; overflow-y: auto; margin-bottom: 12px"
-                ></div>
-                <div
-                  style="border-top: 1px solid var(--border); padding-top: 12px"
-                >
-                  <div
-                    style="
-                      display: flex;
-                      justify-content: space-between;
-                      margin-bottom: 16px;
-                    "
-                  >
-                    <span style="font-weight: 600">Total</span>
-                    <b
-                      class="hl"
-                      id="np-total"
-                      style="color: var(--blue); font-size: 18px"
-                      >R$ 0,00</b
-                    >
+                <div id="np-cart" style="flex:1; overflow-y:auto; margin-bottom:12px"></div>
+                <div style="border-top:1px solid var(--border); padding-top:12px">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:16px">
+                    <span style="font-weight:600">Total</span>
+                    <b class="hl" id="np-total" style="color:var(--blue); font-size:18px">R$ 0,00</b>
                   </div>
-                  <button
-                    class="btn-p"
-                    style="width: 100%"
-                    onclick="enviarPedidoManual()"
-                  >
-                    ENVIAR PEDIDO
-                  </button>
+                  <button class="btn-p" style="width:100%" onclick="enviarPedidoManual()">ENVIAR PEDIDO</button>
                 </div>
               </div>
             </div>
@@ -1146,7 +1121,7 @@
                   style="background: var(--blue); color: white"
                   onclick="openGlobalPizzaBuilder()"
                 >
-                  🍕 CONFIGURAR PIZZAS
+                  CONFIGURAR PIZZAS
                 </button>
                 <button
                   class="btn-p"
@@ -1851,7 +1826,7 @@
               >add_a_photo</span
             >
           </div>
-          <button id="btn-remove-item-photo" onclick="removeItemPhoto()" style="display:none; position:absolute; top:4px; right:4px; background:rgba(220,38,38,.9); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; font-size:16px; line-height:1; z-index:2">✕</button>
+          <button id="btn-remove-item-photo" onclick="removeItemPhoto()" style="display:none; position:absolute; top:4px; right:4px; background:rgba(220,38,38,.9); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; z-index:2; align-items:center; justify-content:center"><span class="ms" style="font-size:16px">close</span></button>
         </div>
         <input
           type="file"
@@ -1900,12 +1875,10 @@
           ><input type="number" step="0.01" id="item-price" />
         </div>
         <label>Descrição</label><textarea id="item-desc" rows="2"></textarea>
-        <button class="btn-p" style="width: 100%" onclick="saveItem()">
-          SALVAR ITEM
-        </button>
-        <button id="btn-delete-item" class="btn-p" style="width:100%; margin-top:12px; background:#dc2626; display:none" onclick="deleteItem()">
-          🗑️ EXCLUIR ITEM
-        </button>
+        <div id="item-action-btns" style="display:grid; grid-template-columns:1fr; gap:8px; margin-top:4px">
+          <button id="btn-delete-item" class="btn-p" style="background:#dc2626; display:none" onclick="deleteItem()">EXCLUIR ITEM</button>
+          <button class="btn-p" style="width:100%" onclick="saveItem()">SALVAR ITEM</button>
+        </div>
       </div>
     </div>
 
@@ -1986,7 +1959,7 @@
       id="mod-pizza-builder"
       onclick="closeMod('mod-pizza-builder', event)"
     >
-      <div class="modal-sheet" style="max-width: 600px; width: 95%">
+      <div class="modal-sheet" style="max-width: 640px; width: 95%; max-height: 90vh; overflow-y: auto">
         <div
           style="
             display: flex;
@@ -2054,24 +2027,6 @@
           ></textarea>
         </div>
 
-        <div style="margin-bottom: 20px">
-          <label>Status do Módulo</label>
-          <div style="display: flex; gap: 12px; margin-top: 8px">
-            <label
-              style="
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 14px;
-                cursor: pointer;
-              "
-            >
-              <input type="checkbox" id="pz-global-active" checked /> Módulo
-              Ativo no Cardápio
-            </label>
-          </div>
-        </div>
-
         <div class="card" style="margin-bottom: 24px; background: var(--bg2)">
           <div
             style="
@@ -2087,16 +2042,7 @@
             Tamanhos, Fatias e Limites
           </div>
           <div id="pb-sizes-list" style="margin-bottom: 12px"></div>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: 1fr 60px 60px 50px;
-              gap: 8px;
-              background: var(--bg3);
-              padding: 12px;
-              border-radius: 12px;
-            "
-          >
+          <div style="display:grid; grid-template-columns:1fr 80px 80px 48px; gap:8px; background:var(--bg3); padding:12px; border-radius:12px; align-items:end">
             <div>
               <label style="font-size: 10px">Nome (Ex: Grande)</label
               ><input
@@ -2496,40 +2442,30 @@
         const container = document.getElementById("login-food-waterfall");
         if (!container) return;
         container.innerHTML = "";
-        const foods = [
-          "🍔",
-          "🍕",
-          "🍟",
-          "🌭",
-          "🥐",
-          "🍣",
-          "🍩",
-          "🍗",
-          "🌮",
-          "🥞",
-          "🍳",
-          "🍝",
-          "🥩",
-          "🥪",
-          "🧀",
-          "🥘",
-          "🥗",
-          "🍿",
-        ];
+        // Formas geométricas — sem emojis
+        const shapes = ["circle","square","triangle","diamond","line"];
+        const colors = ["rgba(255,255,255,0.06)","rgba(255,255,255,0.04)","rgba(255,255,255,0.05)"];
         setInterval(() => {
-          if (document.getElementById("s-login").style.display === "none")
-            return;
+          if (document.getElementById("s-login").style.display === "none") return;
+          const type = shapes[Math.floor(Math.random() * shapes.length)];
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          const size = Math.random() * 18 + 8;
           const el = document.createElement("div");
           el.className = "food-emoji";
-          el.textContent = foods[Math.floor(Math.random() * foods.length)];
           el.style.left = Math.random() * 100 + "vw";
-          el.style.fontSize = Math.random() * 20 + 20 + "px";
-          const duration = Math.random() * 5 + 5;
+          el.style.width = size + "px";
+          el.style.height = size + "px";
+          el.style.background = color;
+          if (type === "circle") el.style.borderRadius = "50%";
+          else if (type === "diamond") { el.style.transform = "rotate(45deg)"; el.style.borderRadius = "3px"; }
+          else if (type === "line") { el.style.height = "2px"; el.style.width = (Math.random()*30+20)+"px"; el.style.borderRadius = "1px"; }
+          else if (type === "triangle") { el.style.background="transparent"; el.style.width="0"; el.style.height="0"; el.style.borderLeft=(size/2)+"px solid transparent"; el.style.borderRight=(size/2)+"px solid transparent"; el.style.borderBottom=size+"px solid "+color; }
+          else el.style.borderRadius = "3px";
+          const duration = Math.random() * 6 + 6;
           el.style.animationDuration = duration + "s";
-          el.style.opacity = (Math.random() * 0.5 + 0.1).toString();
           container.appendChild(el);
           setTimeout(() => el.remove(), duration * 1000);
-        }, 400);
+        }, 350);
       }
 
       async function doLogin() {
@@ -2778,11 +2714,13 @@
       }
 
       function doLogout() {
+        closeMod("mod-logout");
         localStorage.removeItem("quiosque_session_v2");
         localStorage.removeItem("fluxa_login");
         co = null;
         document.getElementById("app").style.display = "none";
         document.getElementById("s-login").style.display = "flex";
+        startFoodWaterfall();
         toast("Você saiu da conta");
       }
 
@@ -3207,7 +3145,7 @@
             catSelect.innerHTML = data
               .map(
                 (c) =>
-                  `<option value="${c.name}">${c.icon ? c.icon + " " : ""}${c.name}</option>`,
+                  `<option value="${c.name}">${c.name}</option>`,
               )
               .join("");
           }
@@ -3447,6 +3385,7 @@
         document.getElementById("item-prev").style.display = "none";
         document.getElementById("item-photo").dataset.url = "";
         document.getElementById("btn-delete-item").style.display = "none";
+        document.getElementById("item-action-btns").style.gridTemplateColumns = "1fr";
         document.getElementById("btn-remove-item-photo").style.display = "none";
         openMod("mod-item");
       }
@@ -3476,6 +3415,7 @@
           document.getElementById("btn-remove-item-photo").style.display = "none";
         }
         document.getElementById("btn-delete-item").style.display = "block";
+        document.getElementById("item-action-btns").style.gridTemplateColumns = "1fr 1fr";
         openMod("mod-item");
       }
 
@@ -4356,6 +4296,30 @@
         toast("Eli está analisando sua operação...");
       }
 
+      // Novo Pedido — alternância mobile
+      let _npTab = "menu";
+      function npSwitchTab(tab) {
+        _npTab = tab;
+        const menu = document.getElementById("np-section-menu");
+        const comanda = document.getElementById("np-section-comanda");
+        const btnM = document.getElementById("np-btn-menu");
+        const btnC = document.getElementById("np-btn-comanda");
+        if (!menu || !comanda) return;
+        if (tab === "menu") {
+          menu.classList.remove("np-hidden");
+          comanda.classList.add("np-hidden");
+          if (btnM) { btnM.style.background = "var(--accent)"; btnM.style.color = "black"; }
+          if (btnC) { btnC.style.background = "transparent"; btnC.style.color = "var(--text3)"; }
+        } else {
+          menu.classList.add("np-hidden");
+          comanda.classList.remove("np-hidden");
+          if (btnC) { btnC.style.background = "var(--accent)"; btnC.style.color = "black"; }
+          if (btnM) { btnM.style.background = "transparent"; btnM.style.color = "var(--text3)"; }
+        }
+      }
+      // Ao abrir aba Novo Pedido no mobile, garante que Cardapio aparece primeiro
+      const _origRenderNpMenu = typeof renderNpMenu === "function" ? renderNpMenu : null;
+
       // ═══════════════════════════════════════════════════
       // ADMIN FLÜXA KITCHENS
       // ═══════════════════════════════════════════════════
@@ -4637,7 +4601,7 @@
         else if (admCadStep===5) {
           if (stepsEl) stepsEl.innerHTML = '';
           f.innerHTML = `<div style="text-align:center;padding:40px 20px">
-            <div style="font-size:48px;margin-bottom:16px">✅</div>
+            <div style="width:64px;height:64px;border-radius:50%;background:rgba(16,185,129,.15);border:2px solid #10B981;display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><span class="ms" style="font-size:32px;color:#10B981">check_circle</span></div>
             <h3 class="hl" style="font-size:20px;font-weight:800;margin-bottom:8px">Restaurante criado!</h3>
             <div style="background:var(--bg3);border-radius:12px;padding:12px;margin:16px 0;font-size:13px">Login do gestor: <b>${admCadData.gestor_email||'—'}</b></div>
             <button class="btn-p" style="background:#C41C3B" onclick="admCadStep=1;admCadData={};admRenderCadStep()">Cadastrar outro</button>

@@ -2970,8 +2970,6 @@
           .join("");
 
         if (data) {
-          document.getElementById("pz-global-active").checked =
-            data.available !== false;
           document.getElementById("pz-name").value = data.name || "Pizza";
           document.getElementById("pz-desc").value = data.description || "";
           document.getElementById("pz-cat").value =
@@ -2990,7 +2988,6 @@
           currentPizzaFlavors = data.pizza_flavors_per_size || [];
         } else {
           // Default template
-          document.getElementById("pz-global-active").checked = true;
           document.getElementById("pz-name").value = "Pizza";
           document.getElementById("pz-desc").value =
             "Escolha o tamanho e os sabores para montar a sua pizza!";
@@ -3010,7 +3007,7 @@
       }
 
       async function saveGlobalPizza() {
-        const active = document.getElementById("pz-global-active").checked;
+        const active = true;
         const name = document.getElementById("pz-name").value.trim() || "Pizza";
         const desc = document.getElementById("pz-desc").value.trim();
         let pzCatName = document.getElementById("pz-cat").value;
